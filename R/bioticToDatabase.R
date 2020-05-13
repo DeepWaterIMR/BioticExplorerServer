@@ -84,7 +84,9 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = TRUE, m
   # Inddat
 
   inddat <- merge(stndat[,!names(stndat) %in% c("purpose", "stationcomment"), with = FALSE], ind, all.y = TRUE, by = names(stndat)[names(stndat) %in% names(ind)])
-  inddat <- rbindlist(list(inddat,age), fill=TRUE, use.names=TRUE)
+
+  inddat[is.na(preferredagereading), preferredagereading := 1]
+  inddat <- merge(inddat, age, by.x=c(intersect(names(inddat), names(age)), "preferredagereading"), by.y= c(intersect(names(inddat), names(age)), "agedeterminationid"), all.x = TRUE)
 
   # inddat[is.na(inddat$commonname), "commonname"] <- "Merging error due to missing data"
 
