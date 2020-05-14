@@ -4,7 +4,7 @@
 \alias{downloadDatabase}
 \title{Download and parse NMD data for the BioticExplorer database}
 \usage{
-downloadDatabase(years, dbPath = dbPath())
+downloadDatabase(years, dbPath = "~/Desktop/IMR_db.monetdb")
 }
 \arguments{
 \item{years}{vector of integer specifying the years to be downloaded. The database reaches 1900:2020}

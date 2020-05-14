@@ -7,7 +7,7 @@
 #' @importFrom utils download.file
 #' @author Ibrahim Umar, Mikko Vihtakari (Institute of Marine Research)
 
-downloadDatabase <- function(years, dbPath = dbPath()) {
+downloadDatabase <- function(years, dbPath = "~/Desktop/IMR_db.monetdb") {
 
   con_duck <- DBI::dbConnect(MonetDBLite::MonetDBLite(), dbPath)
 

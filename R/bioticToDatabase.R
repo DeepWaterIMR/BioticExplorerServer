@@ -75,7 +75,7 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = TRUE, m
 
   ## Compiled datasets ----
 
-  coredat <- merge(msn, stn, by = names(msn)[names(msn) %in% names(stn)], all = TRUE)
+  coredat <- merge(msn[,!names(msn) %in% c("purpose")], stn, by = names(msn)[names(msn) %in% names(stn)], all = TRUE)
 
   # Stndat
 
