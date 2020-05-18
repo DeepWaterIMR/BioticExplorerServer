@@ -11,6 +11,9 @@ downloadDatabase <- function(years, dbPath = "~/Desktop/IMR_db.monetdb") {
 
   con_duck <- DBI::dbConnect(MonetDBLite::MonetDBLite(), dbPath)
 
+  # Get ICES area shape
+  poly <- prepareICESareas()
+
   # h <- years[[20]]
   lapply(years, function(h) {
     message(paste("Downloading:", h))
@@ -26,7 +29,7 @@ downloadDatabase <- function(years, dbPath = "~/Desktop/IMR_db.monetdb") {
       # Do transformations
       file = dest
       # bioticToDatabase()
-      a <- bioticToDatabase(dest, missionidPrefix = h)
+      a <- bioticToDatabase(dest, missionidPrefix = h, icesAreaShape = poly)
 
 
       lapply(names(a), function(i) {

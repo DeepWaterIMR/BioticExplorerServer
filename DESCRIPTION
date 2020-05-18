@@ -1,8 +1,8 @@
 Package: BioticExplorerServer
 Type: Package
 Title: R package to generate and update the server-side data for BioticExplorer
-Version: 0.1.4
-Date: 2020-05-14
+Version: 0.1.5
+Date: 2020-05-18
 Authors@R: c(person("Mikko", "Vihtakari", email = "mikko.vihtakari@hi.no",
                   role = c("aut", "cre")), 
           person("Imbrahim", "Umar",
@@ -15,7 +15,7 @@ Maintainer: Mikko Vihtakari <mikko.vihtakari@hi.no>
 Description: This is a developmental package and not needed by BioticExplorer users. 
     The functions are poorly documented and only intended for internal use. 
 Depends: R (>= 3.0), data.table
-Imports: DBI, RstoxData, MonetDBLite, dplyr, dtplyr
+Imports: DBI, RstoxData, MonetDBLite, dplyr, dtplyr, sp, rgdal
 License: GPL-3 | file LICENSE
 Encoding: UTF-8
 LazyData: true

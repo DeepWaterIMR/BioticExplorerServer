@@ -4,13 +4,15 @@
 #' @param removeEmpty logical indicating whether empty columns should be removed from the output. This option also influences "coreData" columns.
 #' @param convertColumns logical indicating whether the column types should be converted. See \code{link{convertColumnTypes}}. Setting this to \code{FALSE} considerably speeds up the function, but leads to problems with non-unicode characters.
 #' @param missionidPrefix A prefix for the \code{missionid} identifier, which separates cruises. \code{NULL} (default) omits the prefix. Use year when writing to the database.
+#' @param icesAreaShape ICES area shape in SpatialPolygonsDataFrame object. Used for calculating the ICES area for a specific fishstation.
 #' @return Returns a list of Biotic data with the \code{$mission} data table from the original NMD data. The \code{$stnall} and \code{$indall} data frames are merged from \code{$fishstation} and \code{$catchsample} (former) and  \code{$fishstation}, \code{$catchsample}, \code{$individual} and \code{$agedetermination} (latter).
 #' @author Mikko Vihtakari, Ibrahim Umar (Institute of Marine Research)
 #' @import RstoxData data.table
+#' @importFrom sp over coordinates proj4string CRS spTransform
 #' @export
 
 # Debugging parameters
-bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = TRUE, missionidPrefix = NULL) {
+bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = TRUE, missionidPrefix = NULL, icesAreaShape = NULL) {
 
   ## Checks
 
@@ -44,6 +46,21 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = TRUE, m
   stn[, stationstartdate := as.POSIXct(paste(stn$stationstartdate, stn$stationstarttime), format = "%Y-%m-%dZ %H:%M:%S", tz = "GMT")]
 
   stn[, stationstarttime := NULL]
+
+  ### Add ICES area
+  if(!is.null(icesAreaShape)) {
+    points <- stn[, c("longitudestart", "latitudestart")]
+
+    # Remove NAs (set longlat as 0 so that translation gives NA)
+    points[is.na(longitudestart) | is.na(latitudestart), `:=`(longitudestart=0, latitudestart = 0)]
+
+    coordinates(points) <- c(1,2)
+    proj4string(points) <- CRS("+init=epsg:4326")
+
+    transformedPoints <- spTransform(points, proj4string(icesAreaShape))
+
+    stn[, icesarea:= over(transformedPoints, icesAreaShape)$Area_Full]
+  }
 
   if (convertColumns) {
     date.cols <- grep("date", names(stn), value = TRUE)
