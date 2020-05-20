@@ -9,7 +9,8 @@ bioticToDatabase(
   removeEmpty = FALSE,
   convertColumns = TRUE,
   missionidPrefix = NULL,
-  icesAreaShape = NULL
+  icesAreaShape = NULL,
+  cruiseSeries
 )
 }
 \arguments{
@@ -22,6 +23,8 @@ bioticToDatabase(
 \item{missionidPrefix}{A prefix for the \code{missionid} identifier, which separates cruises. \code{NULL} (default) omits the prefix. Use year when writing to the database.}
 
 \item{icesAreaShape}{ICES area shape in SpatialPolygonsDataFrame object. Used for calculating the ICES area for a specific fishstation.}
+
+\item{cruiseSeries}{a data.table object of NMD cruise series list. Used to identify cruise series of a specific mission.}
 }
 \value{
 Returns a list of Biotic data with the \code{$mission} data table from the original NMD data. The \code{$stnall} and \code{$indall} data frames are merged from \code{$fishstation} and \code{$catchsample} (former) and  \code{$fishstation}, \code{$catchsample}, \code{$individual} and \code{$agedetermination} (latter).

@@ -5,6 +5,7 @@
 #' @param convertColumns logical indicating whether the column types should be converted. See \code{link{convertColumnTypes}}. Setting this to \code{FALSE} considerably speeds up the function, but leads to problems with non-unicode characters.
 #' @param missionidPrefix A prefix for the \code{missionid} identifier, which separates cruises. \code{NULL} (default) omits the prefix. Use year when writing to the database.
 #' @param icesAreaShape ICES area shape in SpatialPolygonsDataFrame object. Used for calculating the ICES area for a specific fishstation.
+#' @param cruiseSeries a data.table object of NMD cruise series list. Used to identify cruise series of a specific mission.
 #' @return Returns a list of Biotic data with the \code{$mission} data table from the original NMD data. The \code{$stnall} and \code{$indall} data frames are merged from \code{$fishstation} and \code{$catchsample} (former) and  \code{$fishstation}, \code{$catchsample}, \code{$individual} and \code{$agedetermination} (latter).
 #' @author Mikko Vihtakari, Ibrahim Umar (Institute of Marine Research)
 #' @import RstoxData data.table
@@ -12,7 +13,7 @@
 #' @export
 
 # Debugging parameters
-bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = TRUE, missionidPrefix = NULL, icesAreaShape = NULL) {
+bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = TRUE, missionidPrefix = NULL, icesAreaShape = NULL, cruiseSeries) {
 
   ## Checks
 
@@ -25,6 +26,9 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = TRUE, m
   ## Mission data ---
 
   msn <- dt$mission
+
+  # Add cruise series information
+  msn <- merge(msn, cruiseSeries, by.x = c("startyear", "platformname"), by.y = c("year", "shipName"))
 
   if (convertColumns) {
     date.cols <- grep("date", names(msn), value = TRUE)

@@ -14,6 +14,9 @@ downloadDatabase <- function(years, dbPath = "~/Desktop/IMR_db.monetdb") {
   # Get ICES area shape
   poly <- prepareICESareas()
 
+  # Get cruise series list
+  cruise_series <- prepareCruiseSeriesList()
+
   # h <- years[[20]]
   lapply(years, function(h) {
     message(paste("Downloading:", h))
@@ -29,7 +32,7 @@ downloadDatabase <- function(years, dbPath = "~/Desktop/IMR_db.monetdb") {
       # Do transformations
       file = dest
       # bioticToDatabase()
-      a <- bioticToDatabase(dest, missionidPrefix = h, icesAreaShape = poly)
+      a <- bioticToDatabase(dest, missionidPrefix = h, icesAreaShape = poly, cruiseSeries = cruise_series)
 
 
       lapply(names(a), function(i) {

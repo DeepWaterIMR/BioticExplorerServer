@@ -5,7 +5,7 @@ Version: 0.1.5
 Date: 2020-05-18
 Authors@R: c(person("Mikko", "Vihtakari", email = "mikko.vihtakari@hi.no",
                   role = c("aut", "cre")), 
-          person("Imbrahim", "Umar",
+          person("Ibrahim", "Umar",
                   role = c("aut")),
           person("The Stox Project team", 
           role = c("aut")),
@@ -14,8 +14,8 @@ Authors@R: c(person("Mikko", "Vihtakari", email = "mikko.vihtakari@hi.no",
 Maintainer: Mikko Vihtakari <mikko.vihtakari@hi.no>
 Description: This is a developmental package and not needed by BioticExplorer users. 
     The functions are poorly documented and only intended for internal use. 
-Depends: R (>= 3.0), data.table
-Imports: DBI, RstoxData, MonetDBLite, dplyr, dtplyr, sp, rgdal
+Depends: R (>= 3.5), data.table
+Imports: DBI, RstoxData, MonetDBLite, dplyr, dtplyr, sp, rgdal, xml2
 License: GPL-3 | file LICENSE
 Encoding: UTF-8
 LazyData: true
