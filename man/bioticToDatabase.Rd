@@ -6,25 +6,31 @@
 \usage{
 bioticToDatabase(
   file,
-  removeEmpty = FALSE,
+  removeEmpty = TRUE,
   convertColumns = TRUE,
+  returnOriginal = FALSE,
   missionidPrefix = NULL
 )
 }
 \arguments{
 \item{file}{character string specifying the file path to the xml file. Accepts only one file at the time.}
 
-\item{removeEmpty}{logical indicating whether empty columns should be removed from the output. This option also influences "coreData" columns.}
+\item{removeEmpty}{logical indicating whether empty columns should be removed from the output.}
 
 \item{convertColumns}{logical indicating whether the column types should be converted. See \code{link{convertColumnTypes}}. Setting this to \code{FALSE} considerably speeds up the function, but leads to problems with non-unicode characters.}
 
-\item{missionidPrefix}{A prefix for the \code{missionid} identifier, which separates cruises. \code{NULL} (default) omits the prefix. Use year when writing to the database.}
+\item{returnOriginal}{logical indicating whether the original data (\code{$mission} through \code{$agedetermination}) should be returned together with combined data.}
+
+\item{missionidPrefix}{A prefix for the \code{missionid} identifier, which separates cruises. Used in \code{\link{processBioticFiles}} function when several xml files are put together. \code{NULL} (default) omits the prefix. Not needed in \code{processBioticFile} function.}
 }
 \value{
-Returns a list of Biotic data with the \code{$mission} data table from the original NMD data. The \code{$stnall} and \code{$indall} data frames are merged from \code{$fishstation} and \code{$catchsample} (former) and  \code{$fishstation}, \code{$catchsample}, \code{$individual} and \code{$agedetermination} (latter).
+Returns a list of Biotic data with \code{$mission}, \code{$stnall} and \code{$indall} data tables. The \code{$stnall} and \code{$indall} are merged from \code{$fishstation} and \code{$catchsample} (former) and  \code{$fishstation}, \code{$catchsample}, \code{$individual} and \code{$agedetermination} (latter).
 }
 \description{
 A wrapper for \code{\link[RstoxData]{readXmlFile}} to enable further use in the BioticExplorer database
+}
+\details{
+This function should be identical to the BioticExplorer::processBioticFile function.
 }
 \author{
 Mikko Vihtakari, Ibrahim Umar (Institute of Marine Research)
