@@ -6,7 +6,7 @@
 \usage{
 bioticToDatabase(
   file,
-  removeEmpty = TRUE,
+  removeEmpty = FALSE,
   convertColumns = TRUE,
   returnOriginal = FALSE,
   missionidPrefix = NULL
@@ -30,7 +30,7 @@ Returns a list of Biotic data with \code{$mission}, \code{$stnall} and \code{$in
 A wrapper for \code{\link[RstoxData]{readXmlFile}} to enable further use in the BioticExplorer database
 }
 \details{
-This function should be identical to the BioticExplorer::processBioticFile function.
+This function should be identical to the BioticExplorer::processBioticFile function with the exception that \code{removeEmpty} has to be set to FALSE
 }
 \author{
 Mikko Vihtakari, Ibrahim Umar (Institute of Marine Research)

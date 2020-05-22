@@ -2,6 +2,8 @@
 
 S3method(print,bioticProcData)
 export(bioticToDatabase)
+export(downloadDatabase)
+export(indexDatabase)
 import(DBI)
 import(MonetDBLite)
 import(RstoxData)

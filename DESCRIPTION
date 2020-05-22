@@ -1,7 +1,7 @@
 Package: BioticExplorerServer
 Type: Package
 Title: R package to generate and update the server-side data for BioticExplorer
-Version: 0.1.5
+Version: 0.2.0
 Date: 2020-05-21
 Authors@R: c(person("Mikko", "Vihtakari", email = "mikko.vihtakari@hi.no",
                   role = c("aut", "cre")), 
