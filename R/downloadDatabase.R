@@ -16,6 +16,7 @@ downloadDatabase <- function(years, dbPath = "~/Desktop/IMR_db.monetdb") {
 
   # Get cruise series list
   cruise_series <- prepareCruiseSeriesList()
+  cruise_series[, name:= NULL]
 
   # h <- years[[20]]
   lapply(years, function(h) {

@@ -9,7 +9,7 @@
 #' @return Returns a list of Biotic data with the \code{$mission} data table from the original NMD data. The \code{$stnall} and \code{$indall} data frames are merged from \code{$fishstation} and \code{$catchsample} (former) and  \code{$fishstation}, \code{$catchsample}, \code{$individual} and \code{$agedetermination} (latter).
 #' @author Mikko Vihtakari, Ibrahim Umar (Institute of Marine Research)
 #' @import RstoxData data.table
-#' @importFrom sp over coordinates proj4string CRS spTransform
+#' @importFrom sp over coordinates proj4string coordinates<- proj4string<- CRS spTransform
 #' @export
 
 # Debugging parameters
@@ -28,7 +28,11 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = TRUE, m
   msn <- dt$mission
 
   # Add cruise series information
-  msn <- merge(msn, cruiseSeries, by.x = c("startyear", "platformname"), by.y = c("year", "shipName"))
+  msn <- merge(msn, cruiseSeries, by.x = c("startyear", "platformname", "cruise"), by.y = c("year", "shipName", "cruisenr"), all.x = TRUE)
+  ints <- intersect(names(dt$mission), names(dt$fishstation))
+  msn[, cruiseseriescode := as.character(cruiseseriescode)]
+  msn <- msn[, cruiseseriescode := paste(cruiseseriescode, collapse =","), by = ints]
+  msn <- msn[!duplicated(msn[, ..ints]),]
 
   if (convertColumns) {
     date.cols <- grep("date", names(msn), value = TRUE)
@@ -58,12 +62,16 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = TRUE, m
     # Remove NAs (set longlat as 0 so that translation gives NA)
     points[is.na(longitudestart) | is.na(latitudestart), `:=`(longitudestart=0, latitudestart = 0)]
 
-    coordinates(points) <- c(1,2)
-    proj4string(points) <- CRS("+init=epsg:4326")
+    if(nrow(points) > 0) {
+      sp::coordinates(points) <- c(1,2)
+      sp::proj4string(points) <- CRS("+init=epsg:4326")
 
-    transformedPoints <- spTransform(points, proj4string(icesAreaShape))
+      transformedPoints <- sp::spTransform(points, proj4string(icesAreaShape))
 
-    stn[, icesarea:= over(transformedPoints, icesAreaShape)$Area_Full]
+      stn[, icesarea := sp::over(transformedPoints, icesAreaShape)$Area_Full]
+    } else {
+      stn[, icesarea := as.character(NA)]
+    }
   }
 
   if (convertColumns) {
@@ -95,8 +103,9 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = TRUE, m
   # }
 
   ## Compiled datasets ----
+  if(length(dt$mission$startyear) > 0 && unique(dt$mission$startyear) == 1995) browser()
 
-  coredat <- merge(msn[,!names(msn) %in% c("purpose")], stn, by = names(msn)[names(msn) %in% names(stn)], all = TRUE)
+  coredat <- merge(msn[, setdiff(names(msn), c("purpose")), with = FALSE], stn, by = intersect(names(msn), names(stn)), all = TRUE)
 
   # Stndat
 
@@ -104,7 +113,7 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = TRUE, m
 
   # Inddat
 
-  inddat <- merge(stndat[,!names(stndat) %in% c("purpose", "stationcomment"), with = FALSE], ind, all.y = TRUE, by = names(stndat)[names(stndat) %in% names(ind)])
+  inddat <- merge(stndat[, setdiff(names(stndat), c("purpose", "stationcomment")), with = FALSE], ind, all.y = TRUE, by = intersect(names(stndat), names(ind)))
 
   inddat[is.na(preferredagereading), preferredagereading := 1]
   inddat <- merge(inddat, age, by.x=c(intersect(names(inddat), names(age)), "preferredagereading"), by.y= c(intersect(names(inddat), names(age)), "agedeterminationid"), all.x = TRUE)

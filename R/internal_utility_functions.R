@@ -1,6 +1,6 @@
 # Define global variables
 utils::globalVariables(c("stationstarttime", "stationstartdate", "preferredagereading", "commonname", "cruise", "gear",
-"missionid", "missiontypename", "platformname", "serialnumber", "startyear", "icesarea", "coordinates<-", "proj4string<-", 
+"missionid", "missiontypename", "platformname", "serialnumber", "startyear", "icesarea",
 "longitudestart", "latitudestart", "description", "cruiseseriescode"))
 
 #' @importFrom utils unzip
