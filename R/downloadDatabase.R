@@ -17,7 +17,7 @@ downloadDatabase <- function(years, dbPath) {
 
   # Get cruise series list
   cruise_series <- prepareCruiseSeriesList()
-  cruise_series_lean <- cruise_series
+  cruise_series_lean <- copy(cruise_series)
   cruise_series_lean[, name:= NULL]
 
   timeStart <- Sys.time()
