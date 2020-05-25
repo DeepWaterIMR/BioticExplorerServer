@@ -1,7 +1,7 @@
 # Define global variables
 utils::globalVariables(c("stationstarttime", "stationstartdate", "preferredagereading", "commonname", "cruise", "gear",
-"missionid", "missiontypename", "platformname", "serialnumber", "startyear", "icesarea",
-"longitudestart", "latitudestart", "description", "cruiseseriescode"))
+"missionid", "missiontypename", "platformname", "serialnumber", "startyear", "icesarea", "stationstopdate", "stationstoptime",
+"longitudestart", "latitudestart", "description", "cruiseseriescode", "timestart", "timeend", "..ints", "name"))
 
 #' @importFrom utils unzip
 #' @importFrom rgdal readOGR
