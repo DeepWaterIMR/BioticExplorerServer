@@ -17,7 +17,8 @@ downloadDatabase <- function(years, dbPath) {
 
   # Get cruise series list
   cruise_series <- prepareCruiseSeriesList()
-  cruise_series[, name:= NULL]
+  cruise_series_lean <- cruise_series
+  cruise_series_lean[, name:= NULL]
 
   timeStart <- Sys.time()
   # h <- years[[20]]
@@ -34,7 +35,7 @@ downloadDatabase <- function(years, dbPath) {
 
       # Do transformations
 
-      a <- bioticToDatabase(dest, missionidPrefix = h, icesAreaShape = poly, cruiseSeries = cruise_series)
+      a <- bioticToDatabase(dest, missionidPrefix = h, icesAreaShape = poly, cruiseSeries = cruise_series_lean)
 
 
       lapply(names(a), function(i) {
@@ -54,7 +55,8 @@ downloadDatabase <- function(years, dbPath) {
   timeEnd <- Sys.time()
   
   DBI::dbWriteTable(con_duck, "metadata", data.frame(timestart = timeStart, timeend = timeEnd), overwrite = TRUE)
-  
+  DBI::dbWriteTable(con_duck, "csindex", cruise_series, overwrite = TRUE)  
+
   DBI::dbDisconnect(con_duck)
 
 }
