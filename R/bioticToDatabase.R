@@ -6,16 +6,19 @@
 #' @param returnOriginal logical indicating whether the original data (\code{$mission} through \code{$agedetermination}) should be returned together with combined data.
 #' @param missionidPrefix A prefix for the \code{missionid} identifier, which separates cruises. Used when several xml files are put together. \code{NULL} (default) omits the prefix.
 #' @details This function should be identical to the BioticExplorer::processBioticFile function with the exception that \code{removeEmpty} has to be set to FALSE
+#' @param icesAreaShape ICES area shape in SpatialPolygonsDataFrame object. Used for calculating the ICES area for a specific fishstation.
+#' @param cruiseSeries a data.table object of NMD cruise series list. Used to identify cruise series of a specific mission.
 #' @return Returns a list of Biotic data with \code{$mission}, \code{$stnall} and \code{$indall} data tables. The \code{$stnall} and \code{$indall} are merged from \code{$fishstation} and \code{$catchsample} (former) and  \code{$fishstation}, \code{$catchsample}, \code{$individual} and \code{$agedetermination} (latter). 
 #' @author Mikko Vihtakari, Ibrahim Umar (Institute of Marine Research) 
 #' @import RstoxData data.table
 #' @importFrom utils txtProgressBar setTxtProgressBar
+#' @importFrom sp over coordinates proj4string coordinates<- proj4string<- CRS spTransform
 #' @export
 
 
 # Debugging parameters
 # removeEmpty = FALSE; convertColumns = TRUE; returnOriginal = FALSE; missionidPrefix = NULL
-bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = TRUE, returnOriginal = FALSE, missionidPrefix = NULL) {
+bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = TRUE, returnOriginal = FALSE, missionidPrefix = NULL, icesAreaShape = NULL, cruiseSeries) {
   
   pb <- utils::txtProgressBar(max = 10, style = 3)
   
@@ -32,7 +35,14 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = TRUE, r
   ## Mission data ---
   
   msn <- dt$mission
-  
+
+  # Add cruise series information
+  msn <- merge(msn, cruiseSeries, by.x = c("startyear", "platformname", "cruise"), by.y = c("year", "shipName", "cruisenr"), all.x = TRUE)
+  ints <- intersect(names(dt$mission), names(dt$fishstation))
+  msn[, cruiseseriescode := as.character(cruiseseriescode)]
+  msn <- msn[, cruiseseriescode := paste(cruiseseriescode, collapse =","), by = ints]
+  msn <- msn[!duplicated(msn[, ..ints]),]
+
   if (convertColumns) {
     date.cols <- grep("date", names(msn), value = TRUE)
     msn[, eval(date.cols) := lapply(.SD, as.Date), .SDcols = eval(date.cols)]
@@ -57,6 +67,26 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = TRUE, r
   stn[, stationstopdate := as.POSIXct(paste(stn$stationstopdate, stn$stationstoptime), format = "%Y-%m-%dZ %H:%M:%S", tz = "GMT")]
   
   stn[, stationstarttime := NULL]
+
+  ### Add ICES area
+  if(!is.null(icesAreaShape)) {
+    points <- stn[, c("longitudestart", "latitudestart")]
+
+    # Remove NAs (set longlat as 0 so that translation gives NA)
+    points[is.na(longitudestart) | is.na(latitudestart), `:=`(longitudestart=0, latitudestart = 0)]
+
+    if(nrow(points) > 0) {
+      sp::coordinates(points) <- c(1,2)
+      sp::proj4string(points) <- CRS("+init=epsg:4326")
+
+      transformedPoints <- sp::spTransform(points, proj4string(icesAreaShape))
+
+      stn[, icesarea := sp::over(transformedPoints, icesAreaShape)$Area_Full]
+    } else {
+      stn[, icesarea := as.character(NA)]
+    }
+  }
+
   stn[, stationstoptime := NULL]
   
   if (convertColumns) {
@@ -94,9 +124,9 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = TRUE, r
   # }
   
   ## Compiled datasets ----
-  
-  coredat <- merge(msn[,!names(msn) %in% c("purpose"), with = FALSE], stn, by = names(msn)[names(msn) %in% names(stn)], all = TRUE)
-  
+
+  coredat <- merge(msn[, setdiff(names(msn), c("purpose")), with = FALSE], stn, by = intersect(names(msn), names(stn)), all = TRUE)
+
   utils::setTxtProgressBar(pb, 6)
   
   # Stndat
@@ -106,9 +136,9 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = TRUE, r
   utils::setTxtProgressBar(pb, 7)
   
   # Inddat
-  
-  inddat <- merge(stndat[,!names(stndat) %in% c("purpose", "stationcomment", "catchcomment"), with = FALSE], ind, all.y = TRUE, by = names(stndat)[names(stndat) %in% names(ind)])
-  
+
+  inddat <- merge(stndat[, setdiff(names(stndat), c("purpose", "stationcomment", "catchcomment")), with = FALSE], ind, all.y = TRUE, by = intersect(names(stndat), names(ind)))
+
   inddat[is.na(preferredagereading), preferredagereading := 1]
   inddat <- merge(inddat, age, by.x=c(intersect(names(inddat), names(age)), "preferredagereading"), by.y= c(intersect(names(inddat), names(age)), "agedeterminationid"), all.x = TRUE)
   
