@@ -21,7 +21,7 @@ bioticToDatabase(
 
 \item{returnOriginal}{logical indicating whether the original data (\code{$mission} through \code{$agedetermination}) should be returned together with combined data.}
 
-\item{missionidPrefix}{A prefix for the \code{missionid} identifier, which separates cruises. Used in \code{\link{processBioticFiles}} function when several xml files are put together. \code{NULL} (default) omits the prefix. Not needed in \code{processBioticFile} function.}
+\item{missionidPrefix}{A prefix for the \code{missionid} identifier, which separates cruises. Used when several xml files are put together. \code{NULL} (default) omits the prefix.}
 }
 \value{
 Returns a list of Biotic data with \code{$mission}, \code{$stnall} and \code{$indall} data tables. The \code{$stnall} and \code{$indall} are merged from \code{$fishstation} and \code{$catchsample} (former) and  \code{$fishstation}, \code{$catchsample}, \code{$individual} and \code{$agedetermination} (latter).

@@ -7,7 +7,7 @@
 downloadDatabase(years, dbPath)
 }
 \arguments{
-\item{years}{vector of integer specifying the years to be downloaded. The database reaches 1900:2020}
+\item{years}{vector of integer specifying the years to be downloaded. The database reaches 1914:2020}
 
 \item{dbPath}{Character string specifying the file path where the database should be located. Must include \code{.monetdb} at the end.}
 }

@@ -4,17 +4,20 @@
 #' @param removeEmpty logical indicating whether empty columns should be removed from the output. 
 #' @param convertColumns logical indicating whether the column types should be converted. See \code{link{convertColumnTypes}}. Setting this to \code{FALSE} considerably speeds up the function, but leads to problems with non-unicode characters.
 #' @param returnOriginal logical indicating whether the original data (\code{$mission} through \code{$agedetermination}) should be returned together with combined data.
-#' @param missionidPrefix A prefix for the \code{missionid} identifier, which separates cruises. Used in \code{\link{processBioticFiles}} function when several xml files are put together. \code{NULL} (default) omits the prefix. Not needed in \code{processBioticFile} function.
+#' @param missionidPrefix A prefix for the \code{missionid} identifier, which separates cruises. Used when several xml files are put together. \code{NULL} (default) omits the prefix.
 #' @details This function should be identical to the BioticExplorer::processBioticFile function with the exception that \code{removeEmpty} has to be set to FALSE
 #' @return Returns a list of Biotic data with \code{$mission}, \code{$stnall} and \code{$indall} data tables. The \code{$stnall} and \code{$indall} are merged from \code{$fishstation} and \code{$catchsample} (former) and  \code{$fishstation}, \code{$catchsample}, \code{$individual} and \code{$agedetermination} (latter). 
 #' @author Mikko Vihtakari, Ibrahim Umar (Institute of Marine Research) 
 #' @import RstoxData data.table
+#' @importFrom utils txtProgressBar setTxtProgressBar
 #' @export
 
 
 # Debugging parameters
 # removeEmpty = FALSE; convertColumns = TRUE; returnOriginal = FALSE; missionidPrefix = NULL
 bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = TRUE, returnOriginal = FALSE, missionidPrefix = NULL) {
+  
+  pb <- utils::txtProgressBar(max = 10, style = 3)
   
   ## Checks
   
@@ -23,6 +26,8 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = TRUE, r
   ## Read the Biotic file ----
   
   dt <- RstoxData::readXmlFile(file)
+  
+  utils::setTxtProgressBar(pb, 1)
   
   ## Mission data ---
   
@@ -38,6 +43,8 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = TRUE, r
   } else {
     msn$missionid <- paste(missionidPrefix, rownames(msn), sep = "_")
   }
+  
+  utils::setTxtProgressBar(pb, 2)
   
   ## Station data ---
   
@@ -57,6 +64,8 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = TRUE, r
     stn[, eval(date.cols) := lapply(.SD, as.Date), .SDcols = eval(date.cols)]
   }
   
+  utils::setTxtProgressBar(pb, 3)
+  
   ##________________
   ## Sample data ---
   
@@ -66,6 +75,8 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = TRUE, r
   ## Individual data ---
   
   ind <- dt$individual
+  utils::setTxtProgressBar(pb, 4)
+  
   
   ## Age data ---
   
@@ -76,6 +87,8 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = TRUE, r
     age[, eval(date.cols) := lapply(.SD, as.Date), .SDcols = eval(date.cols)]
   }
   
+  utils::setTxtProgressBar(pb, 5)
+  
   # if (nrow(age) == 0) {
   #   age <- rapply(age, as.integer, how = "replace")
   # }
@@ -84,9 +97,13 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = TRUE, r
   
   coredat <- merge(msn[,!names(msn) %in% c("purpose"), with = FALSE], stn, by = names(msn)[names(msn) %in% names(stn)], all = TRUE)
   
+  utils::setTxtProgressBar(pb, 6)
+  
   # Stndat
   
   stndat <- merge(coredat, cth, all.y = TRUE, by = c("missiontype", "missionnumber", "startyear", "platform", "serialnumber"))
+  
+  utils::setTxtProgressBar(pb, 7)
   
   # Inddat
   
@@ -96,6 +113,8 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = TRUE, r
   inddat <- merge(inddat, age, by.x=c(intersect(names(inddat), names(age)), "preferredagereading"), by.y= c(intersect(names(inddat), names(age)), "agedeterminationid"), all.x = TRUE)
   
   if(sum(is.na(inddat$commonname)) > 0) stop(paste(sum(is.na(inddat$commonname)), "missing commonname records. This is likely due to merging error between individual and agedetermination data tables. File a bug report."))
+  
+  utils::setTxtProgressBar(pb, 8)
   
   ## Return ----
   
@@ -107,6 +126,8 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = TRUE, r
     out <- list(mission = msn, stnall = stndat, indall = inddat)
   }
   
+  utils::setTxtProgressBar(pb, 9)
+  
   ### Remove empty columns to save space
   
   if (removeEmpty) {
@@ -114,6 +135,8 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = TRUE, r
       k[, which(unlist(lapply(k, function(x) !all(is.na(x))))), with = FALSE]
     })
   }
+  
+  utils::setTxtProgressBar(pb, 10)
   
   ### Class
   
