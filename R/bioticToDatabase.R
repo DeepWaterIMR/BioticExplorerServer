@@ -5,9 +5,9 @@
 #' @param convertColumns logical indicating whether the column types should be converted. See \code{link{convertColumnTypes}}. Setting this to \code{FALSE} considerably speeds up the function, but leads to problems with non-unicode characters.
 #' @param returnOriginal logical indicating whether the original data (\code{$mission} through \code{$agedetermination}) should be returned together with combined data.
 #' @param missionidPrefix A prefix for the \code{missionid} identifier, which separates cruises. Used when several xml files are put together. \code{NULL} (default) omits the prefix.
-#' @details This function should be identical to the BioticExplorer::processBioticFile function with the exception that \code{removeEmpty} has to be set to FALSE
 #' @param icesAreaShape ICES area shape in SpatialPolygonsDataFrame object. Used for calculating the ICES area for a specific fishstation.
-#' @param cruiseSeries a data.table object of NMD cruise series list. Used to identify cruise series of a specific mission.
+#' @param cruiseSeries a data.table object of NMD cruise series list. Used to identify cruise series of a specific mission. See \code{\link{prepareCruiseSeriesList}}.
+#' @param gearCodes a data.table object of NMD gear code list. Used to make gearname and gearcategory columns. See \code{\link{prepareGearList}}.
 #' @return Returns a list of Biotic data with \code{$mission}, \code{$stnall} and \code{$indall} data tables. The \code{$stnall} and \code{$indall} are merged from \code{$fishstation} and \code{$catchsample} (former) and  \code{$fishstation}, \code{$catchsample}, \code{$individual} and \code{$agedetermination} (latter). 
 #' @author Mikko Vihtakari, Ibrahim Umar (Institute of Marine Research) 
 #' @import RstoxData data.table
@@ -17,8 +17,9 @@
 
 
 # Debugging parameters
-# removeEmpty = FALSE; convertColumns = TRUE; returnOriginal = FALSE; missionidPrefix = NULL
-bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = TRUE, returnOriginal = FALSE, missionidPrefix = NULL, icesAreaShape = NULL, cruiseSeries) {
+# removeEmpty = FALSE; convertColumns = TRUE; returnOriginal = FALSE; missionidPrefix = NULL; icesAreaShape = ICESareas; cruiseSeries = cruiseSeriesList; gearCodes = gearList
+# file = dest; convertColumns = TRUE; returnOriginal = FALSE; missionidPrefix = h; icesAreaShape = ICESareas; cruiseSeries = cruiseSeriesList; gearCodes = gearList
+bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = TRUE, returnOriginal = FALSE, missionidPrefix = NULL, icesAreaShape = ICESareas, cruiseSeries = cruiseSeriesList, gearCodes = gearList) {
   
   pb <- utils::txtProgressBar(max = 10, style = 3)
   
@@ -36,24 +37,27 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = TRUE, r
   
   msn <- dt$mission
 
-  # Add cruise series information
-  msn <- merge(msn, cruiseSeries, by.x = c("startyear", "platformname", "cruise"), by.y = c("year", "shipName", "cruisenr"), all.x = TRUE)
-  ints <- intersect(names(dt$mission), names(dt$fishstation))
-  msn[, cruiseseriescode := as.character(cruiseseriescode)]
-  msn <- msn[, cruiseseriescode := paste(cruiseseriescode, collapse =","), by = ints]
-  msn <- msn[!duplicated(msn[, ..ints]),]
-
-  if (convertColumns) {
-    date.cols <- grep("date", names(msn), value = TRUE)
-    msn[, eval(date.cols) := lapply(.SD, as.Date), .SDcols = eval(date.cols)]
-  }
-  
   if (is.null(missionidPrefix)) {
     msn$missionid <- rownames(msn)
   } else {
     msn$missionid <- paste(missionidPrefix, rownames(msn), sep = "_")
   }
   
+  ### Add cruise series information
+  
+  msn <- merge(msn, cruiseSeries[,!names(cruiseSeries) %in% c("name"), with = FALSE], by = c("startyear", "platformname", "cruise"), all.x = TRUE, sort = FALSE)
+  ints <- intersect(names(dt$mission), names(dt$fishstation))
+  msn[, cruiseseriescode := as.character(cruiseseriescode)]
+  msn <- msn[, cruiseseriescode := paste(cruiseseriescode, collapse =","), by = ints]
+  msn <- msn[!duplicated(msn[, ..ints]),]
+
+  ### Convert dates
+  
+  if (convertColumns) {
+    date.cols <- grep("date", names(msn), value = TRUE)
+    msn[, eval(date.cols) := lapply(.SD, as.Date), .SDcols = eval(date.cols)]
+  }
+
   utils::setTxtProgressBar(pb, 2)
   
   ## Station data ---
@@ -67,8 +71,10 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = TRUE, r
   stn[, stationstopdate := as.POSIXct(paste(stn$stationstopdate, stn$stationstoptime), format = "%Y-%m-%dZ %H:%M:%S", tz = "GMT")]
   
   stn[, stationstarttime := NULL]
-
+  stn[, stationstoptime := NULL]
+  
   ### Add ICES area
+  
   if(!is.null(icesAreaShape)) {
     points <- stn[, c("longitudestart", "latitudestart")]
 
@@ -77,9 +83,9 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = TRUE, r
 
     if(nrow(points) > 0) {
       sp::coordinates(points) <- c(1,2)
-      sp::proj4string(points) <- CRS("+init=epsg:4326")
+      sp::proj4string(points) <- sp::CRS("+init=epsg:4326")
 
-      transformedPoints <- sp::spTransform(points, proj4string(icesAreaShape))
+      transformedPoints <- sp::spTransform(points, sp::proj4string(icesAreaShape))
 
       stn[, icesarea := sp::over(transformedPoints, icesAreaShape)$Area_Full]
     } else {
@@ -87,7 +93,11 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = TRUE, r
     }
   }
 
-  stn[, stationstoptime := NULL]
+  ### Add gear category
+  
+  stn <- merge(stn, gearCodes[,!names(gearCodes) %in% c("description"), with = FALSE], by.x = c("gear"), by.y = c("code"), all.x = TRUE, sort = FALSE)
+  
+  ### Convert date columns
   
   if (convertColumns) {
     date.cols <- grep("date", names(stn), value = TRUE)

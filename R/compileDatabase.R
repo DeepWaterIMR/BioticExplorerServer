@@ -11,7 +11,24 @@
 # dbPath = "~/Desktop/IMR_db.monetdb"; years = 1900:data.table::year(Sys.time()); dbIndexPath = "~/Desktop/dbIndex.rda"
 compileDatabase <- function(years = 1900:data.table::year(Sys.time()), dbPath = "~/Desktop/IMR_db.monetdb", dbIndexPath = "~/Desktop/dbIndex.rda") {
   
-  downloadDatabase(years = years, dbPath = dbPath)
+  ## Cruise series
+  
+  message("1. Compiling cruise series list")
+  cruiseSeriesList <- prepareCruiseSeriesList()
+  
+  ## Gear list
+  
+  message("2. Compiling gear list")
+  gearList <- prepareGearList()
+  
+  ## Download
+  
+  message("3. Compiling database")
+  downloadDatabase(years = years, dbPath = dbPath, cruiseSeries = cruiseSeriesList, gearCodes = gearList)
+  
+  # Index
+  
+  message("4. Indexing database")
   indexDatabase(dbPath = dbPath, dbIndexPath = dbIndexPath)
   
 }

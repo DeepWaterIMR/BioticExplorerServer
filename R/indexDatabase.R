@@ -23,6 +23,9 @@ indexDatabase <- function(dbPath = "~/Desktop/IMR_db.monetdb", dbIndexPath = "~/
   rv$inputData$indall <- dplyr::tbl(con_db, "indall")
   rv$inputData$mission <- dplyr::tbl(con_db, "mission")
   rv$inputData$meta <- dplyr::tbl(con_db, "metadata")
+  rv$inputData$csindex <- dplyr::tbl(con_db, "csindex")
+  rv$inputData$filesize <- dplyr::tbl(con_db, "filesize")
+  # rv$inputData$gearlist <- dplyr::tbl(con_db, "gearindex")
   
   utils::setTxtProgressBar(pb, 2)
   
@@ -48,24 +51,19 @@ indexDatabase <- function(dbPath = "~/Desktop/IMR_db.monetdb", dbIndexPath = "~/
   
   utils::setTxtProgressBar(pb, 5)
   
+  index$cruiseseries <- rv$inputData$csindex %>% select(cruiseseriescode, name) %>% distinct() %>% arrange(cruiseseriescode) %>% collect()
+  
+  utils::setTxtProgressBar(pb, 6)
+  
   index$downloadstart <- rv$inputData$meta %>% select(timestart) %>% pull()
   index$downloadend <- rv$inputData$meta %>% select(timeend) %>% pull()
-  
-  # index$stnallsize <- print(object.size(DBI::dbReadTable(con_db, "stnall")), units = "GB")
-  # 
-  # utils::setTxtProgressBar(pb, 6)
-  # 
-  # index$indallsize <- print(object.size(DBI::dbReadTable(con_db, "indall")), units = "GB")
-  # 
-  # utils::setTxtProgressBar(pb, 7)
-  # 
-  ## Close database connection
+  index$filesize <- rv$inputData$filesize %>% summarise(size = sum(filesize)/1e9) %>% pull() # in GB
   
   DBI::dbDisconnect(con_db) # MonetDBLite::monetdblite_shutdown()
   
   ## Save and return
   
-  utils::setTxtProgressBar(pb, 6)
+  utils::setTxtProgressBar(pb, 7)
   
   if(fileOnly) {
     save(index, file = dbIndexPath, compress = "xz")

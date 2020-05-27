@@ -10,8 +10,9 @@ bioticToDatabase(
   convertColumns = TRUE,
   returnOriginal = FALSE,
   missionidPrefix = NULL,
-  icesAreaShape = NULL,
-  cruiseSeries
+  icesAreaShape = ICESareas,
+  cruiseSeries = cruiseSeriesList,
+  gearCodes = gearList
 )
 }
 \arguments{
@@ -27,16 +28,15 @@ bioticToDatabase(
 
 \item{icesAreaShape}{ICES area shape in SpatialPolygonsDataFrame object. Used for calculating the ICES area for a specific fishstation.}
 
-\item{cruiseSeries}{a data.table object of NMD cruise series list. Used to identify cruise series of a specific mission.}
+\item{cruiseSeries}{a data.table object of NMD cruise series list. Used to identify cruise series of a specific mission. See \code{\link{prepareCruiseSeriesList}}.}
+
+\item{gearCodes}{a data.table object of NMD gear code list. Used to make gearname and gearcategory columns. See \code{\link{prepareGearList}}.}
 }
 \value{
 Returns a list of Biotic data with \code{$mission}, \code{$stnall} and \code{$indall} data tables. The \code{$stnall} and \code{$indall} are merged from \code{$fishstation} and \code{$catchsample} (former) and  \code{$fishstation}, \code{$catchsample}, \code{$individual} and \code{$agedetermination} (latter).
 }
 \description{
 A wrapper for \code{\link[RstoxData]{readXmlFile}} to enable further use in the BioticExplorer database
-}
-\details{
-This function should be identical to the BioticExplorer::processBioticFile function with the exception that \code{removeEmpty} has to be set to FALSE
 }
 \author{
 Mikko Vihtakari, Ibrahim Umar (Institute of Marine Research)
