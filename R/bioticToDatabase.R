@@ -93,6 +93,10 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = TRUE, r
     }
   }
 
+  ### Fix FDIR area code
+  
+  stn[, area := as.integer(area)]
+  
   ### Add gear category
   
   stn <- merge(stn, gearCodes[,!names(gearCodes) %in% c("description"), with = FALSE], by.x = c("gear"), by.y = c("code"), all.x = TRUE, sort = FALSE)

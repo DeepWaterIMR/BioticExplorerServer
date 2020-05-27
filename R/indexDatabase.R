@@ -43,6 +43,7 @@ indexDatabase <- function(dbPath = "~/Desktop/IMR_db.monetdb", dbIndexPath = "~/
   index$platformname <- rv$inputData$stnall %>% select(platformname) %>% distinct() %>% pull() %>% sort()
   index$serialnumber <- rv$inputData$stnall %>% select(serialnumber) %>% distinct() %>% pull() %>% sort()
   index$gear <- rv$inputData$stnall %>% select(gear) %>% distinct() %>% pull() %>% sort()
+  index$gearcategory <- rv$inputData$stnall %>% select(gearcategory) %>% distinct() %>% pull() %>% sort()
   index$date <- rv$inputData$stnall %>% summarise(min = min(stationstartdate, na.rm = TRUE), max = max(stationstartdate, na.rm = TRUE)) %>% collect()
   
   utils::setTxtProgressBar(pb, 4)
@@ -51,13 +52,18 @@ indexDatabase <- function(dbPath = "~/Desktop/IMR_db.monetdb", dbIndexPath = "~/
   
   utils::setTxtProgressBar(pb, 5)
   
-  index$cruiseseries <- rv$inputData$csindex %>% select(cruiseseriescode, name) %>% distinct() %>% arrange(cruiseseriescode) %>% collect()
+  tmp <- rv$inputData$csindex %>% select(cruiseseriescode, name) %>% distinct() %>% arrange(cruiseseriescode) %>% collect()
+  index$cruiseseries <- tmp$cruiseseriescode
+  names(index$cruiseseries) <- tmp$name
+  
+  index$icesarea <- rv$inputData$stnall %>% select(icesarea) %>% distinct() %>% pull() %>% sort()
+  index$fdirarea <- rv$inputData$stnall %>% select(area) %>% distinct() %>% pull() %>% sort() 
   
   utils::setTxtProgressBar(pb, 6)
   
   index$downloadstart <- rv$inputData$meta %>% select(timestart) %>% pull()
   index$downloadend <- rv$inputData$meta %>% select(timeend) %>% pull()
-  index$filesize <- rv$inputData$filesize %>% summarise(size = sum(filesize)/1e9) %>% pull() # in GB
+  index$filesize <- rv$inputData$filesize %>% summarise(size = sum(filesize, na.rm = TRUE)/1e9) %>% pull() # in GB
   
   DBI::dbDisconnect(con_db) # MonetDBLite::monetdblite_shutdown()
   
