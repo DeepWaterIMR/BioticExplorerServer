@@ -54,7 +54,7 @@ downloadDatabase <- function(years, dbPath, icesAreaShape = ICESareas, cruiseSer
   
   DBI::dbWriteTable(con_duck, "metadata", data.frame(timestart = timeStart, timeend = timeEnd), overwrite = TRUE)
   DBI::dbWriteTable(con_duck, "csindex", cruiseSeries, overwrite = TRUE)  
-  DBI::dbWriteTable(con_duck, "gearindex", gearList, overwrite = TRUE)  
+  DBI::dbWriteTable(con_duck, "gearindex", gearCodes, overwrite = TRUE)
   
   DBI::dbDisconnect(con_duck)
 

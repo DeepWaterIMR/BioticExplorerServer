@@ -21,10 +21,15 @@ compileDatabase <- function(years = 1900:data.table::year(Sys.time()), dbPath = 
   message("2. Compiling gear list")
   gearList <- prepareGearList()
   
+  ## ICES Areas
+
+  message("3. Compiling ICES area shapes")
+  icesAreas <- prepareICESareas()
+
   ## Download
   
-  message("3. Compiling database")
-  downloadDatabase(years = years, dbPath = dbPath, cruiseSeries = cruiseSeriesList, gearCodes = gearList)
+  message("4. Compiling database")
+  downloadDatabase(years = years, dbPath = dbPath, icesAreaShape = icesAreas, cruiseSeries = cruiseSeriesList, gearCodes = gearList)
   
   # Index
   
