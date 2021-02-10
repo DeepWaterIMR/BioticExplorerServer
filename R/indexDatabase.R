@@ -65,7 +65,7 @@ indexDatabase <- function(dbPath = "~/Desktop/IMR_db.monetdb", dbIndexPath = "~/
   index$downloadend <- rv$inputData$meta %>% select(timeend) %>% pull()
   index$filesize <- rv$inputData$filesize %>% summarise(size = sum(filesize, na.rm = TRUE)/1e9) %>% pull() # in GB
   
-  DBI::dbDisconnect(con_db) # MonetDBLite::monetdblite_shutdown()
+  DBI::dbDisconnect(con_db, shutdown = TRUE) # MonetDBLite::monetdblite_shutdown()
   
   ## Save and return
   

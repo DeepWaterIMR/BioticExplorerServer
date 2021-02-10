@@ -8,13 +8,15 @@
 #' @author Mikko Vihtakari, Ibrahim Umar (Institute of Marine Research)
 #' @export
 
-# dbPath = "~/Desktop/IMR_db.monetdb"; years = 1900:data.table::year(Sys.time()); dbIndexPath = "~/Desktop/dbIndex.rda"
+# years = 1900:data.table::year(Sys.time())
+# dbPath = "~/Desktop/IMR_db.monetdb"; dbIndexPath = "~/Desktop/dbIndex.rda"
 compileDatabase <- function(years = 1900:data.table::year(Sys.time()), dbPath = "~/Desktop/IMR_db.monetdb", dbIndexPath = "~/Desktop/dbIndex.rda") {
   
   ## Cruise series
   
   message("1. Compiling cruise series list")
-  cruiseSeriesList <- prepareCruiseSeriesList()
+  # cruiseSeriesList <- prepareCruiseSeriesList()
+  data(cruiseSeriesList) # a debugging shortcut. Works if you update the data/cruiseSeriesList.rda first. 
   
   ## Gear list
   
@@ -24,7 +26,7 @@ compileDatabase <- function(years = 1900:data.table::year(Sys.time()), dbPath = 
   ## ICES Areas
 
   message("3. Compiling ICES area shapes")
-  icesAreas <- prepareICESareas()
+  data(icesAreas)
 
   ## Download
   
