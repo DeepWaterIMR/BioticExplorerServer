@@ -102,7 +102,7 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = TRUE, r
   
   ### Convert date columns
   
-  # if (convertColumns) {
+  # if (convertColumns) { # Fixes the time issue. Left here in case unforeseen consequences. 
   #   #date.cols <- grep("date", names(stn), value = TRUE)
   #   #stn[, eval(date.cols) := lapply(.SD, as.Date), .SDcols = eval(date.cols)]
   # }

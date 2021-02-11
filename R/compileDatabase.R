@@ -15,8 +15,8 @@ compileDatabase <- function(years = 1900:data.table::year(Sys.time()), dbPath = 
   ## Cruise series
   
   message("1. Compiling cruise series list")
-  # cruiseSeriesList <- prepareCruiseSeriesList()
-  data(cruiseSeriesList) # a debugging shortcut. Works if you update the data/cruiseSeriesList.rda first. 
+  cruiseSeriesList <- prepareCruiseSeriesList()
+  # data(cruiseSeriesList) # a debugging shortcut. Works if you update the data/cruiseSeriesList.rda first. 
   
   ## Gear list
   
