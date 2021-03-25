@@ -15,7 +15,7 @@ downloadDatabase(
 \arguments{
 \item{years}{vector of integer specifying the years to be downloaded. The database reaches 1914:2020}
 
-\item{dbPath}{Character string specifying the file path where the database should be located. Must include \code{.monetdb} at the end.}
+\item{dbPath}{Character string specifying the file path where the database should be located. Must include \code{.duckdb} at the end.}
 
 \item{icesAreaShape}{ICES area shape in SpatialPolygonsDataFrame object. Used for calculating the ICES area for a specific fishstation.}
 
@@ -24,7 +24,7 @@ downloadDatabase(
 \item{gearCodes}{a data.table object of NMD gear code list. Used to make gearname and gearcategory columns. See \code{\link{prepareGearList}}.}
 }
 \description{
-Downloads annual NMD data from the API and writes them as MonetDB database
+Downloads annual NMD data from the API and writes them as DuckDB database
 }
 \details{
 This function is scarily powerful. Do not run a large number of years unless you think you know what you are doing

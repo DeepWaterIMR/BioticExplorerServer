@@ -6,14 +6,14 @@
 \usage{
 compileDatabase(
   years = 1900:data.table::year(Sys.time()),
-  dbPath = "~/Desktop/IMR_db.monetdb",
+  dbPath = "~/Desktop/IMR_db.duckdb",
   dbIndexPath = "~/Desktop/dbIndex.rda"
 )
 }
 \arguments{
 \item{years}{vector of integer specifying the years to be downloaded. The database reaches 1900:2020}
 
-\item{dbPath}{Character string specifying the file path where the database should be located. Must include \code{.monetdb} at the end.}
+\item{dbPath}{Character string specifying the file path where the database should be located. Must include \code{.duckdb} at the end.}
 
 \item{dbIndexPath}{Character string specifying the file path where the database should be saved. Must include \code{.rda} at the end.}
 }
