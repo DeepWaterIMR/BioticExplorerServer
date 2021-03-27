@@ -6,14 +6,14 @@
 #' @param cruiseSeries a data.table object of NMD cruise series list. Used to identify cruise series of a specific mission. See \code{\link{prepareCruiseSeriesList}}.
 #' @param gearCodes a data.table object of NMD gear code list. Used to make gearname and gearcategory columns. See \code{\link{prepareGearList}}.
 #' @details This function is scarily powerful. Do not run a large number of years unless you think you know what you are doing
-#' @import data.table DBI duckdb
+#' @import data.table DBI MonetDB.R
 #' @importFrom utils download.file
 #' @author Ibrahim Umar, Mikko Vihtakari (Institute of Marine Research)
 #' @export
 
 downloadDatabase <- function(years, dbPath, icesAreaShape = ICESareas, cruiseSeries = cruiseSeriesList, gearCodes = gearList) {
 
-  con_duck <- DBI::dbConnect(duckdb::duckdb(), dbPath)
+  con_db <- DBI::dbConnect(MonetDB.R(), host="dbserver", dbname="bioticexplorer-next", user="monetdb", password="monetdb")
 
   timeStart <- Sys.time()
   
@@ -30,7 +30,7 @@ downloadDatabase <- function(years, dbPath, icesAreaShape = ICESareas, cruiseSer
     } else {
       
       filesize <- data.table::data.table(dbyear = h, filesize = file.info(dest)$size)
-      DBI::dbWriteTable(con_duck, "filesize", filesize, append = TRUE)
+      DBI::dbWriteTable(con_db, "filesize", filesize, transaction = FALSE, append = TRUE)
       
       # Do transformations
 
@@ -40,7 +40,7 @@ downloadDatabase <- function(years, dbPath, icesAreaShape = ICESareas, cruiseSer
         message(paste("Parsing", i))
 
         if(nrow(a[[i]]) > 0) {
-          DBI::dbWriteTable(con_duck, i, a[[i]], append = TRUE)
+          DBI::dbWriteTable(con_db, i, a[[i]], csvdump = TRUE, transaction = FALSE, append = TRUE)
         }
       })
 
@@ -52,10 +52,10 @@ downloadDatabase <- function(years, dbPath, icesAreaShape = ICESareas, cruiseSer
 
   timeEnd <- Sys.time()
   
-  DBI::dbWriteTable(con_duck, "metadata", data.frame(timestart = timeStart, timeend = timeEnd), overwrite = TRUE)
-  DBI::dbWriteTable(con_duck, "csindex", cruiseSeries, overwrite = TRUE)  
-  DBI::dbWriteTable(con_duck, "gearindex", gearCodes, overwrite = TRUE)
+  DBI::dbWriteTable(con_db, "metadata", data.frame(timestart = timeStart, timeend = timeEnd), transaction = FALSE, overwrite = TRUE)
+  DBI::dbWriteTable(con_db, "csindex", cruiseSeries, csvdump = TRUE, transaction = FALSE, overwrite = TRUE)
+  DBI::dbWriteTable(con_db, "gearindex", gearCodes, csvdump = TRUE, transaction = FALSE, overwrite = TRUE)
   
-  DBI::dbDisconnect(con_duck)
+  DBI::dbDisconnect(con_db)
 
 }
