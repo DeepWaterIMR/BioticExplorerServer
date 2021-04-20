@@ -26,11 +26,13 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = TRUE, r
   
   if(!file.exists(file)) stop("file does not exist. Check your file path.")
   
+  utils::setTxtProgressBar(pb, 1)
+  
   ## Read the Biotic file ----
   
   dt <- RstoxData::readXmlFile(file)
   
-  utils::setTxtProgressBar(pb, 1)
+  utils::setTxtProgressBar(pb, 2)
   
   ## Mission data ---
   
@@ -57,7 +59,7 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = TRUE, r
     msn[, eval(date.cols) := lapply(.SD, as.Date), .SDcols = eval(date.cols)]
   }
 
-  utils::setTxtProgressBar(pb, 2)
+  utils::setTxtProgressBar(pb, 3)
   
   ## Station data ---
   
@@ -107,7 +109,7 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = TRUE, r
   #   #stn[, eval(date.cols) := lapply(.SD, as.Date), .SDcols = eval(date.cols)]
   # }
   
-  utils::setTxtProgressBar(pb, 3)
+  utils::setTxtProgressBar(pb, 4)
   
   ##________________
   ## Sample data ---
@@ -118,7 +120,7 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = TRUE, r
   ## Individual data ---
   
   ind <- dt$individual
-  utils::setTxtProgressBar(pb, 4)
+  utils::setTxtProgressBar(pb, 5)
   
   ## Age data ---
   
@@ -129,7 +131,7 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = TRUE, r
     age[, eval(date.cols) := lapply(.SD, as.Date), .SDcols = eval(date.cols)]
   }
   
-  utils::setTxtProgressBar(pb, 5)
+  utils::setTxtProgressBar(pb, 6)
   
   # if (nrow(age) == 0) {
   #   age <- rapply(age, as.integer, how = "replace")
@@ -139,14 +141,14 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = TRUE, r
 
   coredat <- merge(msn[, setdiff(names(msn), c("purpose")), with = FALSE], stn, by = intersect(names(msn), names(stn)), all = TRUE)
 
-  utils::setTxtProgressBar(pb, 6)
+  utils::setTxtProgressBar(pb, 7)
   
   # Stndat
   
   stndat <- merge(coredat, cth, all.y = TRUE, by = c("missiontype", "missionnumber", "startyear", "platform", "serialnumber"))
   stndat[is.na(commonname), commonname := "Empty"]
   
-  utils::setTxtProgressBar(pb, 7)
+  utils::setTxtProgressBar(pb, 8)
   
   # Inddat
 
@@ -157,7 +159,7 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = TRUE, r
   
   if(sum(is.na(inddat$commonname)) > 0) stop(paste(sum(is.na(inddat$commonname)), "missing commonname records. This is likely due to merging error between individual and agedetermination data tables. File a bug report."))
   
-  utils::setTxtProgressBar(pb, 8)
+  utils::setTxtProgressBar(pb, 9)
   
   ## Return ----
   
@@ -169,7 +171,7 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = TRUE, r
     out <- list(mission = msn, stnall = stndat, indall = inddat)
   }
   
-  utils::setTxtProgressBar(pb, 9)
+  utils::setTxtProgressBar(pb, 10)
   
   ### Remove empty columns to save space
   
@@ -179,7 +181,7 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = TRUE, r
     })
   }
   
-  utils::setTxtProgressBar(pb, 10)
+  utils::setTxtProgressBar(pb, 11)
   
   ### Class
   

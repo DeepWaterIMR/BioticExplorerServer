@@ -1,7 +1,7 @@
 #' @title Prepare gear list
 #' @description Prepares gear list using the IMR database API. Stored as data object in the package. Refreshes any new gear codes. The function does not use any arguments. 
 #' @importFrom xml2 read_xml xml_find_all xml_children xml_text xml_name
-#' @importFrom data.table rbindlist := setnames setcolorder
+#' @importFrom data.table data.table rbindlist := setnames setcolorder
 #' @author Mikko Vihtakari, Ibrahim Umar
 #' @export
 
@@ -15,7 +15,7 @@ prepareGearList <- function() {
     y <- xml2::xml_text(ch)
     z <- xml2::xml_name(ch)
     names(y) <- z
-    return(data.table(t(y)))
+    return(data.table::data.table(t(y)))
   })
   
   # Bind to data table
