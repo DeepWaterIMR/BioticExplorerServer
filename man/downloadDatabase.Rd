@@ -7,7 +7,7 @@
 downloadDatabase(
   years,
   dbPath,
-  icesAreaShape = ICESareas,
+  icesAreaShape = icesAreas,
   cruiseSeries = cruiseSeriesList,
   gearCodes = gearList
 )

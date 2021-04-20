@@ -15,6 +15,7 @@ compileDatabase <- function(years = 1900:data.table::year(Sys.time()), dbPath = 
   
   message("1. Compiling cruise series list")
   cruiseSeriesList <- prepareCruiseSeriesList()
+  # data(cruiseSeriesList) # a debugging shortcut. Works if you update the data/cruiseSeriesList.rda first. 
   
   ## Gear list
   
@@ -24,7 +25,7 @@ compileDatabase <- function(years = 1900:data.table::year(Sys.time()), dbPath = 
   ## ICES Areas
 
   message("3. Compiling ICES area shapes")
-  icesAreas <- prepareICESareas()
+  data(icesAreas)
 
   ## Download
   

@@ -103,10 +103,10 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = FALSE, 
   
   ### Convert date columns
   
-  if (convertColumns) {
-    date.cols <- grep("date", names(stn), value = TRUE)
-    stn[, eval(date.cols) := lapply(.SD, as.Date), .SDcols = eval(date.cols)]
-  }
+  # if (convertColumns) { # Fixes the time issue. Left here in case unforeseen consequences. 
+  #   #date.cols <- grep("date", names(stn), value = TRUE)
+  #   #stn[, eval(date.cols) := lapply(.SD, as.Date), .SDcols = eval(date.cols)]
+  # }
   
   utils::setTxtProgressBar(pb, 3)
   
@@ -120,7 +120,6 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = FALSE, 
   
   ind <- dt$individual
   utils::setTxtProgressBar(pb, 4)
-  
   
   ## Age data ---
   
@@ -146,6 +145,7 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = FALSE, 
   # Stndat
   
   stndat <- merge(coredat, cth, all.y = TRUE, by = c("missiontype", "missionnumber", "startyear", "platform", "serialnumber"))
+  stndat[is.na(commonname), commonname := "Empty"]
   
   utils::setTxtProgressBar(pb, 7)
   

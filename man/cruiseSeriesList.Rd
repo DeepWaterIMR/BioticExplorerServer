@@ -14,6 +14,6 @@ Institute of Marine Research (\url{https://imr.no})
 cruiseSeriesList
 }
 \description{
-Use the \code{\link{prepareCruiseSeriesList}} function to update the list.
+Use the \code{\link{prepareCruiseSeriesList}} function to update the list. Need to be updated every time data from the database are downloaded.
 }
 \keyword{datasets}

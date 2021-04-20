@@ -11,30 +11,35 @@
 #' @author Ibrahim Umar, Mikko Vihtakari (Institute of Marine Research)
 #' @export
 
-downloadDatabase <- function(years, dbPath, icesAreaShape = ICESareas, cruiseSeries = cruiseSeriesList, gearCodes = gearList) {
+# dbPath = "~/Desktop/IMR_db.monetdb"; dbIndexPath = "~/Desktop/dbIndex.rda"
+# years = 2020; dbPath = "~/Desktop/test.monetdb"; dbIndexPath = "~/Desktop/test.rda"; 
+# icesAreaShape = icesAreas; cruiseSeries = cruiseSeriesList; gearCodes = gearList
+downloadDatabase <- function(years, dbPath, icesAreaShape = icesAreas, cruiseSeries = cruiseSeriesList, gearCodes = gearList) {
 
   con_db <- DBI::dbConnect(MonetDB.R(), host="dbserver", dbname="bioticexplorer-next", user="monetdb", password="monetdb")
 
   timeStart <- Sys.time()
   
-  # h <- years[[20]]
+  # h <- years[[1]]
   lapply(years, function(h) {
     message(paste("Downloading:", h))
 
     dest <- tempfile(fileext=".xml")
-    url <- paste0("http://tomcat7.imr.no:8080/apis/nmdapi/biotic/v3/", h, "/cache?version=3.0")
+    url <- paste0("http://tomcat7.imr.no:8080/apis/nmdapi/biotic/v3/", h, "/cache?version=3.1")
     status <- suppressMessages(suppressWarnings(try(utils::download.file(url, dest), silent = TRUE)))
 
     if(class(status) == "try-error") {
+      if(!is.na(file.info(dest)$size)) stop("Download timeout error. Current timeout ", getOption('timeout'),". Set a higher timeout limit using options(timeout = ...)")
       message(paste("Year", h, "not found from the database. Skipping..."))
     } else {
       
+
       filesize <- data.table::data.table(dbyear = h, filesize = file.info(dest)$size)
       DBI::dbWriteTable(con_db, "filesize", filesize, transaction = FALSE, append = TRUE)
       
       # Do transformations
 
-      a <- bioticToDatabase(dest, missionidPrefix = h, icesAreaShape = icesAreaShape, cruiseSeries = cruiseSeries, gearCodes = gearCodes)
+      a <- bioticToDatabase(dest, missionidPrefix = h, icesAreaShape = icesAreaShape, cruiseSeries = cruiseSeriesList, gearCodes = gearCodes)
 
       lapply(names(a), function(i) {
         message(paste("Parsing", i))
@@ -57,5 +62,4 @@ downloadDatabase <- function(years, dbPath, icesAreaShape = ICESareas, cruiseSer
   DBI::dbWriteTable(con_db, "gearindex", gearCodes, csvdump = TRUE, transaction = FALSE, overwrite = TRUE)
   
   DBI::dbDisconnect(con_db)
-
 }

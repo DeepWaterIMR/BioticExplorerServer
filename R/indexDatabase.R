@@ -64,7 +64,7 @@ indexDatabase <- function(dbPath = "~/Desktop/IMR_db.duckdb", dbIndexPath = "~/D
   index$downloadstart <- rv$inputData$meta %>% select(timestart) %>% pull()
   index$downloadend <- rv$inputData$meta %>% select(timeend) %>% pull()
   index$filesize <- rv$inputData$filesize %>% summarise(size = sum(filesize, na.rm = TRUE)/1e9) %>% pull() # in GB
-  
+
   DBI::dbDisconnect(con_db)
   
   ## Save and return

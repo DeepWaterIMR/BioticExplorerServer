@@ -10,7 +10,7 @@ bioticToDatabase(
   convertColumns = FALSE,
   returnOriginal = FALSE,
   missionidPrefix = NULL,
-  icesAreaShape = ICESareas,
+  icesAreaShape = icesAreas,
   cruiseSeries = cruiseSeriesList,
   gearCodes = gearList
 )
