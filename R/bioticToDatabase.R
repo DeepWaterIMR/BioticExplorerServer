@@ -17,8 +17,9 @@
 
 
 # Debugging parameters
-# file = dest; removeEmpty = FALSE; convertColumns = TRUE; returnOriginal = FALSE; missionidPrefix = NULL; icesAreaShape = icesAreas; cruiseSeries = cruiseSeriesList; gearCodes = gearList
-bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = TRUE, returnOriginal = FALSE, missionidPrefix = NULL, icesAreaShape = icesAreas, cruiseSeries = cruiseSeriesList, gearCodes = gearList) {
+# removeEmpty = FALSE; convertColumns = TRUE; returnOriginal = FALSE; missionidPrefix = NULL; icesAreaShape = ICESareas; cruiseSeries = cruiseSeriesList; gearCodes = gearList
+# file = dest; convertColumns = TRUE; returnOriginal = FALSE; missionidPrefix = h; icesAreaShape = ICESareas; cruiseSeries = cruiseSeriesList; gearCodes = gearList
+bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = FALSE, returnOriginal = FALSE, missionidPrefix = NULL, icesAreaShape = ICESareas, cruiseSeries = cruiseSeriesList, gearCodes = gearList) {
   
   pb <- utils::txtProgressBar(max = 10, style = 3)
   

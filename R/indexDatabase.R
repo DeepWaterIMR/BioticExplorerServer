@@ -1,20 +1,20 @@
 #' @title Index BioticExplorer database
 #' @description Loads BioticExplorer database and creates an index used by BioticExplorer to save processing time
-#' @param dbPath Character string specifying the file path where the database should be located. Must include \code{.monetdb} at the end.
+#' @param dbPath Character string specifying the file path where the database should be located. Must include \code{.duckdb} at the end.
 #' @param dbIndexPath Character string specifying the file path where the database should be saved. Must include \code{.rda} at the end.
 #' @param fileOnly Logical indicating whether the result should only be saved to a file and not returned. If FALSE, no file is made and the result is returned instead.
-#' @import data.table DBI MonetDBLite
+#' @import data.table DBI MonetDB.R
 #' @rawNamespace import(dplyr, except = c(last, first, between))
 #' @importFrom utils txtProgressBar setTxtProgressBar
 #' @author Mikko Vihtakari, Ibrahim Umar (Institute of Marine Research)
 #' @export
 
-# dbPath = "~/Desktop/IMR_db.monetdb"; dbIndexPath = "~/Desktop/dbIndex.rda"
-indexDatabase <- function(dbPath = "~/Desktop/IMR_db.monetdb", dbIndexPath = "~/Desktop/dbIndex.rda", fileOnly = TRUE) {
+# dbPath = "~/Desktop/IMR_db.duckdb"; dbIndexPath = "~/Desktop/dbIndex.rda"
+indexDatabase <- function(dbPath = "~/Desktop/IMR_db.duckdb", dbIndexPath = "~/Desktop/dbIndex.rda", fileOnly = TRUE) {
   
   pb <- utils::txtProgressBar(max = 6, style = 3)
   
-  con_db <- DBI::dbConnect(MonetDBLite::MonetDBLite(), dbPath)
+  con_db <- DBI::dbConnect(MonetDB.R(), host="dbserver", dbname="bioticexplorer-next", user="monetdb", password="monetdb")
   
   utils::setTxtProgressBar(pb, 1)
   
@@ -64,8 +64,8 @@ indexDatabase <- function(dbPath = "~/Desktop/IMR_db.monetdb", dbIndexPath = "~/
   index$downloadstart <- rv$inputData$meta %>% select(timestart) %>% pull()
   index$downloadend <- rv$inputData$meta %>% select(timeend) %>% pull()
   index$filesize <- rv$inputData$filesize %>% summarise(size = sum(filesize, na.rm = TRUE)/1e9) %>% pull() # in GB
-  
-  DBI::dbDisconnect(con_db, shutdown = TRUE) # MonetDBLite::monetdblite_shutdown()
+
+  DBI::dbDisconnect(con_db)
   
   ## Save and return
   
