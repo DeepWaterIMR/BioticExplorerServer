@@ -7,7 +7,7 @@
 bioticToDatabase(
   file,
   removeEmpty = FALSE,
-  convertColumns = TRUE,
+  convertColumns = FALSE,
   returnOriginal = FALSE,
   missionidPrefix = NULL,
   icesAreaShape = icesAreas,
