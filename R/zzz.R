@@ -7,8 +7,7 @@
 }
 
 # Define global variables
-utils::globalVariables(c("stationstarttime", "stationstartdate", "preferredagereading", "commonname", "cruise", "gear",
-                         "missionid", "missiontypename", "platformname", "serialnumber", "startyear", "icesarea", "stationstopdate", "stationstoptime",
+utils::globalVariables(c("stationstarttime", "stationstartdate", "preferredagereading", "commonname", "cruise", "gear", "missionid", "missiontypename", "platformname", "serialnumber", "startyear", "icesarea", "stationstopdate", "stationstoptime",
                          "longitudestart", "latitudestart", "description", "cruiseseriescode", "timestart", "timeend", "..ints", "name", "cruiseSeriesList", 
-                         "cruise_series", "ICESareas", "gearcategory", "area", "gearList"))
+                         "cruise_series", "ICESareas", "gearcategory", "area", "gearList", "icesAreas", "filesize", "language"))
 

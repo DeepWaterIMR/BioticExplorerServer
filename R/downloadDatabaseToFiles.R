@@ -7,7 +7,7 @@
 #' @param cruiseSeries a data.table object of NMD cruise series list. Used to identify cruise series of a specific mission. See \code{\link{prepareCruiseSeriesList}}.
 #' @param gearCodes a data.table object of NMD gear code list. Used to make gearname and gearcategory columns. See \code{\link{prepareGearList}}.
 #' @details This function is scarily powerful. Do not run a large number of years unless you think you know what you are doing
-#' @import data.table DBI MonetDBLite
+#' @import data.table
 #' @importFrom utils download.file
 #' @author Ibrahim Umar, Mikko Vihtakari (Institute of Marine Research)
 #' @export

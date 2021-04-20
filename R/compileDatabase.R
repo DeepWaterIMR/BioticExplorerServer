@@ -3,30 +3,19 @@
 #' @param years vector of integer specifying the years to be downloaded. The database reaches 1900:2020
 #' @param dbPath Character string specifying the file path where the database should be located. Must include \code{.duckdb} at the end.
 #' @param dbIndexPath Character string specifying the file path where the database should be saved. Must include \code{.rda} at the end.
-#' @param source Character string indicating from where the database should be compiled. If \code{NULL}, the data will be downloaded from NMD. Requires access to the IMR intranet. Otherwise, specify a file path where the rds files are located from the \code{\link{downloadDatabaseToFiles}} function.
+#' @param source Character string indicating from where the database should be compiled. If \code{NULL}, the data will be downloaded from NMD. Requires access to the IMR intranet. Otherwise, specify a file path where the rds files are located from the \code{\link{downloadDatabaseToFiles}} function. NOT IMPLEMENTED YET.
 #' @details Runs the \code{\link{downloadDatabase}} and \code{\link{indexDatabase}} functions. Be aware that running these functions requires access to the IMR intranet, reasonably fast internet and loads of memory. If the function crashes after the \code{\link{downloadDatabase}}, you can still run the \code{\link{indexDatabase}} to save the progress. If it crashes during \code{\link{downloadDatabase}}, you may have to start from scratch. 
 #' @import data.table
 #' @author Mikko Vihtakari, Ibrahim Umar (Institute of Marine Research)
 #' @export
 
-<<<<<<< HEAD
-# years = 1900:data.table::year(Sys.time())
-# dbPath = "~/Desktop/IMR_db.monetdb"; dbIndexPath = "~/Desktop/dbIndex.rda"
-compileDatabase <- function(years = 1900:data.table::year(Sys.time()), dbPath = "~/Desktop/IMR_db.monetdb", dbIndexPath = "~/Desktop/dbIndex.rda", source = NULL) {
-||||||| 3873324
-# years = 1900:data.table::year(Sys.time())
-# dbPath = "~/Desktop/IMR_db.monetdb"; dbIndexPath = "~/Desktop/dbIndex.rda"
-compileDatabase <- function(years = 1900:data.table::year(Sys.time()), dbPath = "~/Desktop/IMR_db.monetdb", dbIndexPath = "~/Desktop/dbIndex.rda") {
-=======
-# dbPath = "~/Desktop/IMR_db.duckdb"; years = 1900:data.table::year(Sys.time()); dbIndexPath = "~/Desktop/dbIndex.rda"
-compileDatabase <- function(years = 1900:data.table::year(Sys.time()), dbPath = "~/Desktop/IMR_db.duckdb", dbIndexPath = "~/Desktop/dbIndex.rda") {
->>>>>>> 24d995357a82422cd5d0df7a61832d302f08e349
-  
+compileDatabase <- function(years = 1900:data.table::year(Sys.time()), dbPath = "~/Desktop/IMR_db.duckdb", dbIndexPath = "~/Desktop/dbIndex.rda", source = NULL) {
+
   ## Cruise series
   
   message("1. Compiling cruise series list")
-  # cruiseSeriesList <- prepareCruiseSeriesList()
-  data(cruiseSeriesList) # a debugging shortcut. Works if you update the data/cruiseSeriesList.rda first. 
+  cruiseSeriesList <- prepareCruiseSeriesList()
+  # data(cruiseSeriesList) # a debugging shortcut. Works if you update the data/cruiseSeriesList.rda first. 
   
   ## Gear list
   
@@ -36,7 +25,7 @@ compileDatabase <- function(years = 1900:data.table::year(Sys.time()), dbPath = 
   ## ICES Areas
 
   message("3. Compiling ICES area shapes")
-  data(icesAreas)
+  # data(icesAreas) # R CMD check complains about this
 
   ## Download
   
@@ -46,7 +35,6 @@ compileDatabase <- function(years = 1900:data.table::year(Sys.time()), dbPath = 
   } else {
     stop("not implemented yet")
   }
-  
   
   # Index
   

@@ -16,7 +16,7 @@
 # icesAreaShape = icesAreas; cruiseSeries = cruiseSeriesList; gearCodes = gearList
 downloadDatabase <- function(years, dbPath, icesAreaShape = icesAreas, cruiseSeries = cruiseSeriesList, gearCodes = gearList) {
 
-  con_db <- DBI::dbConnect(MonetDB.R(), host="dbserver", dbname="bioticexplorer-next", user="monetdb", password="monetdb")
+  con_db <- DBI::dbConnect(MonetDB.R::MonetDB.R(), host="dbserver", dbname="bioticexplorer-next", user="monetdb", password="monetdb")
 
   timeStart <- Sys.time()
   

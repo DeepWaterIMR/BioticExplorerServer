@@ -7,7 +7,8 @@
 compileDatabase(
   years = 1900:data.table::year(Sys.time()),
   dbPath = "~/Desktop/IMR_db.duckdb",
-  dbIndexPath = "~/Desktop/dbIndex.rda"
+  dbIndexPath = "~/Desktop/dbIndex.rda",
+  source = NULL
 )
 }
 \arguments{
@@ -16,6 +17,8 @@ compileDatabase(
 \item{dbPath}{Character string specifying the file path where the database should be located. Must include \code{.duckdb} at the end.}
 
 \item{dbIndexPath}{Character string specifying the file path where the database should be saved. Must include \code{.rda} at the end.}
+
+\item{source}{Character string indicating from where the database should be compiled. If \code{NULL}, the data will be downloaded from NMD. Requires access to the IMR intranet. Otherwise, specify a file path where the rds files are located from the \code{\link{downloadDatabaseToFiles}} function. NOT IMPLEMENTED YET.}
 }
 \description{
 Downloads, formulates and indexes BioticExplorer database.
