@@ -39,7 +39,7 @@ downloadDatabase <- function(years, dbPath, icesAreaShape = icesAreas, cruiseSer
       
       # Do transformations
 
-      a <- bioticToDatabase(dest, missionidPrefix = h, icesAreaShape = icesAreaShape, cruiseSeries = cruiseSeriesList, gearCodes = gearCodes)
+      a <- bioticToDatabase(dest, missionidPrefix = h, icesAreaShape = icesAreaShape, cruiseSeries = cruiseSeries, gearCodes = gearCodes)
 
       lapply(names(a), function(i) {
         message(paste("Parsing", i))
