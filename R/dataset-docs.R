@@ -2,10 +2,10 @@
 #' @description Use the \code{\link{prepareCruiseSeriesList}} function to update the list. Need to be updated every time data from the database are downloaded.
 #' @docType data
 #' @keywords datasets
-#' @name cruiseSeriesList
+#' @name cruiseSeries
 #' @format A data table 
 #' @source Institute of Marine Research (\url{https://imr.no})
-"cruiseSeriesList"
+"cruiseSeries"
 
 #' @title Gear code list
 #' @description Use the \code{\link{prepareGearList}} function to update the list.
@@ -22,8 +22,7 @@
 #' @keywords datasets shapefiles
 #' @family shapefiles
 #' @name icesAreas
-#' @format \code{\link[sp]{SpatialPolygonsDataFrame}} in decimal degrees (+init=epsg:4326).
+#' @format \code{\link[sf]{st_polygon}} in decimal degrees (EPSG:4326).
 #' @source \href{https://gis.ices.dk/sf/index.html}{International Council for the Exploration of the Sea}
-#' @importFrom sp SpatialPolygonsDataFrame
 "icesAreas"
 

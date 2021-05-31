@@ -8,7 +8,8 @@ compileDatabase(
   years = 1900:data.table::year(Sys.time()),
   dbIndexPath = "~/Desktop/dbIndex.rda",
   source = NULL,
-  dbName = NULL
+  dbName = NULL,
+  prepareCruiseSeries = TRUE
 )
 }
 \arguments{
@@ -19,6 +20,8 @@ compileDatabase(
 \item{source}{Character string indicating from where the database should be compiled. If \code{NULL}, the data will be downloaded from NMD. Requires access to the IMR intranet. Otherwise, specify a file path where the rds files are located from the \code{\link{downloadDatabaseToFiles}} function. NOT IMPLEMENTED YET.}
 
 \item{dbName}{Character string or \code{NULL}. If \code{NULL} uses the default names and overwrites the existing database.}
+
+\item{prepareCruiseSeries}{Logical indicating whether \link[=prepareCruiseSeriesList]{the cruise series list} should be prepared. Only set this to \code{FALSE} while debugging as preparing the cruise series list takes time.}
 }
 \description{
 Downloads, formulates and indexes BioticExplorer database.

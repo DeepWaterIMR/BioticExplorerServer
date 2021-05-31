@@ -6,7 +6,7 @@ prepareICESareas <- function() {
     dst <- tempfile()
     utils::download.file("https://gis.ices.dk/shapefiles/ICES_areas.zip", dst)
     shpfiles <- utils::unzip(dst, exdir = paste0(dirname(dst), "/shape"))
-    poly <- rgdal::readOGR(dirname(shpfiles[1]))
+    poly <- sf::st_read(dirname(shpfiles[1]))
     unlink(dirname(shpfiles[1]), recursive = TRUE)
     unlink(dst)
     return(poly)

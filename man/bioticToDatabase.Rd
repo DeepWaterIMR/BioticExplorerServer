@@ -10,9 +10,9 @@ bioticToDatabase(
   convertColumns = FALSE,
   returnOriginal = FALSE,
   missionidPrefix = NULL,
-  icesAreaShape = ICESareas,
-  cruiseSeries = cruiseSeriesList,
-  gearCodes = gearList
+  icesAreas = icesAreas,
+  cruiseSeries = cruiseSeries,
+  gearCodes = gearCodes
 )
 }
 \arguments{
@@ -26,7 +26,7 @@ bioticToDatabase(
 
 \item{missionidPrefix}{A prefix for the \code{missionid} identifier, which separates cruises. Used when several xml files are put together. \code{NULL} (default) omits the prefix.}
 
-\item{icesAreaShape}{ICES area shape in SpatialPolygonsDataFrame object. Used for calculating the ICES area for a specific fishstation.}
+\item{icesAreas}{ICES area shape \code{\link[sf]{st_polygon}} abject. Used for calculating the ICES area for a specific fishstation.}
 
 \item{cruiseSeries}{a data.table object of NMD cruise series list. Used to identify cruise series of a specific mission. See \code{\link{prepareCruiseSeriesList}}.}
 

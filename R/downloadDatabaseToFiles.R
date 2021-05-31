@@ -1,11 +1,8 @@
 #' @title Download and parse NMD data for the BioticExplorer database
 #' @description Downloads annual NMD data from the API and writes them as MonetDB database
-#' @param years Vector of integer specifying the years to be downloaded. The database reaches 1914:2020
 #' @param dest Character string specifying the file path where the database should be downloaded to. 
 #' @param method,save Switches that do not make much sense at the moment. Leave them as they are.
-#' @param icesAreaShape ICES area shape in SpatialPolygonsDataFrame object. Used for calculating the ICES area for a specific fishstation.
-#' @param cruiseSeries a data.table object of NMD cruise series list. Used to identify cruise series of a specific mission. See \code{\link{prepareCruiseSeriesList}}.
-#' @param gearCodes a data.table object of NMD gear code list. Used to make gearname and gearcategory columns. See \code{\link{prepareGearList}}.
+#' @inheritParams downloadDatabase
 #' @details This function is scarily powerful. Do not run a large number of years unless you think you know what you are doing
 #' @import data.table
 #' @author Ibrahim Umar, Mikko Vihtakari (Institute of Marine Research)
@@ -15,7 +12,7 @@
 # icesAreaShape = icesAreas; cruiseSeries = cruiseSeriesList; gearCodes = gearList
 # method = "compare", "keep", "update"
 # save = "xml", "rds", 
-downloadDatabaseToFiles <- function(years, dest, method = "compare", save = c("xml", "rds"), icesAreaShape = icesAreas, cruiseSeries = cruiseSeriesList, gearCodes = gearList) {
+downloadDatabaseToFiles <- function(years, dest, method = "compare", save = c("xml", "rds"), icesAreas = icesAreas, cruiseSeries = cruiseSeries, gearCodes = gearCodes) {
 
   if(!dir.exists(dest)) {
     
@@ -58,7 +55,8 @@ downloadDatabaseToFiles <- function(years, dest, method = "compare", save = c("x
       
       # Do transformations
 
-      a <- bioticToDatabase(paste0(file.path(dest, "XMLfiles"), "/", h, ".xml"), missionidPrefix = h, icesAreaShape = icesAreaShape, cruiseSeries = cruiseSeriesList, gearCodes = gearCodes)
+      a <- bioticToDatabase(paste0(file.path(dest, "XMLfiles"), "/", h, ".xml"), 
+                            missionidPrefix = h, icesAreas = icesAreas, cruiseSeries = cruiseSeries, gearCodes = gearCodes)
       
       if("rds" %in% save) {
         saveRDS(a, file = paste0(file.path(dest, "Rdata"), "/", h, ".rds"), compress = "xz")

@@ -5,7 +5,7 @@
 \alias{icesAreas}
 \title{ICES fishing areas}
 \format{
-\code{\link[sp]{SpatialPolygonsDataFrame}} in decimal degrees (+init=epsg:4326).
+\code{\link[sf]{st_polygon}} in decimal degrees (EPSG:4326).
 }
 \source{
 \href{https://gis.ices.dk/sf/index.html}{International Council for the Exploration of the Sea}

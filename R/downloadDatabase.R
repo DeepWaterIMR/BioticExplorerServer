@@ -1,7 +1,7 @@
 #' @title Download and parse NMD data for the BioticExplorer database
 #' @description Downloads annual NMD data from the API and writes them as DuckDB database
 #' @param years vector of integer specifying the years to be downloaded. The database reaches 1914:2020
-#' @param icesAreaShape ICES area shape in SpatialPolygonsDataFrame object. Used for calculating the ICES area for a specific fishstation.
+#' @param icesAreas ICES area shape \code{\link[sf]{st_polygon}} abject. Used for calculating the ICES area for a specific fishstation.
 #' @param cruiseSeries a data.table object of NMD cruise series list. Used to identify cruise series of a specific mission. See \code{\link{prepareCruiseSeriesList}}.
 #' @param gearCodes a data.table object of NMD gear code list. Used to make gearname and gearcategory columns. See \code{\link{prepareGearList}}.
 #' @param dbName Character string or \code{NULL}. If \code{NULL} uses the default names and overwrites the existing database. 
@@ -12,7 +12,7 @@
 
 # years = 2020; dbPath = "~/Desktop/test.monetdb"; dbIndexPath = "~/Desktop/test.rda"; 
 # icesAreaShape = icesAreas; cruiseSeries = cruiseSeriesList; gearCodes = gearList
-downloadDatabase <- function(years, icesAreaShape = icesAreas, cruiseSeries = cruiseSeriesList, gearCodes = gearList, dbName = NULL) {
+downloadDatabase <- function(years, icesAreas = icesAreas, cruiseSeries = cruiseSeries, gearCodes = gearCodes, dbName = NULL) {
 
   if(Sys.getenv(c("SERVER_MODE"))=="") {
     dbHost <- "localhost"
@@ -23,8 +23,9 @@ downloadDatabase <- function(years, icesAreaShape = icesAreas, cruiseSeries = cr
   }
   
   if(!DBI::dbCanConnect(MonetDB.R::MonetDB(), host=dbHost, dbname=dbName, user="monetdb", password="monetdb")) {
-    stop("Cannot connect to the database")
-  }
+    system(paste0("monetdb create ", dbName))
+    system(paste0("monetdb start ", dbName))
+   }
   
   con_db <- DBI::dbConnect(MonetDB.R::MonetDB.R(), host=dbHost, dbname=dbName, user="monetdb", password="monetdb")
 
@@ -43,13 +44,12 @@ downloadDatabase <- function(years, icesAreaShape = icesAreas, cruiseSeries = cr
       message(paste("Year", h, "not found from the database. Skipping..."))
     } else {
       
-
       filesize <- data.table::data.table(dbyear = h, filesize = file.info(dest)$size)
       DBI::dbWriteTable(con_db, "filesize", filesize, transaction = FALSE, append = TRUE)
       
       # Do transformations
 
-      a <- bioticToDatabase(dest, missionidPrefix = h, icesAreaShape = icesAreaShape, cruiseSeries = cruiseSeries, gearCodes = gearCodes)
+      a <- bioticToDatabase(dest, missionidPrefix = h, icesAreas = icesAreas, cruiseSeries = cruiseSeries, gearCodes = gearCodes)
 
       lapply(names(a), function(i) {
         message(paste("Parsing", i))
