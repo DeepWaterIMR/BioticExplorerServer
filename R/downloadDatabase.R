@@ -1,22 +1,32 @@
 #' @title Download and parse NMD data for the BioticExplorer database
 #' @description Downloads annual NMD data from the API and writes them as DuckDB database
 #' @param years vector of integer specifying the years to be downloaded. The database reaches 1914:2020
-#' @param dbPath Character string specifying the file path where the database should be located. Must include \code{.duckdb} at the end.
 #' @param icesAreaShape ICES area shape in SpatialPolygonsDataFrame object. Used for calculating the ICES area for a specific fishstation.
 #' @param cruiseSeries a data.table object of NMD cruise series list. Used to identify cruise series of a specific mission. See \code{\link{prepareCruiseSeriesList}}.
 #' @param gearCodes a data.table object of NMD gear code list. Used to make gearname and gearcategory columns. See \code{\link{prepareGearList}}.
-#' @details This function is scarily powerful. Do not run a large number of years unless you think you know what you are doing
-#' @import data.table DBI MonetDB.R
-#' @importFrom utils download.file
+#' @param dbName Character string or \code{NULL}. If \code{NULL} uses the default names and overwrites the existing database. 
+#' @details The function downloads NMD data from the API per year, saves these in temp files, reformats them for the MonetDB and writes them into the database. Server mode (Eucleia docker or local) is automatically detected. Requires MonetDB installed and running on the computer.
+#' @import data.table DBI
 #' @author Ibrahim Umar, Mikko Vihtakari (Institute of Marine Research)
 #' @export
 
-# dbPath = "~/Desktop/IMR_db.monetdb"; dbIndexPath = "~/Desktop/dbIndex.rda"
 # years = 2020; dbPath = "~/Desktop/test.monetdb"; dbIndexPath = "~/Desktop/test.rda"; 
 # icesAreaShape = icesAreas; cruiseSeries = cruiseSeriesList; gearCodes = gearList
-downloadDatabase <- function(years, dbPath, icesAreaShape = icesAreas, cruiseSeries = cruiseSeriesList, gearCodes = gearList) {
+downloadDatabase <- function(years, icesAreaShape = icesAreas, cruiseSeries = cruiseSeriesList, gearCodes = gearList, dbName = NULL) {
 
-  con_db <- DBI::dbConnect(MonetDB.R::MonetDB.R(), host="dbserver", dbname="bioticexplorer-next", user="monetdb", password="monetdb")
+  if(Sys.getenv(c("SERVER_MODE"))=="") {
+    dbHost <- "localhost"
+    if(is.null(dbName)) dbName <- "bioticexplorer"
+  } else {
+    dbHost <- "dbserver"
+    if(is.null(dbName)) dbName <- "bioticexplorer-next"
+  }
+  
+  if(!DBI::dbCanConnect(MonetDB.R::MonetDB(), host=dbHost, dbname=dbName, user="monetdb", password="monetdb")) {
+    stop("Cannot connect to the database")
+  }
+  
+  con_db <- DBI::dbConnect(MonetDB.R::MonetDB.R(), host=dbHost, dbname=dbName, user="monetdb", password="monetdb")
 
   timeStart <- Sys.time()
   

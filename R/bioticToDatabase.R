@@ -11,8 +11,6 @@
 #' @return Returns a list of Biotic data with \code{$mission}, \code{$stnall} and \code{$indall} data tables. The \code{$stnall} and \code{$indall} are merged from \code{$fishstation} and \code{$catchsample} (former) and  \code{$fishstation}, \code{$catchsample}, \code{$individual} and \code{$agedetermination} (latter). 
 #' @author Mikko Vihtakari, Ibrahim Umar (Institute of Marine Research) 
 #' @import RstoxData data.table
-#' @importFrom utils txtProgressBar setTxtProgressBar
-#' @importFrom sp over coordinates proj4string coordinates<- proj4string<- CRS spTransform
 #' @export
 
 

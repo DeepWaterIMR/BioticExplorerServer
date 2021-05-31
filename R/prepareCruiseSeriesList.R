@@ -1,7 +1,5 @@
 #' @title Prepare cruise series list
 #' @description Prepares cruise series list using the IMR database API. Stored as data object in the package. Refreshes any new cruise codes. The function does not use any arguments. 
-#' @importFrom xml2 read_xml xml_find_all xml_children xml_text xml_name
-#' @importFrom data.table rbindlist :=
 #' @author Ibrahim Umar, Mikko Vihtakari
 #' @export
 

@@ -6,28 +6,28 @@
 \usage{
 downloadDatabase(
   years,
-  dbPath,
   icesAreaShape = icesAreas,
   cruiseSeries = cruiseSeriesList,
-  gearCodes = gearList
+  gearCodes = gearList,
+  dbName = NULL
 )
 }
 \arguments{
 \item{years}{vector of integer specifying the years to be downloaded. The database reaches 1914:2020}
-
-\item{dbPath}{Character string specifying the file path where the database should be located. Must include \code{.duckdb} at the end.}
 
 \item{icesAreaShape}{ICES area shape in SpatialPolygonsDataFrame object. Used for calculating the ICES area for a specific fishstation.}
 
 \item{cruiseSeries}{a data.table object of NMD cruise series list. Used to identify cruise series of a specific mission. See \code{\link{prepareCruiseSeriesList}}.}
 
 \item{gearCodes}{a data.table object of NMD gear code list. Used to make gearname and gearcategory columns. See \code{\link{prepareGearList}}.}
+
+\item{dbName}{Character string or \code{NULL}. If \code{NULL} uses the default names and overwrites the existing database.}
 }
 \description{
 Downloads annual NMD data from the API and writes them as DuckDB database
 }
 \details{
-This function is scarily powerful. Do not run a large number of years unless you think you know what you are doing
+The function downloads NMD data from the API per year, saves these in temp files, reformats them for the MonetDB and writes them into the database. Server mode (Eucleia docker or local) is automatically detected. Requires MonetDB installed and running on the computer.
 }
 \author{
 Ibrahim Umar, Mikko Vihtakari (Institute of Marine Research)

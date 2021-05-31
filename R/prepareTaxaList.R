@@ -1,8 +1,6 @@
 #' @title Prepare taxa list
 #' @description Prepares taxa list using the IMR database API. Stored as data object in the package. Refreshes any new taxa codes. 
 #' @param verbose Logical indicating whether the function should return status information as messages.
-#' @importFrom xml2 read_xml xml_find_all xml_children xml_text xml_name
-#' @importFrom data.table data.table rbindlist := melt
 #' @author Mikko Vihtakari, Ibrahim Umar
 #' @export
 

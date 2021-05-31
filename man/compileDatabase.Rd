@@ -6,19 +6,19 @@
 \usage{
 compileDatabase(
   years = 1900:data.table::year(Sys.time()),
-  dbPath = "~/Desktop/IMR_db.duckdb",
   dbIndexPath = "~/Desktop/dbIndex.rda",
-  source = NULL
+  source = NULL,
+  dbName = NULL
 )
 }
 \arguments{
-\item{years}{vector of integer specifying the years to be downloaded. The database reaches 1900:2020}
-
-\item{dbPath}{Character string specifying the file path where the database should be located. Must include \code{.duckdb} at the end.}
+\item{years}{vector of integer specifying the years to be downloaded. The database reaches 1914:2020}
 
 \item{dbIndexPath}{Character string specifying the file path where the database should be saved. Must include \code{.rda} at the end.}
 
 \item{source}{Character string indicating from where the database should be compiled. If \code{NULL}, the data will be downloaded from NMD. Requires access to the IMR intranet. Otherwise, specify a file path where the rds files are located from the \code{\link{downloadDatabaseToFiles}} function. NOT IMPLEMENTED YET.}
+
+\item{dbName}{Character string or \code{NULL}. If \code{NULL} uses the default names and overwrites the existing database.}
 }
 \description{
 Downloads, formulates and indexes BioticExplorer database.

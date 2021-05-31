@@ -8,7 +8,6 @@
 #' @param gearCodes a data.table object of NMD gear code list. Used to make gearname and gearcategory columns. See \code{\link{prepareGearList}}.
 #' @details This function is scarily powerful. Do not run a large number of years unless you think you know what you are doing
 #' @import data.table
-#' @importFrom utils download.file
 #' @author Ibrahim Umar, Mikko Vihtakari (Institute of Marine Research)
 #' @export
 
