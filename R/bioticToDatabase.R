@@ -81,7 +81,7 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = FALSE, 
 
     if(nrow(points) > 0) {
       points <- sf::st_as_sf(points, coords = c(1,2), crs = 4326)
-      
+      suppressWarnings(sf::st_crs(icesAreas) <- 4326)
       points <- sf::st_transform(points, sf::st_crs(icesAreas))
       
       stn[, icesarea := icesAreas[as.integer(suppressMessages(sf::st_intersects(points, icesAreas))),]$Area_Full]
