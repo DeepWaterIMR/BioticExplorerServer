@@ -6,7 +6,7 @@
 \usage{
 compileDatabase(
   years = 1900:data.table::year(Sys.time()),
-  dbIndexPath = "~/Desktop/dbIndex.rda",
+  dbIndexPath = "~/Desktop",
   source = NULL,
   dbName = NULL,
   prepareCruiseSeries = TRUE

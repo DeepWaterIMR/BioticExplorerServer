@@ -46,7 +46,7 @@ downloadDatabaseToFiles <- function(years, dest, method = "compare", save = c("x
     url <- paste0("http://tomcat7.imr.no:8080/apis/nmdapi/biotic/v3/", h, "/cache?version=3.1")
     status <- suppressMessages(suppressWarnings(try(utils::download.file(url, paste0(file.path(dest, "XMLfiles"), "/", h, ".xml"), silent = TRUE))))
 
-    if(class(status) == "try-error") {
+    if(inherits(status, "try-error")) {
       if(!is.na(file.info(paste0(file.path(dest, "XMLfiles"), "/", h, ".xml"))$size)) stop("Download timeout error. Current timeout ", getOption('timeout'),". Set a higher timeout limit using options(timeout = ...)")
       message(paste("Year", h, "not found from the database. Skipping..."))
     } else {

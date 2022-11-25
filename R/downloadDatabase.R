@@ -35,11 +35,11 @@ downloadDatabase <- function(years, icesAreas = icesAreas, cruiseSeries = cruise
   lapply(years, function(h) {
     message(paste("Downloading:", h))
 
-    dest <- tempfile(fileext=".xml")
+    dest <- tempfile(fileext = ".xml")
     url <- paste0("http://tomcat7.imr.no:8080/apis/nmdapi/biotic/v3/", h, "/cache?version=3.1")
     status <- suppressMessages(suppressWarnings(try(utils::download.file(url, dest), silent = TRUE)))
 
-    if(class(status) == "try-error") {
+    if(inherits(status, "try-error")) {
       if(!is.na(file.info(dest)$size)) stop("Download timeout error. Current timeout ", getOption('timeout'),". Set a higher timeout limit using options(timeout = ...)")
       message(paste("Year", h, "not found from the database. Skipping..."))
     } else {

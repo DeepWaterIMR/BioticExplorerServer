@@ -13,8 +13,8 @@
 
 
 # Debugging parameters
-# removeEmpty = FALSE; convertColumns = FALSE; returnOriginal = FALSE; missionidPrefix = NULL; icesAreas = icesAreas; cruiseSeries = cruiseSeries; gearCodes = gearCodes
-# file = dest; missionidPrefix = h; icesAreaShape = icesAreaShape; cruiseSeries = cruiseSeries; gearCodes = gearCodes
+# removeEmpty = FALSE; convertColumns = FALSE; returnOriginal = FALSE; missionidPrefix = NULL; icesAreas = icesAreas
+# file = dest; missionidPrefix = h; icesAreaShape = icesAreaShape;
 bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = FALSE, returnOriginal = FALSE, missionidPrefix = NULL, icesAreas = icesAreas, cruiseSeries = cruiseSeries, gearCodes = gearCodes) {
   
   pb <- utils::txtProgressBar(max = 10, style = 3)
@@ -74,6 +74,12 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = FALSE, 
   ### Add ICES area
   
   if(!is.null(icesAreas)) {
+    
+    ## Turn s2 off
+    s2_mode <- sf::sf_use_s2()
+    suppressMessages(sf::sf_use_s2(FALSE))
+    on.exit({suppressMessages(sf::sf_use_s2(s2_mode))})
+    
     points <- stn[, c("longitudestart", "latitudestart")]
 
     # Remove NAs (set longlat as 0 so that translation gives NA)
@@ -151,7 +157,7 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = FALSE, 
   inddat <- merge(stndat[, setdiff(names(stndat), c("purpose", "stationcomment", "catchcomment")), with = FALSE], ind, all.y = TRUE, by = intersect(names(stndat), names(ind)))
 
   inddat[is.na(preferredagereading), preferredagereading := 1]
-  inddat <- merge(inddat, age, by.x=c(intersect(names(inddat), names(age)), "preferredagereading"), by.y= c(intersect(names(inddat), names(age)), "agedeterminationid"), all.x = TRUE)
+  inddat <- merge(inddat, age, by.x = c(intersect(names(inddat), names(age)), "preferredagereading"), by.y = c(intersect(names(inddat), names(age)), "agedeterminationid"), all.x = TRUE)
   
   if(sum(is.na(inddat$commonname)) > 0) stop(paste(sum(is.na(inddat$commonname)), "missing commonname records. This is likely due to merging error between individual and agedetermination data tables. File a bug report."))
   
