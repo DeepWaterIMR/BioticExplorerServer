@@ -13,7 +13,7 @@
 
 
 # Debugging parameters
-# removeEmpty = FALSE; convertColumns = FALSE; returnOriginal = FALSE; missionidPrefix = NULL; icesAreas = icesAreas
+# removeEmpty = FALSE; convertColumns = FALSE; returnOriginal = FALSE; missionidPrefix = NULL
 # file = dest; missionidPrefix = h; icesAreaShape = icesAreaShape;
 bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = FALSE, returnOriginal = FALSE, missionidPrefix = NULL, icesAreas = icesAreas, cruiseSeries = cruiseSeries, gearCodes = gearCodes) {
   
@@ -34,7 +34,7 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = FALSE, 
   ## Mission data ---
   
   msn <- dt$mission
-
+  
   if (is.null(missionidPrefix)) {
     msn$missionid <- rownames(msn)
   } else {
@@ -48,14 +48,14 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = FALSE, 
   msn[, cruiseseriescode := as.character(cruiseseriescode)]
   msn <- msn[, cruiseseriescode := paste(cruiseseriescode, collapse =","), by = ints]
   msn <- msn[!duplicated(msn[, ..ints]),]
-
+  
   ### Convert dates
   
   if (convertColumns) {
     date.cols <- grep("date", names(msn), value = TRUE)
     msn[, eval(date.cols) := lapply(.SD, as.Date), .SDcols = eval(date.cols)]
   }
-
+  
   utils::setTxtProgressBar(pb, 3)
   
   ## Station data ---
@@ -81,10 +81,10 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = FALSE, 
     on.exit({suppressMessages(sf::sf_use_s2(s2_mode))})
     
     points <- stn[, c("longitudestart", "latitudestart")]
-
+    
     # Remove NAs (set longlat as 0 so that translation gives NA)
     points[is.na(longitudestart) | is.na(latitudestart), `:=`(longitudestart=0, latitudestart = 0)]
-
+    
     if(nrow(points) > 0) {
       points <- sf::st_as_sf(points, coords = c(1,2), crs = 4326)
       suppressWarnings(sf::st_crs(icesAreas) <- 4326)
@@ -95,7 +95,7 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = FALSE, 
       stn[, icesarea := as.character(NA)]
     }
   }
-
+  
   ### Fix FDIR area code
   
   stn[, area := as.integer(area)]
@@ -140,9 +140,9 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = FALSE, 
   # }
   
   ## Compiled datasets ----
-
+  
   coredat <- merge(msn[, setdiff(names(msn), c("purpose")), with = FALSE], stn, by = intersect(names(msn), names(stn)), all = TRUE)
-
+  
   utils::setTxtProgressBar(pb, 7)
   
   # Stndat
@@ -153,10 +153,19 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = FALSE, 
   utils::setTxtProgressBar(pb, 8)
   
   # Inddat
-
+  
   inddat <- merge(stndat[, setdiff(names(stndat), c("purpose", "stationcomment", "catchcomment")), with = FALSE], ind, all.y = TRUE, by = intersect(names(stndat), names(ind)))
-
+  
+  age[,numberofreads:=length(age),.(startyear,platform,serialnumber,catchsampleid,specimenid)]
+  
+  # Agedat
+  
+  agedat <- merge(inddat, age, by = intersect(names(inddat), names(age)), all.y = T)
+  
+  # More inddat
+  
   inddat[is.na(preferredagereading), preferredagereading := 1]
+  
   inddat <- merge(inddat, age, by.x = c(intersect(names(inddat), names(age)), "preferredagereading"), by.y = c(intersect(names(inddat), names(age)), "agedeterminationid"), all.x = TRUE)
   
   if(sum(is.na(inddat$commonname)) > 0) stop(paste(sum(is.na(inddat$commonname)), "missing commonname records. This is likely due to merging error between individual and agedetermination data tables. File a bug report."))
@@ -168,9 +177,9 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = FALSE, 
   ### Format
   
   if (returnOriginal) {
-    out <- list(mission = msn, fishstation = stn, catchsample = cth, individual = ind, agedetermination = age, stnall = stndat, indall = inddat)
+    out <- list(mission = msn, fishstation = stn, catchsample = cth, individual = ind, agedetermination = age, stnall = stndat, indall = inddat, ageall = agedat)
   } else {
-    out <- list(mission = msn, stnall = stndat, indall = inddat)
+    out <- list(mission = msn, stnall = stndat, indall = inddat, ageall = agedat)
   }
   
   utils::setTxtProgressBar(pb, 10)
@@ -206,7 +215,7 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = FALSE, 
 #' @export
 
 print.bioticProcData <- function(x, ...) {
-
+  
   cat("Processed Biotic Data object")
   cat(paste(" of class", class(x)), sep = "\n")
   cat(NULL, sep = "\n")
@@ -215,6 +224,7 @@ print.bioticProcData <- function(x, ...) {
   cat(paste0("$mission: ", nrow(x$mission), " rows and ", ncol(x$mission), " columns"), sep = "\n")
   cat(paste0("$stnall: ", nrow(x$stnall), " rows and ", ncol(x$stnall), " columns"), sep = "\n")
   cat(paste0("$indall: ", nrow(x$indall), " rows and ", ncol(x$indall), " columns"), sep = "\n")
+  cat(paste0("$ageall: ", nrow(x$ageall), " rows and ", ncol(x$ageall), " columns"), sep = "\n")
   cat(NULL, sep = "\n")
   cat("Object size: ", sep = "")
   print(utils::object.size(x), unit = "auto")
@@ -235,5 +245,5 @@ print.bioticProcData <- function(x, ...) {
   cat(sort(unique(x$stnall$commonname)), sep = ", ")
   cat(NULL, sep = "\n")
   cat(NULL, sep = "\n")
-
+  
 }
