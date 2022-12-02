@@ -22,7 +22,7 @@ prepareCruiseSeriesList <- function() {
   
   # Get per-cruise details
   second <- lapply(seq_along(first), function(i) {
-    message(i)
+    # message(i)
     utils::setTxtProgressBar(pb, i + 2)
     
     x <- first[[i]]
@@ -33,7 +33,7 @@ prepareCruiseSeriesList <- function() {
     
     # Get per-year details
     cruises <- lapply(years, function(y) {
-      message(y)
+      # message(y)
       subsubdoc <- xml2::read_xml(paste0("http://tomcat7.imr.no:8080/apis/nmdapi/reference/v2//model/cruiseseries/", seriesCode, "/samples/", y, "/cruises?version=2.0"))
       third <- lapply(xml2::xml_find_all(subsubdoc, "//d1:row"), function(z) {ch <- xml2::xml_children(z); zz <- xml2::xml_text(ch); zzz <- xml2::xml_name(ch); names(zz) <- zzz; return(as.list(zz))})
       subret <- data.table::rbindlist(third, fill = TRUE)
