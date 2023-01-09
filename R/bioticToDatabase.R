@@ -156,11 +156,11 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = FALSE, 
   
   inddat <- merge(stndat[, setdiff(names(stndat), c("purpose", "stationcomment", "catchcomment")), with = FALSE], ind, all.y = TRUE, by = intersect(names(stndat), names(ind)))
   
-  age[,numberofreads:=length(age),.(startyear,platform,serialnumber,catchpartnumber,specimenid)]
-  
   # Agedat
+  # age[,numberofreads:=length(age),.(startyear,platform,serialnumber,catchsampleid,specimenid)]
   
   agedat <- merge(inddat, age, by = intersect(names(inddat), names(age)), all.y = T)
+  agedat[,numberofreads:=length(age),.(startyear,platform,serialnumber,catchpartnumber,specimenid)]
   
   # More inddat
   
