@@ -67,7 +67,7 @@ downloadDatabase <- function(years, icesAreas = icesAreas, cruiseSeries = cruise
 
   timeEnd <- Sys.time()
   
-  DBI::dbWriteTable(con_db, "metadata", data.frame(timestart = timeStart, timeend = timeEnd), transaction = FALSE, overwrite = TRUE)
+  DBI::dbWriteTable(con_db, "metadata", data.frame(timestart = as.character(timeStart), timeend = as.character(timeEnd)), transaction = FALSE, overwrite = TRUE)
   DBI::dbWriteTable(con_db, "csindex", cruiseSeries, csvdump = TRUE, transaction = FALSE, overwrite = TRUE)
   DBI::dbWriteTable(con_db, "gearindex", gearCodes, csvdump = TRUE, transaction = FALSE, overwrite = TRUE)
   
