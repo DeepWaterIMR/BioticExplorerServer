@@ -10,7 +10,7 @@
 #' @export
 
 # years = 1914; dbIndexPath = "~/Desktop/test.rda"; source = NULL; dbName = "test"; prepareCruiseSeries = FALSE
-compileDatabase <- function(years = 1900:data.table::year(Sys.time()), dbIndexPath = "~/Desktop", source = NULL, dbName = NULL, prepareCruiseSeries = TRUE) {
+compileDatabase <- function(years = 1900:data.table::year(Sys.time()), dbIndexPath = "~/Desktop/dbIndex.rda", source = NULL, dbName = NULL, prepareCruiseSeries = TRUE) {
 
   ## Define dbName and dbIndexPath
   
