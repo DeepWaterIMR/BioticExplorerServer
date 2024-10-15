@@ -15,6 +15,6 @@ utils::globalVariables(
     "timestart", "timeend", "..ints", "name", "cruiseSeriesList", "cruise_series",
     "ICESareas", "gearcategory", "area", "gearList", "icesAreas", "filesize", 
     "language", "numberofreads", "catchpartnumber", "catchsampleid", "platform", 
-    "specimenid", ".")
+    "specimenid", ".", "con_db")
   )
 

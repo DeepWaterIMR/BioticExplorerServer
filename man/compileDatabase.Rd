@@ -9,7 +9,8 @@ compileDatabase(
   dbIndexPath = "~/Desktop/dbIndex.rda",
   source = NULL,
   dbName = NULL,
-  prepareCruiseSeries = TRUE
+  prepareCruiseSeries = TRUE,
+  overwrite = FALSE
 )
 }
 \arguments{
@@ -22,6 +23,8 @@ compileDatabase(
 \item{dbName}{Character string or \code{NULL}. If \code{NULL} uses the default names and overwrites the existing database.}
 
 \item{prepareCruiseSeries}{Logical indicating whether \link[=prepareCruiseSeriesList]{the cruise series list} should be prepared. Only set this to \code{FALSE} while debugging as preparing the cruise series list takes time.}
+
+\item{overwrite}{Logical indicating whether existing information in the \code{dbName} should be downloaded again and overwritten.}
 }
 \description{
 Downloads, formulates and indexes BioticExplorer database.

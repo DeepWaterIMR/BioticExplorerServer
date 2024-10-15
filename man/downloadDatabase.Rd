@@ -9,7 +9,8 @@ downloadDatabase(
   icesAreas = icesAreas,
   cruiseSeries = cruiseSeries,
   gearCodes = gearCodes,
-  dbName = NULL
+  dbName = NULL,
+  overwrite = FALSE
 )
 }
 \arguments{
@@ -22,6 +23,8 @@ downloadDatabase(
 \item{gearCodes}{a data.table object of NMD gear code list. Used to make gearname and gearcategory columns. See \code{\link{prepareGearList}}.}
 
 \item{dbName}{Character string or \code{NULL}. If \code{NULL} uses the default names and overwrites the existing database.}
+
+\item{overwrite}{Logical indicating whether existing information in the \code{dbName} should be downloaded again and overwritten.}
 }
 \description{
 Downloads annual NMD data from the API and writes them as DuckDB database

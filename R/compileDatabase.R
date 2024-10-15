@@ -12,7 +12,7 @@
 # years = 1914; dbIndexPath = "~/Desktop/test.rda"; source = NULL; dbName = "test"; prepareCruiseSeries = FALSE
 compileDatabase <- function(
     years = 1900:data.table::year(Sys.time()), dbIndexPath = "~/Desktop/dbIndex.rda", 
-    source = NULL, dbName = NULL, prepareCruiseSeries = TRUE
+    source = NULL, dbName = NULL, prepareCruiseSeries = TRUE, overwrite = FALSE
 ) {
   
   ## Define dbName and dbIndexPath
@@ -25,25 +25,42 @@ compileDatabase <- function(
     if(is.null(dbName)) dbName <- "bioticexplorer-next"
   }
   
+  con_db <- 
+    try({DBI::dbConnect(MonetDB.R::MonetDB.R(), host=dbHost, dbname=dbName, 
+                        user="monetdb", password="monetdb")}, silent = TRUE)
+  
   # dbIndexPath <- file.path(dbIndexPath, paste0(dbName, ".rda"))
   
   ## Cruise series
   
   message("1. Compiling cruise series list")
   if(prepareCruiseSeries) {
-    cruiseSeries <- prepareCruiseSeriesList()
+    if(inherits(try(dplyr::tbl(con_db, "csindex"), silent = TRUE), "try-error") | overwrite) {
+      cruiseSeries <- prepareCruiseSeriesList()
+    } else {
+      cruiseSeries <- dplyr::collect(dplyr::tbl(con_db, "csindex"))
+      message("Cruise series information found from ", dbName, 
+              ". The information was not rewritten. Delete the database or use the overwrite argument if you want to re-download the data.")
+    }
   } 
   
   ## Gear list
   
   message("2. Compiling gear list")
+  
+  if(inherits(try(dplyr::tbl(con_db, "gearindex"), silent = TRUE), "try-error") | overwrite) {
   gearCodes <- prepareGearList()
+  } else {
+    gearCodes <- dplyr::collect(dplyr::tbl(con_db, "gearindex"))
+    message("Gead codes found from ", dbName, 
+            ". The information was not rewritten. Delete the database or use the overwrite argument if you want to re-download the data.")
+  }
   
   ## Download
   
   message("3. Compiling database")
   if(is.null(source)) {
-    downloadDatabase(years = years, icesAreas = icesAreas, cruiseSeries = cruiseSeries, gearCodes = gearCodes, dbName = dbName)
+    downloadDatabase(years = years, icesAreas = icesAreas, cruiseSeries = cruiseSeries, gearCodes = gearCodes, dbName = dbName, overwrite = overwrite)
   } else {
     stop("not implemented yet")
   }
