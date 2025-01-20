@@ -6,7 +6,7 @@
 \usage{
 compileDatabase(
   years = 1900:data.table::year(Sys.time()),
-  dbPath = "~/Desktop/duckdb_test",
+  dbPath = "~/Documents/IMR_biotic_BES_database",
   dbIndexFile = file.path(dbPath, "dbIndex.rda"),
   dbName = NULL,
   overwrite = FALSE

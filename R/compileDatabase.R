@@ -11,7 +11,7 @@
 # compileDatabase(years = 1914, dbName = "spedenpatukka", overwrite = TRUE)
 
 compileDatabase <- function(
-    years = 1900:data.table::year(Sys.time()), dbPath = "~/Desktop/IMR_biotic_BES_database", 
+    years = 1900:data.table::year(Sys.time()), dbPath = "~/Documents/IMR_biotic_BES_database", 
     dbIndexFile = file.path(dbPath, "dbIndex.rda"), dbName = NULL, 
     overwrite = FALSE
 ) {
