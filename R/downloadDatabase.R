@@ -12,44 +12,30 @@
 #' @author Ibrahim Umar, Mikko Vihtakari (Institute of Marine Research)
 #' @export
 
-# years = 2020; dbPath = "~/Desktop/test.monetdb"; dbIndexPath = "~/Desktop/test.rda"; 
-# icesAreaShape = icesAreas; cruiseSeries = cruiseSeriesList; gearCodes = gearList
-downloadDatabase <- function(years, icesAreas = icesAreas, cruiseSeries = cruiseSeries, gearCodes = gearCodes, dbName = NULL, overwrite = FALSE) {
-  
-  if(Sys.getenv(c("SERVER_MODE"))=="") {
-    dbHost <- "localhost"
-    if(is.null(dbName)) dbName <- "bioticexplorer"
-  } else {
-    dbHost <- "dbserver"
-    if(is.null(dbName)) dbName <- "bioticexplorer-next"
-  }
-  
-  if(!DBI::dbCanConnect(MonetDB.R::MonetDB(), host=dbHost, dbname=dbName, user="monetdb", password="monetdb")) {
-    system(paste0("monetdb create ", dbName))
-    system(paste0("monetdb start ", dbName))
-  }
-  
-  con_db <- DBI::dbConnect(MonetDB.R::MonetDB.R(), host=dbHost, dbname=dbName, user="monetdb", password="monetdb")
+# years = 1914; connection = con_db; icesAreas = icesAreas; cruiseSeries = cruiseSeries; gearCodes = gearCodes; overwrite = FALSE
+
+
+downloadDatabase <- function(years, connection, icesAreas = icesAreas, cruiseSeries = cruiseSeries, gearCodes = gearCodes, overwrite = FALSE) {
   
   timeStart <- Sys.time()
   
-  if(inherits(try(dplyr::tbl(con_db, "csindex"), silent = TRUE), "try-error") | overwrite) {
-    DBI::dbWriteTable(con_db, "csindex", cruiseSeries, csvdump = TRUE,
-                      transaction = FALSE, overwrite = TRUE)
-  }
-  
-  if(inherits(try(dplyr::tbl(con_db, "gearindex"), silent = TRUE), "try-error") | overwrite) {
-    DBI::dbWriteTable(con_db, "gearindex", gearCodes, csvdump = TRUE, 
-                      transaction = FALSE, overwrite = TRUE)
-  }
+  # if(inherits(try(dplyr::tbl(connection, "csindex"), silent = TRUE), "try-error") | overwrite) {
+  #   DBI::dbWriteTable(connection, "csindex", cruiseSeries, csvdump = TRUE,
+  #                     transaction = FALSE, overwrite = TRUE)
+  # }
+  # 
+  # if(inherits(try(dplyr::tbl(connection, "gearindex"), silent = TRUE), "try-error") | overwrite) {
+  #   DBI::dbWriteTable(connection, "gearindex", gearCodes, csvdump = TRUE, 
+  #                     transaction = FALSE, overwrite = TRUE)
+  # }
   
   # h <- years[[1]]
   lapply(years, function(h) {
     
-    tmp <- try(filter(dplyr::tbl(con_db, "stnall"), startyear == h), silent = TRUE)
+    tmp <- try(dplyr::filter(dplyr::tbl(connection, "stnall"), startyear == h), silent = TRUE)
     
     if(ifelse(inherits(tmp, "try-error"), TRUE, 
-              length(pull(head(tmp), startyear)) == 0) | overwrite) {
+              length(dplyr::pull(head(tmp), startyear)) == 0) | overwrite) {
       
       message(paste("Downloading:", h))
       
@@ -99,7 +85,7 @@ downloadDatabase <- function(years, icesAreas = icesAreas, cruiseSeries = cruise
       
       if(!skip) {
         filesize <- data.table::data.table(dbyear = h, filesize = file.info(dest)$size)
-        DBI::dbWriteTable(con_db, "filesize", filesize, transaction = FALSE, append = TRUE)
+        DBI::dbWriteTable(connection, "filesize", filesize, transaction = FALSE, append = TRUE)
         
         # Do transformations
         
@@ -109,7 +95,7 @@ downloadDatabase <- function(years, icesAreas = icesAreas, cruiseSeries = cruise
           message(paste("Parsing", i))
           
           if(nrow(a[[i]]) > 0) {
-            DBI::dbWriteTable(con_db, i, a[[i]], csvdump = TRUE, transaction = FALSE, append = TRUE)
+            DBI::dbWriteTable(connection, i, a[[i]], csvdump = TRUE, transaction = FALSE, append = TRUE)
           }
         })
         
@@ -123,7 +109,7 @@ downloadDatabase <- function(years, icesAreas = icesAreas, cruiseSeries = cruise
   
   timeEnd <- Sys.time()
   
-  DBI::dbWriteTable(con_db, "metadata", data.frame(timestart = as.character(timeStart), timeend = as.character(timeEnd)), transaction = FALSE, overwrite = TRUE)
+  DBI::dbWriteTable(connection, "metadata", data.frame(timestart = as.character(timeStart), timeend = as.character(timeEnd)), transaction = FALSE, overwrite = TRUE)
   
-  DBI::dbDisconnect(con_db)
+  # DBI::dbDisconnect(connection)
 }

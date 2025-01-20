@@ -6,25 +6,20 @@
 \usage{
 compileDatabase(
   years = 1900:data.table::year(Sys.time()),
-  dbIndexPath = "~/Desktop/dbIndex.rda",
-  source = NULL,
+  dbPath = "~/Desktop/duckdb_test",
+  dbIndexFile = file.path(dbPath, "dbIndex.rda"),
   dbName = NULL,
-  prepareCruiseSeries = TRUE,
   overwrite = FALSE
 )
 }
 \arguments{
 \item{years}{vector of integer specifying the years to be downloaded. The database reaches 1914:2020}
 
-\item{dbIndexPath}{Character string specifying the file path where the database should be saved. Must include \code{.rda} at the end.}
-
-\item{source}{Character string indicating from where the database should be compiled. If \code{NULL}, the data will be downloaded from NMD. Requires access to the IMR intranet. Otherwise, specify a file path where the rds files are located from the \code{\link{downloadDatabaseToFiles}} function. NOT IMPLEMENTED YET.}
-
 \item{dbName}{Character string or \code{NULL}. If \code{NULL} uses the default names and overwrites the existing database.}
 
-\item{prepareCruiseSeries}{Logical indicating whether \link[=prepareCruiseSeriesList]{the cruise series list} should be prepared. Only set this to \code{FALSE} while debugging as preparing the cruise series list takes time.}
-
 \item{overwrite}{Logical indicating whether existing information in the \code{dbName} should be downloaded again and overwritten.}
+
+\item{dbIndexPath}{Character string specifying the file path where the database should be saved. Must include \code{.rda} at the end.}
 }
 \description{
 Downloads, formulates and indexes BioticExplorer database.

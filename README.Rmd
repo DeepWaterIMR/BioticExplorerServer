@@ -7,4 +7,8 @@ output:
 # BioticExplorer-Server
 **R package to generate and update the server-side data for BioticExplorer**
 
-This is a developmental package and not needed by BioticExplorer users. The functions are poorly documented and only intended for internal use. 
+This package can be used to download IMR Biotic database and to place it into a [duckdb](https://duckdb.org/docs/api/r.html) allowing an access to all institute's Biotic data from R.
+
+## Installation
+
+remotes::install_github("MikkoVihtakari/ggOceanMaps")

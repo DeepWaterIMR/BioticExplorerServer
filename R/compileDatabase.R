@@ -2,18 +2,36 @@
 #' @description Downloads, formulates and indexes BioticExplorer database.
 #' @inheritParams downloadDatabase
 #' @param dbIndexPath Character string specifying the file path where the database should be saved. Must include \code{.rda} at the end.
-#' @param source Character string indicating from where the database should be compiled. If \code{NULL}, the data will be downloaded from NMD. Requires access to the IMR intranet. Otherwise, specify a file path where the rds files are located from the \code{\link{downloadDatabaseToFiles}} function. NOT IMPLEMENTED YET.
-#' @param prepareCruiseSeries Logical indicating whether \link[=prepareCruiseSeriesList]{the cruise series list} should be prepared. Only set this to \code{FALSE} while debugging as preparing the cruise series list takes time. 
 #' @details Runs the \code{\link{downloadDatabase}} and \code{\link{indexDatabase}} functions. Be aware that running these functions requires access to the IMR intranet, reasonably fast internet and loads of memory. If the function crashes after the \code{\link{downloadDatabase}}, you can still run the \code{\link{indexDatabase}} to save the progress. If it crashes during \code{\link{downloadDatabase}}, you may have to start from scratch. 
 #' @import data.table
 #' @author Mikko Vihtakari, Ibrahim Umar (Institute of Marine Research)
 #' @export
 
-# years = 1914; dbIndexPath = "~/Desktop/test.rda"; source = NULL; dbName = "test"; prepareCruiseSeries = FALSE
+# years = 1914; dbPath = "~/Desktop/IMR_biotic_BES_database"; dbIndexFile = file.path(dbPath, "dbIndex.rda"); dbName = NULL; overwrite = TRUE
+# compileDatabase(years = 1914, dbName = "spedenpatukka", overwrite = TRUE)
+
 compileDatabase <- function(
-    years = 1900:data.table::year(Sys.time()), dbIndexPath = "~/Desktop/dbIndex.rda", 
-    source = NULL, dbName = NULL, prepareCruiseSeries = TRUE, overwrite = FALSE
+    years = 1900:data.table::year(Sys.time()), dbPath = "~/Desktop/IMR_biotic_BES_database", 
+    dbIndexFile = file.path(dbPath, "dbIndex.rda"), dbName = NULL, 
+    overwrite = FALSE
 ) {
+  
+  ## Create the database folder if it does not exist
+  
+  if(!dir.exists(dbPath)) {
+    message(dbPath, " does not exist. Do you want to create the folder?")
+    
+    ret.val <- utils::menu(c("Yes", "No"), "")
+    
+    if(ret.val != 1) {
+      msg <- paste0("Selected not to create the folder. Redefine dbPath and try again.")
+      stop(paste(strwrap(msg), collapse= "\n"))
+    } else {
+      dir.create(dbPath)
+      msg <- paste0("duckdb IMR database created to ", dbPath)
+      message(paste(strwrap(msg), collapse= "\n"))
+    }
+  }
   
   ## Define dbName and dbIndexPath
   
@@ -26,48 +44,56 @@ compileDatabase <- function(
   }
   
   con_db <- 
-    try({DBI::dbConnect(MonetDB.R::MonetDB.R(), host=dbHost, dbname=dbName, 
-                        user="monetdb", password="monetdb")}, silent = TRUE)
-  
-  # dbIndexPath <- file.path(dbIndexPath, paste0(dbName, ".rda"))
+    try({DBI::dbConnect(
+      duckdb::duckdb(
+        dbdir = normalizePath(paste0(file.path(dbPath, dbName), ".duckdb"), 
+                              mustWork = FALSE)))}, 
+      silent = TRUE)
   
   ## Cruise series
   
   message("1. Compiling cruise series list")
-  if(prepareCruiseSeries) {
-    if(inherits(try(dplyr::tbl(con_db, "csindex"), silent = TRUE), "try-error") | overwrite) {
-      cruiseSeries <- prepareCruiseSeriesList()
-    } else {
-      cruiseSeries <- dplyr::collect(dplyr::tbl(con_db, "csindex"))
-      message("Cruise series information found from ", dbName, 
-              ". The information was not rewritten. Delete the database or use the overwrite argument if you want to re-download the data.")
-    }
-  } 
+  if(inherits(try(dplyr::tbl(con_db, "csindex"), silent = TRUE), "try-error") | overwrite) {
+    cruiseSeries <- prepareCruiseSeriesList()
+  } else {
+    cruiseSeries <- dplyr::collect(dplyr::tbl(con_db, "csindex"))
+    message("Cruise series information found from ", dbName, 
+            ". The information was not rewritten. Delete the database or use the overwrite argument if you want to re-download the data.")
+  }
+  
+  if(inherits(try(dplyr::tbl(con_db, "csindex"), silent = TRUE), "try-error") | overwrite) {
+    DBI::dbWriteTable(con_db, "csindex", cruiseSeries, overwrite = overwrite) #, csvdump = TRUE,
+    #transaction = FALSE, overwrite = TRUE)
+  }
   
   ## Gear list
   
   message("2. Compiling gear list")
   
   if(inherits(try(dplyr::tbl(con_db, "gearindex"), silent = TRUE), "try-error") | overwrite) {
-  gearCodes <- prepareGearList()
+    gearCodes <- prepareGearList()
   } else {
     gearCodes <- dplyr::collect(dplyr::tbl(con_db, "gearindex"))
     message("Gead codes found from ", dbName, 
             ". The information was not rewritten. Delete the database or use the overwrite argument if you want to re-download the data.")
   }
   
+  if(inherits(try(dplyr::tbl(con_db, "gearindex"), silent = TRUE), "try-error") | overwrite) {
+    DBI::dbWriteTable(con_db, "gearindex", gearCodes, overwrite = overwrite) #csvdump = TRUE, 
+    # transaction = FALSE, overwrite = TRUE)
+  }
+  
   ## Download
   
   message("3. Compiling database")
-  if(is.null(source)) {
-    downloadDatabase(years = years, icesAreas = icesAreas, cruiseSeries = cruiseSeries, gearCodes = gearCodes, dbName = dbName, overwrite = overwrite)
-  } else {
-    stop("not implemented yet")
-  }
+  downloadDatabase(
+      years = years, connection = con_db, icesAreas = icesAreas, 
+      cruiseSeries = cruiseSeries, gearCodes = gearCodes, overwrite = overwrite)
   
   # Index
   
   message("4. Indexing database")
-  indexDatabase(dbIndexPath = dbIndexPath, dbName = dbName)
+  indexDatabase(connection = con_db, dbIndexPath = dbIndexFile)
   
+  DBI::dbDisconnect(con_db)
 }
