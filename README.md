@@ -70,7 +70,7 @@ invisible(lapply(packages, library, character.only = TRUE, quietly = TRUE))
 # Connect to the database (assuming you used standard dbPath and name)
 con_db <- "~/Documents/IMR_biotic_BES_database/bioticexplorer.duckdb" %>% 
   normalizePath() %>% 
-  duckdb::duckdb() %>% 
+  duckdb::duckdb(read_only = TRUE) %>% 
   DBI::dbConnect()
 
 ## Create the data objects
@@ -149,6 +149,7 @@ If you get an error something like:
 > Error:
 > ! error in evaluating the argument 'drv' in selecting a method for function 'dbConnect':
 > rapi_startup: Failed to open database: {"exception_type":"IO","exception_message":"Could not set lock on file
+> ...
 
 You likely have the database connection open elsewhere within your R session. Close those connections:
 
@@ -157,3 +158,4 @@ You likely have the database connection open elsewhere within your R session. Cl
 DBI::dbDisconnect(con_db)
 ```
 
+and connect to the database in read only mode: `duckdb::duckdb(read_only = TRUE)`.
