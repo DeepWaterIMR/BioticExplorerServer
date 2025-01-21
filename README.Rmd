@@ -133,7 +133,7 @@ If you get an error something like:
 > rapi_startup: Failed to open database: {"exception_type":"IO","exception_message":"Could not set lock on file
 > ...
 
-You likely have the database connection open elsewhere within your R session. Close those connections:
+You likely have database connection with write privileges open elsewhere within your R session. DuckDB supports only one write connection, but multiple simultaneus read only connections can be established. Close the connections to the database:
 
 ```{r}
 DBI::dbDisconnect(con_db)
