@@ -6,17 +6,19 @@
 \usage{
 indexDatabase(
   connection,
-  dbIndexPath = "~/Desktop/dbIndex.rda",
+  dbIndexFile = "~/Desktop/dbIndex.rda",
   fileOnly = TRUE
 )
 }
 \arguments{
-\item{dbIndexPath}{Character string specifying the file path where the database should be saved. Must include \code{.rda} at the end.}
+\item{connection}{Object defining the \link[duckdb]{duckdb} connection. Typically made within \code{\link{compileDatabase}}.}
+
+\item{dbIndexFile}{Character string specifying the file path where the index of the database should be saved. Must include \code{.rda} at the end. The index is used by \href{https://github.com/DeepWaterIMR/BioticExplorer}{BioticExplorer}.}
 
 \item{fileOnly}{Logical indicating whether the result should only be saved to a file and not returned. If FALSE, no file is made and the result is returned instead.}
 }
 \description{
-Loads BioticExplorer database and creates an index used by BioticExplorer to save processing time
+Loads BioticExplorer database and creates an index used by BioticExplorer to save processing time.
 }
 \author{
 Mikko Vihtakari, Ibrahim Umar (Institute of Marine Research)

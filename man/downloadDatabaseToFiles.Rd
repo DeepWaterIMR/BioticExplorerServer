@@ -15,7 +15,7 @@ downloadDatabaseToFiles(
 )
 }
 \arguments{
-\item{years}{vector of integer specifying the years to be downloaded. The database reaches 1914:2020}
+\item{years}{Vector of integers specifying the years to be downloaded. The database reaches 1914:year(Sys.Date())}
 
 \item{dest}{Character string specifying the file path where the database should be downloaded to.}
 

@@ -1,15 +1,15 @@
 #' @title Index BioticExplorer database
-#' @description Loads BioticExplorer database and creates an index used by BioticExplorer to save processing time
-#' @param dbIndexPath Character string specifying the file path where the database should be saved. Must include \code{.rda} at the end.
+#' @description Loads BioticExplorer database and creates an index used by BioticExplorer to save processing time.
 #' @param fileOnly Logical indicating whether the result should only be saved to a file and not returned. If FALSE, no file is made and the result is returned instead.
+#' @inheritParams compileDatabase 
 #' @inheritParams downloadDatabase
 #' @import data.table DBI
 #' @rawNamespace import(dplyr, except = c(last, first, between))
 #' @author Mikko Vihtakari, Ibrahim Umar (Institute of Marine Research)
 #' @export
 
-# dbPath = "~/Desktop/IMR_db.duckdb"; dbIndexPath = "~/Desktop/dbIndex.rda"
-indexDatabase <- function(connection, dbIndexPath = "~/Desktop/dbIndex.rda", 
+# dbPath = "~/Desktop/IMR_db.duckdb"; dbIndexFile = "~/Desktop/dbIndex.rda"
+indexDatabase <- function(connection, dbIndexFile = "~/Desktop/dbIndex.rda", 
                           fileOnly = TRUE) {
   
   pb <- utils::txtProgressBar(max = 6, style = 3)
@@ -68,7 +68,7 @@ indexDatabase <- function(connection, dbIndexPath = "~/Desktop/dbIndex.rda",
   utils::setTxtProgressBar(pb, 7)
   
   if(fileOnly) {
-    save(index, file = dbIndexPath, compress = "xz")
+    save(index, file = dbIndexFile, compress = "xz")
   } else {
     return(index)
   }

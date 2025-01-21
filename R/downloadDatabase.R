@@ -1,33 +1,20 @@
 #' @title Download and parse NMD data for the BioticExplorer database
-#' @description Downloads annual NMD data from the API and writes them as DuckDB database
-#' @param years vector of integer specifying the years to be downloaded. The database reaches 1914:2020
+#' @description Downloads annual NMD data from the API and writes them as a DuckDB database
+#' @param connection Object defining the \link[duckdb]{duckdb} connection. Typically made within \code{\link{compileDatabase}}.
 #' @param icesAreas ICES area shape \code{\link[sf]{st_polygon}} abject. Used for calculating the ICES area for a specific fishstation.
 #' @param cruiseSeries a data.table object of NMD cruise series list. Used to identify cruise series of a specific mission. See \code{\link{prepareCruiseSeriesList}}.
 #' @param gearCodes a data.table object of NMD gear code list. Used to make gearname and gearcategory columns. See \code{\link{prepareGearList}}.
-#' @param dbName Character string or \code{NULL}. If \code{NULL} uses the default names and overwrites the existing database. 
-#' @param overwrite Logical indicating whether existing information in the \code{dbName} should be downloaded again and overwritten.
-#' @details The function downloads NMD data from the API per year, saves these in temp files, reformats them for the MonetDB and writes them into the database. Server mode (Eucleia docker or local) is automatically detected. Requires MonetDB installed and running on the computer.
+#' @inheritParams compileDatabase
+#' @details The function downloads NMD data from the API per year, saves these in temp files, reformats them for the DuckDB and writes them into the database. 
 #' @import data.table DBI
 #' @importFrom utils head
 #' @author Ibrahim Umar, Mikko Vihtakari (Institute of Marine Research)
 #' @export
 
 # years = 1914; connection = con_db; icesAreas = icesAreas; cruiseSeries = cruiseSeries; gearCodes = gearCodes; overwrite = FALSE
-
-
 downloadDatabase <- function(years, connection, icesAreas = icesAreas, cruiseSeries = cruiseSeries, gearCodes = gearCodes, overwrite = FALSE) {
   
   timeStart <- Sys.time()
-  
-  # if(inherits(try(dplyr::tbl(connection, "csindex"), silent = TRUE), "try-error") | overwrite) {
-  #   DBI::dbWriteTable(connection, "csindex", cruiseSeries, csvdump = TRUE,
-  #                     transaction = FALSE, overwrite = TRUE)
-  # }
-  # 
-  # if(inherits(try(dplyr::tbl(connection, "gearindex"), silent = TRUE), "try-error") | overwrite) {
-  #   DBI::dbWriteTable(connection, "gearindex", gearCodes, csvdump = TRUE, 
-  #                     transaction = FALSE, overwrite = TRUE)
-  # }
   
   # h <- years[[1]]
   lapply(years, function(h) {
@@ -103,13 +90,11 @@ downloadDatabase <- function(years, connection, icesAreas = icesAreas, cruiseSer
         unlink(dest)
       }
     } else {
-      message("Data for ", h, " found from ", dbName, ". Did not re-download.")
+      message("Data for ", h, " found. Did not re-download.")
     }
   })
   
   timeEnd <- Sys.time()
   
   DBI::dbWriteTable(connection, "metadata", data.frame(timestart = as.character(timeStart), timeend = as.character(timeEnd)), transaction = FALSE, overwrite = TRUE)
-  
-  # DBI::dbDisconnect(connection)
 }

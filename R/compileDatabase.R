@@ -1,8 +1,11 @@
-#' @title Compile BioticExplorer database
-#' @description Downloads, formulates and indexes BioticExplorer database.
-#' @inheritParams downloadDatabase
-#' @param dbIndexPath Character string specifying the file path where the database should be saved. Must include \code{.rda} at the end.
-#' @details Runs the \code{\link{downloadDatabase}} and \code{\link{indexDatabase}} functions. Be aware that running these functions requires access to the IMR intranet, reasonably fast internet and loads of memory. If the function crashes after the \code{\link{downloadDatabase}}, you can still run the \code{\link{indexDatabase}} to save the progress. If it crashes during \code{\link{downloadDatabase}}, you may have to start from scratch. 
+#' @title Download IMR Biotic database and to place it into a \link[duckdb]{duckdb} database
+#' @description Downloads, formulates and indexes IMR Biotic database into a format used by BioticExplorer
+#' @param years Vector of integers specifying the years to be downloaded. The database reaches 1914:year(Sys.Date())
+#' @param dbPath Character string specifying the folder where the \link[duckdb]{duckdb} and \link[=indexDatabase]{dbIndex} files should be saved. 
+#' @param dbIndexFile Character string specifying the file path where the index of the database should be saved. Must include \code{.rda} at the end. The index is used by \href{https://github.com/DeepWaterIMR/BioticExplorer}{BioticExplorer}.
+#' @param dbName Character string or \code{NULL}. If \code{NULL} uses the default names ("bioticexploer"). 
+#' @param overwrite Logical indicating whether existing information in the \link[duckdb]{duckdb} database (\code{dbPath}) should be downloaded again and overwritten.
+#' @details Runs the \code{\link{prepareCruiseSeriesList}}, \code{\link{prepareGearList}}, \code{\link{downloadDatabase}} and \code{\link{indexDatabase}} functions, and saves the results into a \link[duckdb]{duckdb}. Be aware that running these functions requires access to the IMR intranet and reasonably stable internet. It is advisable to run the function in a separate R session or in a screen session in the terminal on Unix machines, as downloading the database takes several hours and requires a stable internet connection. If the connection is unstable, the function may return an error. In such cases, ensure that the connection is stable and rerun the function. The function should continue downloading from where it left off.
 #' @import data.table
 #' @author Mikko Vihtakari, Ibrahim Umar (Institute of Marine Research)
 #' @export
@@ -93,7 +96,7 @@ compileDatabase <- function(
   # Index
   
   message("4. Indexing database")
-  indexDatabase(connection = con_db, dbIndexPath = dbIndexFile)
+  indexDatabase(connection = con_db, dbIndexFile = dbIndexFile)
   
   DBI::dbDisconnect(con_db)
 }

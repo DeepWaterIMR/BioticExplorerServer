@@ -1,15 +1,7 @@
----
-output: 
-  html_document: 
-    keep_md: yes
-editor_options: 
-  chunk_output_type: console
----
-
 # BioticExplorer-Server
-**R package to generate and update the server-side data for BioticExplorer**
+**R Package for Downloading Server-Side Data for BioticExplorer**
 
-This package can be used to download IMR Biotic database and to place it into a [duckdb](https://duckdb.org/docs/api/r.html) allowing an access to all institute's Biotic data from R.
+This package can be used to download IMR Biotic database and to place it into a [duckdb](https://duckdb.org/docs/api/r.html) database, providing access to all of the institute's Biotic data from R.
 
 ## Installation
 
@@ -20,17 +12,19 @@ remotes::install_github("DeepWaterIMR/BioticExplorerServer")
 
 ## Usage
 
-### Download IMR biotic database
+### Download the IMR biotic database
 
-Download and compile the IMR database to a [duckdb](https://cran.r-project.org/package=duckdb) database. Requires intranet access (VPN, cable within the institute web or HI-adm wifi). The **database takes 40 Gb of disk space**. Make sure to modify the `dbPath` argument to decide a fitting place for the database. **Do not** place it in a folder that gets synced to cloud due to the size and please mind the [institute data policy](https://www.hi.no/resources/Data-policy-HI.pdf). While the data are mostly licensed NLOD (governmental version of CCBY), there are some external data that should not be shared outside the institute. By using this package, you accept the responsibility of using IMR biotic data according to the licences and regulations. It is recommended to conduct the download command below in a separate R session or in a screen session in terminal on Unix machines as downloading the database takes several hours and requires a stable internet. If the connection is unstable, the function may return an error. In such a case, make sure that the connection is stable and rerun the command above. The function should continue downloading from where it crashed. 
+The BioticExplorerServer package (BES) downloads and compiles the IMR database into a [duckdb](https://cran.r-project.org/package=duckdb) database. The download requires stable intranet access (VPN, cable within the institute web or HI-adm WiFi). The **database requires more than 2 Gb of disk space**. Make sure to modify the `dbPath` argument to choose an appropriate location for the database. **Do not store it in a folder that is synced to the cloud** due to its size, and be mindful of the [institute's data policy](https://www.hi.no/resources/Data-policy-HI.pdf). While most of the data is licensed under NLOD (the governmental version of CCBY), **some external data within the database must not be shared outside the institute**. **By using this package, you accept the responsibility of handling the IMR Biotic data according to the licenses and regulations**. It is advisable to run the download command in a separate R session or in a screen session in the terminal on Unix machines, as downloading the database takes several hours and requires a stable internet connection. If the connection is unstable, the function may return an error. In such cases, ensure that the connection is stable and rerun the command. The function should continue downloading from where it left off.
 
 
 ``` r
 library(BioticExplorerServer)
-compileDatabase(dbPath = "~/Documents/IMR_biotic_BES_database")
+compileDatabase(dbPath = "~/Documents/IMR_biotic_BES_database") # default dbPath, written out to show it
 ```
 
-To update the database, you can do the following:
+### Update the database
+
+Currently, the entire database must be re-downloaded to update it because IMR Biotic database does not have last modified tags. To update the database, you can do the following:
 
 
 ``` r
@@ -38,22 +32,26 @@ library(BioticExplorerServer)
 compileDatabase(dbPath = "~/Documents/IMR_biotic_BES_database",
                 dbName = "bioticexplorer-next")
 unlink(normalizePath("~/Documents/IMR_biotic_BES_database/bioticexplorer.duckdb"))
-file.rename(normalizePath("~/Documents/IMR_biotic_BES_database/bioticexplorer-next.duckdb"),
-            normalizePath("~/Documents/IMR_biotic_BES_database/bioticexplorer.duckdb", mustWork = FALSE))
+file.rename(
+  normalizePath("~/Documents/IMR_biotic_BES_database/bioticexplorer-next.duckdb"),
+  normalizePath("~/Documents/IMR_biotic_BES_database/bioticexplorer.duckdb", 
+                mustWork = FALSE))
 ```
 
-This first downloads the database to a file called `bioticexplorer-next.duckdb`, then deletes the old database and renames `bioticexplorer-next.duckdb` to `bioticexplorer.duckdb`. Since downloading takes time, you can continue using the database in another R session while downloading. If this is not important, you can also overwrite the existing database: 
+This process first downloads the database to a file named `bioticexplorer-next.duckdb`, then deletes the old database and renames `bioticexplorer-next.duckdb` to `bioticexplorer.duckdb`. Since downloading takes time, you can continue using the database in another R session while the download is in progress. If it is not a priority, you can also overwrite the existing database:
 
 
 ``` r
 compileDatabase(dbPath = "~/Documents/IMR_biotic_BES_database", overwrite = TRUE)
 ```
 
-If you want to get rid of the database on your computer, you can simply delete the `dbPath` folder. Remember to empty trash bin too. 
+### Uninstall the database
+
+If you want to remove the database from your computer, simply delete the folder at the specified `dbPath`. Remember to empty your trash bin as well.
 
 ### Control the database through R
 
-Once the database has been downloaded and saved to a [duckdb](https://cran.r-project.org/package=duckdb) database, you can use standard [DBI](https://cran.r-project.org/package=DBI) or [dplyr](https://cran.r-project.org/package=dplyr) to access it:
+Once the database has been downloaded and saved to a [duckdb](https://cran.r-project.org/package=duckdb) database, you can use standard [DBI](https://cran.r-project.org/package=DBI) or [dplyr](https://cran.r-project.org/package=dplyr) functions to access it:
 
 
 ``` r
@@ -67,47 +65,13 @@ if (any(installed_packages == FALSE)) {
 }
 
 # Load the packages
-invisible(lapply(packages, library, character.only = TRUE))
-```
+invisible(lapply(packages, library, character.only = TRUE, quietly = TRUE))
 
-```
-## ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
-## ✔ dplyr     1.1.4     ✔ readr     2.1.5
-## ✔ forcats   1.0.0     ✔ stringr   1.5.1
-## ✔ ggplot2   3.5.1     ✔ tibble    3.2.1
-## ✔ lubridate 1.9.4     ✔ tidyr     1.3.1
-## ✔ purrr     1.0.2     
-## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
-## ✖ dplyr::filter() masks stats::filter()
-## ✖ dplyr::lag()    masks stats::lag()
-## ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
-## 
-## Attaching package: 'data.table'
-## 
-## 
-## The following objects are masked from 'package:lubridate':
-## 
-##     hour, isoweek, mday, minute, month, quarter, second, wday, week,
-##     yday, year
-## 
-## 
-## The following objects are masked from 'package:dplyr':
-## 
-##     between, first, last
-## 
-## 
-## The following object is masked from 'package:purrr':
-## 
-##     transpose
-```
-
-``` r
 # Connect to the database (assuming you used standard dbPath and name)
-con_db <- DBI::dbConnect(
-  duckdb::duckdb(
-    dbdir = normalizePath("~/Documents/IMR_biotic_BES_database/bioticexplorer.duckdb")
-    )
-)
+con_db <- "~/Documents/IMR_biotic_BES_database/bioticexplorer.duckdb" %>% 
+  normalizePath() %>% 
+  duckdb::duckdb() %>% 
+  DBI::dbConnect()
 
 ## Create the data objects
 
@@ -115,9 +79,10 @@ stnall <- dplyr::tbl(con_db, "stnall") # station-based data
 indall <- dplyr::tbl(con_db, "indall") # individual-based data
 ageall <- dplyr::tbl(con_db, "ageall") # age data
 mission <- dplyr::tbl(con_db, "mission") # information on
-meta <- dplyr::tbl(con_db, "metadata") %>% collect() %>% mutate_all(as.POSIXct)
-csindex <- dplyr::tbl(con_db, "csindex")
-gearlist <- dplyr::tbl(con_db, "gearindex") %>% collect()
+meta <- dplyr::tbl(con_db, "metadata") %>% # time of download
+  collect() %>% mutate_all(as.POSIXct)
+csindex <- dplyr::tbl(con_db, "csindex") # cruise series index
+gearlist <- dplyr::tbl(con_db, "gearindex") %>% collect() # gear index
 ```
 
 These data objects can now be used in R:
@@ -129,7 +94,7 @@ head(mission)
 
 ```
 ## # Source:   SQL [6 x 13]
-## # Database: DuckDB v1.1.3 [root@Darwin 24.2.0:R 4.4.1//Users/a22357/Documents/IMR_biotic_BES_database/bioticexplorer.duckdb]
+## # Database: DuckDB v1.1.3 [root@Darwin 24.2.0:R 4.4.1//Documents/IMR_biotic_BES_database/bioticexplorer.duckdb]
 ##   startyear platformname               cruise missiontype platform missionnumber
 ##       <int> <chr>                      <chr>  <chr>       <chr>            <int>
 ## 1      1914 Ikke navngitte skip i kom… <NA>   1           1530                 1
@@ -143,6 +108,8 @@ head(mission)
 ## #   missionid <chr>, cruiseseriescode <chr>
 ```
 
+The [dplyr package can also be used with databases](https://solutions.posit.co/connections/db/r-packages/dplyr/). The only difference from normal use is that you'll need to [`collect()`](https://dbplyr.tidyverse.org/reference/collapse.tbl_sql.html) the data from the database after filtering. Note that you are handling large amounts of data, and using the collect function incorrectly may cause your computer to crash due to insufficient RAM. Therefore, always filter before collecting and consider using [`compute()`](https://dbplyr.tidyverse.org/reference/collapse.tbl_sql.html) or use the [data.table](https://cran.r-project.org/web/packages/data.table/index.html) package, if you'll need to handle very large proportions of the IMR Biotic database. 
+
 
 ``` r
 stnall %>% 
@@ -153,10 +120,11 @@ stnall %>%
   ggplot(aes(x = startyear, y = n)) +
   geom_col() + 
   labs(x = "Year", y = "Number of stations", 
-      title = "Number of sampling stations in IMR survey data over years")
+       title = "Number of sampling stations in IMR survey data over years") +
+  theme_classic()
 ```
 
-![](README_files/figure-html/unnamed-chunk-7-1.png)<!-- -->
+![](README_files/figure-html/unnamed-chunk-8-1.png)<!-- -->
 
 The duckdb database contains following data tables:
 
@@ -171,3 +139,21 @@ DBI::dbListTables(con_db)
 ```
 
 ### Explore the database using Biotic Explorer shiny app
+
+Once downloaded, you can also use the database through the [Biotic Explorer](https://github.com/DeepWaterIMR/BioticExplorer) shiny app. 
+
+## Troubleshooting
+
+If you get an error something like:
+
+> Error:
+> ! error in evaluating the argument 'drv' in selecting a method for function 'dbConnect':
+> rapi_startup: Failed to open database: {"exception_type":"IO","exception_message":"Could not set lock on file
+
+You likely have the database connection open elsewhere within your R session. Close those connections:
+
+
+``` r
+DBI::dbDisconnect(con_db)
+```
+

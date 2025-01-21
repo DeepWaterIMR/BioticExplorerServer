@@ -14,7 +14,9 @@ downloadDatabase(
 )
 }
 \arguments{
-\item{years}{vector of integer specifying the years to be downloaded. The database reaches 1914:2020}
+\item{years}{Vector of integers specifying the years to be downloaded. The database reaches 1914:year(Sys.Date())}
+
+\item{connection}{Object defining the \link[duckdb]{duckdb} connection. Typically made within \code{\link{compileDatabase}}.}
 
 \item{icesAreas}{ICES area shape \code{\link[sf]{st_polygon}} abject. Used for calculating the ICES area for a specific fishstation.}
 
@@ -22,15 +24,13 @@ downloadDatabase(
 
 \item{gearCodes}{a data.table object of NMD gear code list. Used to make gearname and gearcategory columns. See \code{\link{prepareGearList}}.}
 
-\item{overwrite}{Logical indicating whether existing information in the \code{dbName} should be downloaded again and overwritten.}
-
-\item{dbName}{Character string or \code{NULL}. If \code{NULL} uses the default names and overwrites the existing database.}
+\item{overwrite}{Logical indicating whether existing information in the \link[duckdb]{duckdb} database (\code{dbPath}) should be downloaded again and overwritten.}
 }
 \description{
-Downloads annual NMD data from the API and writes them as DuckDB database
+Downloads annual NMD data from the API and writes them as a DuckDB database
 }
 \details{
-The function downloads NMD data from the API per year, saves these in temp files, reformats them for the MonetDB and writes them into the database. Server mode (Eucleia docker or local) is automatically detected. Requires MonetDB installed and running on the computer.
+The function downloads NMD data from the API per year, saves these in temp files, reformats them for the DuckDB and writes them into the database.
 }
 \author{
 Ibrahim Umar, Mikko Vihtakari (Institute of Marine Research)
