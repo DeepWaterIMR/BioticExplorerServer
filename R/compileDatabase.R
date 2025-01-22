@@ -14,7 +14,7 @@
 # compileDatabase(years = 1914, dbName = "spedenpatukka", overwrite = TRUE)
 
 compileDatabase <- function(
-    years = 1900:data.table::year(Sys.time()), dbPath = "~/Documents/IMR_biotic_BES_database", 
+    years = 1900:data.table::year(Sys.time()), dbPath = "~/IMR_biotic_BES_database", 
     dbIndexFile = file.path(dbPath, "dbIndex.rda"), dbName = NULL, 
     overwrite = FALSE
 ) {
@@ -37,14 +37,15 @@ compileDatabase <- function(
   }
   
   ## Define dbName and dbIndexPath
-  
-  if(Sys.getenv(c("SERVER_MODE"))=="") {
-    dbHost <- "localhost"
-    if(is.null(dbName)) dbName <- "bioticexplorer"
-  } else {
-    dbHost <- "dbserver"
-    if(is.null(dbName)) dbName <- "bioticexplorer-next"
-  }
+
+  if(is.null(dbName)) dbName <- "bioticexplorer"  
+  # if(Sys.getenv(c("SERVER_MODE"))=="") {
+  #   dbHost <- "localhost"
+  #   if(is.null(dbName)) dbName <- "bioticexplorer"
+  # } else {
+  #   dbHost <- "dbserver"
+  #   if(is.null(dbName)) dbName <- "bioticexplorer-next"
+  # }
   
   con_db <- 
     try({DBI::dbConnect(

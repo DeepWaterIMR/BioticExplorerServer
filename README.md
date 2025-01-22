@@ -19,7 +19,7 @@ The BioticExplorerServer package (BES) downloads and compiles the IMR database i
 
 ``` r
 library(BioticExplorerServer)
-compileDatabase(dbPath = "~/Documents/IMR_biotic_BES_database") # default dbPath, written out to show it
+compileDatabase(dbPath = "~/IMR_biotic_BES_database") # default dbPath, written out to show it
 ```
 
 ### Update the database
@@ -29,12 +29,12 @@ Currently, the entire database must be re-downloaded to update it because IMR Bi
 
 ``` r
 library(BioticExplorerServer)
-compileDatabase(dbPath = "~/Documents/IMR_biotic_BES_database",
+compileDatabase(dbPath = "~/IMR_biotic_BES_database",
                 dbName = "bioticexplorer-next")
-unlink(normalizePath("~/Documents/IMR_biotic_BES_database/bioticexplorer.duckdb"))
+unlink(normalizePath("~/IMR_biotic_BES_database/bioticexplorer.duckdb"))
 file.rename(
-  normalizePath("~/Documents/IMR_biotic_BES_database/bioticexplorer-next.duckdb"),
-  normalizePath("~/Documents/IMR_biotic_BES_database/bioticexplorer.duckdb", 
+  normalizePath("~/IMR_biotic_BES_database/bioticexplorer-next.duckdb"),
+  normalizePath("~/IMR_biotic_BES_database/bioticexplorer.duckdb", 
                 mustWork = FALSE))
 ```
 
@@ -42,7 +42,7 @@ This process first downloads the database to a file named `bioticexplorer-next.d
 
 
 ``` r
-compileDatabase(dbPath = "~/Documents/IMR_biotic_BES_database", overwrite = TRUE)
+compileDatabase(dbPath = "~/IMR_biotic_BES_database", overwrite = TRUE)
 ```
 
 ### Uninstall the database
@@ -68,7 +68,7 @@ if (any(installed_packages == FALSE)) {
 invisible(lapply(packages, library, character.only = TRUE, quietly = TRUE))
 
 # Connect to the database (assuming you used standard dbPath and name)
-con_db <- "~/Documents/IMR_biotic_BES_database/bioticexplorer.duckdb" %>% 
+con_db <- "~/IMR_biotic_BES_database/bioticexplorer.duckdb" %>% 
   normalizePath() %>% 
   duckdb::duckdb(read_only = TRUE) %>% 
   DBI::dbConnect()
@@ -94,7 +94,7 @@ head(mission)
 
 ```
 ## # Source:   SQL [6 x 13]
-## # Database: DuckDB v1.1.3 [root@Darwin 24.2.0:R 4.4.1//Documents/IMR_biotic_BES_database/bioticexplorer.duckdb]
+## # Database: DuckDB v1.1.3 [root@Darwin 24.2.0:R 4.4.1//IMR_biotic_BES_database/bioticexplorer.duckdb]
 ##   startyear platformname               cruise missiontype platform missionnumber
 ##       <int> <chr>                      <chr>  <chr>       <chr>            <int>
 ## 1      1914 Ikke navngitte skip i kom… <NA>   1           1530                 1
@@ -152,6 +152,7 @@ If you get an error something like:
 > ...
 
 You likely have database connection with write privileges open elsewhere within your R session. DuckDB supports only one write connection, but multiple simultaneus read only connections can be established. Close the connections to the database:
+
 
 ``` r
 DBI::dbDisconnect(con_db)

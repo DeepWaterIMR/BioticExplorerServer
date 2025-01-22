@@ -9,7 +9,7 @@
 #' @export
 
 # dbPath = "~/Desktop/IMR_db.duckdb"; dbIndexFile = "~/Desktop/dbIndex.rda"
-indexDatabase <- function(connection, dbIndexFile = "~/Desktop/dbIndex.rda", 
+indexDatabase <- function(connection, dbIndexFile = "~/IMR_biotic_BES_database/dbIndex.rda", 
                           fileOnly = TRUE) {
   
   pb <- utils::txtProgressBar(max = 6, style = 3)

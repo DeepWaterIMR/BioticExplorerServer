@@ -6,7 +6,7 @@
 \usage{
 indexDatabase(
   connection,
-  dbIndexFile = "~/Desktop/dbIndex.rda",
+  dbIndexFile = "~/IMR_biotic_BES_database/dbIndex.rda",
   fileOnly = TRUE
 )
 }
