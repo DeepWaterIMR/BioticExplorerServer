@@ -1,4 +1,4 @@
-# BioticExplorer-Server
+# BioticExplorerServer
 **R Package for Downloading Server-Side Data for BioticExplorer**
 
 This package can be used to download IMR Biotic database and to place it into a [duckdb](https://duckdb.org/docs/api/r.html) database, providing access to all of the institute's Biotic data from R.
