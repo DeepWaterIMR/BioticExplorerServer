@@ -27,7 +27,7 @@ downloadDatabase <- function(years, connection, icesAreas = icesAreas, cruiseSer
       message(paste("Downloading:", h))
       
       dest <- tempfile(fileext = ".xml")
-      url <- paste0("http://tomcat7.imr.no:8080/apis/nmdapi/biotic/v3/", h, "/cache?version=3.1")
+      url <- paste0("https://biotic-api.hi.no/apis/nmdapi/biotic/v3/", h, "/cache?version=3.1")
       status <- suppressMessages(
         suppressWarnings(try(utils::download.file(url, dest), silent = TRUE))
       )

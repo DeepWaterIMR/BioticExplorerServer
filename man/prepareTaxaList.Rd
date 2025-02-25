@@ -4,7 +4,7 @@
 \alias{prepareTaxaList}
 \title{Prepare taxa list}
 \usage{
-prepareTaxaList(verbose = TRUE)
+prepareTaxaList(verbose = FALSE)
 }
 \arguments{
 \item{verbose}{Logical indicating whether the function should return status information as messages.}
