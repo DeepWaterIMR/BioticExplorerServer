@@ -7,9 +7,9 @@
 prepareTaxaList <- function(verbose = TRUE) {
   
   # Read gear list reference
-  if(verbose) message("Downloading http://tomcat7.imr.no:8080/apis/nmdapi/reference/v2/dataset/taxa?version=2.0...")
+  if(verbose) message("Downloading https://reference-api.hi.no/apis/nmdapi/reference/v2/dataset/taxa?version=2.0...")
   
-  doc <- xml2::read_xml("http://tomcat7.imr.no:8080/apis/nmdapi/reference/v2/dataset/taxa?version=2.0")
+  doc <- xml2::read_xml("https://reference-api.hi.no/apis/nmdapi/reference/v2/dataset/taxa?version=2.0")
   
   if(verbose) message("Merging tsn lists...")
   
