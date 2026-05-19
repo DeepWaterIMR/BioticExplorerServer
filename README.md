@@ -1,3 +1,14 @@
+---
+output: 
+  html_document: 
+    keep_md: yes
+editor_options: 
+  chunk_output_type: console
+---
+
+
+
+
 # BioticExplorerServer
 **R Package for Downloading Server-Side Data for BioticExplorer**
 
@@ -114,19 +125,30 @@ The [dplyr package can also be used with databases](https://solutions.posit.co/c
 
 
 ``` r
-stnall %>% 
-  filter(!is.na(cruise)) %>% 
-  collect() %>% 
+stnall %>%
+  filter(!is.na(cruise)) %>%
+  collect() %>%
   group_by(startyear) %>%
-  reframe(n = length(unique(paste(cruise, platformname, serialnumber)))) %>% 
+  reframe(n = length(unique(paste(cruise, platformname, serialnumber)))) %>%
   ggplot(aes(x = startyear, y = n)) +
-  geom_col() + 
-  labs(x = "Year", y = "Number of stations", 
-       title = "Number of sampling stations in IMR survey data over years") +
-  theme_classic()
+  geom_col() +
+  scale_x_continuous(breaks = seq(1910, 2020, by = 10), expand = c(0, 0)) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.05))) +
+  labs(
+    x = "Year",
+    y = "Number of stations",
+    title = "Number of sampling stations in IMR survey data over years"
+  ) +
+  theme_classic() +
+  theme(
+    panel.grid.major.y = element_line(color = "grey80", linewidth = 0.5),
+    panel.grid.minor.y = element_line(color = "grey90", linewidth = 0.25),
+    panel.grid.major.x = element_line(color = "grey80", linewidth = 0.25),
+    panel.grid.minor.x = element_line(color = "grey90", linewidth = 0.1)
+  )
 ```
 
-![Bar chart showing the number of IMR Biotic sampling stations per year from around 1914 to present.](man/figures/README-unnamed-chunk-8-1.png)
+<img src="man/figures/README-unnamed-chunk-8-1.png" alt="Bar chart showing the number of IMR Biotic sampling stations per year from around 1914 to present."  />
 
 The duckdb database contains following data tables:
 

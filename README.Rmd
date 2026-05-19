@@ -112,9 +112,20 @@ stnall %>%
   reframe(n = length(unique(paste(cruise, platformname, serialnumber)))) %>%
   ggplot(aes(x = startyear, y = n)) +
   geom_col() +
-  labs(x = "Year", y = "Number of stations",
-       title = "Number of sampling stations in IMR survey data over years") +
-  theme_classic()
+  scale_x_continuous(breaks = seq(1910, 2020, by = 10), expand = c(0, 0)) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.05))) +
+  labs(
+    x = "Year",
+    y = "Number of stations",
+    title = "Number of sampling stations in IMR survey data over years"
+  ) +
+  theme_classic() +
+  theme(
+    panel.grid.major.y = element_line(color = "grey80", linewidth = 0.5),
+    panel.grid.minor.y = element_line(color = "grey90", linewidth = 0.25),
+    panel.grid.major.x = element_line(color = "grey80", linewidth = 0.25),
+    panel.grid.minor.x = element_line(color = "grey90", linewidth = 0.1)
+  )
 ```
 
 The duckdb database contains following data tables:
