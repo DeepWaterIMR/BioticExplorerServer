@@ -1,14 +1,3 @@
----
-output: 
-  html_document: 
-    keep_md: yes
-editor_options: 
-  chunk_output_type: console
----
-
-
-
-
 # BioticExplorerServer
 **R Package for Downloading Server-Side Data for BioticExplorer**
 
