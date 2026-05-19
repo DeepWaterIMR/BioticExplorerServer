@@ -7,11 +7,12 @@ editor_options:
 ---
 
 ```{r, include = FALSE}
+knitr::opts_chunk$set(fig.path = "man/figures/README-")
 suppressPackageStartupMessages(library(tidyverse))
 ```
 
 
-# BioticExplorer-Server
+# BioticExplorerServer
 **R Package for Downloading Server-Side Data for BioticExplorer**
 
 [![Website](https://img.shields.io/badge/pkgdown-website-blue)](https://deepwaterimr.github.io/BioticExplorerServer/)
@@ -103,15 +104,15 @@ head(mission)
 
 The [dplyr package can also be used with databases](https://solutions.posit.co/connections/db/r-packages/dplyr/). The only difference from normal use is that you'll need to [`collect()`](https://dbplyr.tidyverse.org/reference/collapse.tbl_sql.html) the data from the database after filtering. Note that you are handling large amounts of data, and using the collect function incorrectly may cause your computer to crash due to insufficient RAM. Therefore, always filter before collecting and consider using [`compute()`](https://dbplyr.tidyverse.org/reference/collapse.tbl_sql.html) or use the [data.table](https://cran.r-project.org/web/packages/data.table/index.html) package, if you'll need to handle very large proportions of the IMR Biotic database. 
 
-```{r}
-stnall %>% 
-  filter(!is.na(cruise)) %>% 
-  collect() %>% 
+```{r, fig.alt = "Bar chart showing the number of IMR Biotic sampling stations per year from around 1914 to present."}
+stnall %>%
+  filter(!is.na(cruise)) %>%
+  collect() %>%
   group_by(startyear) %>%
-  reframe(n = length(unique(paste(cruise, platformname, serialnumber)))) %>% 
+  reframe(n = length(unique(paste(cruise, platformname, serialnumber)))) %>%
   ggplot(aes(x = startyear, y = n)) +
-  geom_col() + 
-  labs(x = "Year", y = "Number of stations", 
+  geom_col() +
+  labs(x = "Year", y = "Number of stations",
        title = "Number of sampling stations in IMR survey data over years") +
   theme_classic()
 ```

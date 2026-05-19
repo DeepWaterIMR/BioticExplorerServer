@@ -1,7 +1,9 @@
 # BioticExplorerServer
 **R Package for Downloading Server-Side Data for BioticExplorer**
 
-This package can be used to download IMR Biotic database and to place it into a [duckdb](https://duckdb.org/docs/api/r.html) database, providing access to all of the institute's Biotic data from R.
+[![Website](https://img.shields.io/badge/pkgdown-website-blue)](https://deepwaterimr.github.io/BioticExplorerServer/)
+
+This package downloads and compiles the IMR Biotic survey database into a [DuckDB](https://duckdb.org/docs/api/r.html) database, providing programmatic access to all of the institute's Biotic data from R. It serves as the data backend for the [BioticExplorer](https://github.com/DeepWaterIMR/BioticExplorer) Shiny application.
 
 ## Installation
 
@@ -93,19 +95,19 @@ head(mission)
 ```
 
 ```
-## # Source:   SQL [6 x 13]
-## # Database: DuckDB v1.1.3 [root@Darwin 24.2.0:R 4.4.1//IMR_biotic_BES_database/bioticexplorer.duckdb]
+## # Source:   SQL [?? x 14]
+## # Database: DuckDB 1.5.2 [root@Darwin 25.4.0:R 4.6.0//Users/a22357/IMR_biotic_BES_database/bioticexplorer.duckdb]
 ##   startyear platformname               cruise missiontype platform missionnumber
 ##       <int> <chr>                      <chr>  <chr>       <chr>            <int>
-## 1      1914 Ikke navngitte skip i kom… <NA>   1           1530                 1
-## 2      1916 Ikke navngitte skip i kom… <NA>   1           1530                 1
-## 3      1917 Ikke navngitte skip i kom… <NA>   1           1530                 1
-## 4      1918 Ikke navngitte skip i kom… <NA>   1           1530                 1
-## 5      1919 Ikke navngitte skip i kom… <NA>   1           1530                 1
-## 6      1919 Uspesifisert Norsk skip    19190… 4           4999                 1
-## # ℹ 7 more variables: missiontypename <chr>, callsignal <chr>,
+## 1      1906 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
+## 2      1907 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
+## 3      1908 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
+## 4      1909 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
+## 5      1910 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
+## 6      1911 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
+## # ℹ 8 more variables: missiontypename <chr>, callsignal <chr>,
 ## #   missionstartdate <chr>, missionstopdate <chr>, purpose <chr>,
-## #   missionid <chr>, cruiseseriescode <chr>
+## #   missionid <chr>, cruiseseriescode <chr>, idCruiseseriesSample <chr>
 ```
 
 The [dplyr package can also be used with databases](https://solutions.posit.co/connections/db/r-packages/dplyr/). The only difference from normal use is that you'll need to [`collect()`](https://dbplyr.tidyverse.org/reference/collapse.tbl_sql.html) the data from the database after filtering. Note that you are handling large amounts of data, and using the collect function incorrectly may cause your computer to crash due to insufficient RAM. Therefore, always filter before collecting and consider using [`compute()`](https://dbplyr.tidyverse.org/reference/collapse.tbl_sql.html) or use the [data.table](https://cran.r-project.org/web/packages/data.table/index.html) package, if you'll need to handle very large proportions of the IMR Biotic database. 
@@ -124,7 +126,7 @@ stnall %>%
   theme_classic()
 ```
 
-![](README_files/figure-html/unnamed-chunk-8-1.png)<!-- -->
+![Bar chart showing the number of IMR Biotic sampling stations per year from around 1914 to present.](man/figures/README-unnamed-chunk-8-1.png)
 
 The duckdb database contains following data tables:
 
