@@ -13,6 +13,14 @@ This package can be used to download IMR Biotic database and to place it into
 \details{
 The database can be downloaded and compiled using the \code{\link{compileDatabase}} function.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://deepwaterimr.github.io/BioticExplorerServer}
+  \item Report bugs at \url{https://github.com/DeepWaterIMR/BioticExplorerServer/issues}
+}
+
+}
 \author{
 \strong{Maintainer}: Mikko Vihtakari \email{mikko.vihtakari@hi.no}
 
