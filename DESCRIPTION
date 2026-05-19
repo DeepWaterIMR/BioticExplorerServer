@@ -17,6 +17,8 @@ Description: This package can be used to download the IMR Biotic database and
         Institute's Biotic data from R.
 Depends: R (>= 3.5)
 Imports: data.table, DBI, RstoxData, duckdb, dplyr, sf, xml2
+URL: https://deepwaterimr.github.io/BioticExplorerServer
+BugReports: https://github.com/DeepWaterIMR/BioticExplorerServer/issues
 License: GPL-3 | file LICENSE
 Encoding: UTF-8
 LazyData: true
