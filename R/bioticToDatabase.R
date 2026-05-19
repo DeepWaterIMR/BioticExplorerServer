@@ -147,12 +147,12 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = FALSE, 
   # Inddat
 
   inddat <- merge(stndat[, setdiff(names(stndat), c("purpose", "stationcomment", "catchcomment")), with = FALSE], ind, all.y = TRUE, by = intersect(names(stndat), names(ind)))
-
-  n_na_ind <- sum(is.na(inddat$commonname))
-  if (n_na_ind > 0) {
-    warning(paste(n_na_ind, "individual records could not be matched to a catch sample entry and will be excluded from indall. This may indicate a data quality issue in the source XML."))
-    inddat <- inddat[!is.na(commonname)]
-  }
+  inddat <- inddat[!is.na(commonname)]
+  
+  # n_na_ind <- sum(is.na(inddat$commonname))
+  # if (n_na_ind > 0) {
+  #   warning(paste(n_na_ind, "individual records could not be matched to a catch sample entry and will be excluded from indall. This may indicate a data quality issue in the source XML."))
+  # }
 
   # Agedat
 
