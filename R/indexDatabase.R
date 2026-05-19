@@ -1,8 +1,9 @@
 #' @title Index BioticExplorer database
 #' @description Loads BioticExplorer database and creates an index used by BioticExplorer to save processing time.
 #' @param fileOnly Logical indicating whether the result should only be saved to a file and not returned. If FALSE, no file is made and the result is returned instead.
-#' @inheritParams compileDatabase 
+#' @inheritParams compileDatabase
 #' @inheritParams downloadDatabase
+#' @return If \code{fileOnly = TRUE} (the default), saves the index to \code{dbIndexFile} and returns \code{NULL} invisibly. Otherwise returns a named list of pre-computed index values used by the BioticExplorer Shiny app.
 #' @import data.table DBI
 #' @rawNamespace import(dplyr, except = c(last, first, between))
 #' @author Mikko Vihtakari, Ibrahim Umar (Institute of Marine Research)

@@ -6,8 +6,11 @@
 \usage{
 prepareCruiseSeriesList()
 }
+\value{
+A \code{\link[data.table]{data.table}} with columns \code{cruise}, \code{platformname}, \code{startyear}, \code{cruiseseriescode}, and \code{name}.
+}
 \description{
-Prepares cruise series list using the IMR database API. Stored as data object in the package. Refreshes any new cruise codes. The function does not use any arguments.
+Downloads and compiles the cruise series reference list from the IMR API. The result is bundled as \code{\link{cruiseSeries}} package data. Run this function and save with \code{usethis::use_data(cruiseSeries, overwrite = TRUE)} to refresh the bundled data.
 }
 \author{
 Ibrahim Umar, Mikko Vihtakari

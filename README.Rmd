@@ -14,7 +14,9 @@ suppressPackageStartupMessages(library(tidyverse))
 # BioticExplorer-Server
 **R Package for Downloading Server-Side Data for BioticExplorer**
 
-This package can be used to download IMR Biotic database and to place it into a [duckdb](https://duckdb.org/docs/api/r.html) database, providing access to all of the institute's Biotic data from R.
+[![Website](https://img.shields.io/badge/pkgdown-website-blue)](https://deepwaterimr.github.io/BioticExplorerServer/)
+
+This package downloads and compiles the IMR Biotic survey database into a [DuckDB](https://duckdb.org/docs/api/r.html) database, providing programmatic access to all of the institute's Biotic data from R. It serves as the data backend for the [BioticExplorer](https://github.com/DeepWaterIMR/BioticExplorer) Shiny application.
 
 ## Installation
 

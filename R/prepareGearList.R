@@ -1,5 +1,6 @@
 #' @title Prepare gear list
-#' @description Prepares gear list using the IMR database API. Stored as data object in the package. Refreshes any new gear codes. The function does not use any arguments. 
+#' @description Downloads and compiles the gear code reference list from the IMR API. The result is bundled as \code{\link{gearList}} package data. Run this function and save with \code{usethis::use_data(gearList, overwrite = TRUE)} to refresh the bundled data.
+#' @return A \code{\link[data.table]{data.table}} with columns \code{code}, \code{gearname}, \code{gearcategory}, and \code{description}.
 #' @author Mikko Vihtakari, Ibrahim Umar
 #' @export
 

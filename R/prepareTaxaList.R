@@ -1,6 +1,7 @@
 #' @title Prepare taxa list
-#' @description Prepares taxa list using the IMR database API. Stored as data object in the package. Refreshes any new taxa codes. 
-#' @param verbose Logical indicating whether the function should return status information as messages.
+#' @description Downloads and compiles the taxa reference list from the IMR API. The result can be bundled as package data. Run this function and save with \code{usethis::use_data(taxaList, overwrite = TRUE)} to refresh the bundled data.
+#' @param verbose Logical indicating whether the function should print progress messages.
+#' @return A \code{\link[data.table]{data.table}} with columns \code{tsn} and \code{name} (plus additional synonym columns where available). Rows where \code{name} is \code{NA} are excluded.
 #' @author Mikko Vihtakari, Ibrahim Umar
 #' @export
 

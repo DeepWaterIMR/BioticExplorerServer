@@ -5,7 +5,8 @@
 #' @param cruiseSeries a data.table object of NMD cruise series list. Used to identify cruise series of a specific mission. See \code{\link{prepareCruiseSeriesList}}.
 #' @param gearCodes a data.table object of NMD gear code list. Used to make gearname and gearcategory columns. See \code{\link{prepareGearList}}.
 #' @inheritParams compileDatabase
-#' @details The function downloads NMD data from the API per year, saves these in temp files, reformats them for the DuckDB and writes them into the database. 
+#' @details The function downloads NMD data from the API per year, saves these in temp files, reformats them for the DuckDB and writes them into the database.
+#' @return Called for its side effects: appends parsed Biotic data to the DuckDB database. Returns \code{NULL} invisibly.
 #' @import data.table DBI
 #' @importFrom utils head
 #' @author Ibrahim Umar, Mikko Vihtakari (Institute of Marine Research)
@@ -45,24 +46,24 @@ downloadDatabase <- function(years, connection, icesAreas = NULL, cruiseSeries =
           )
           
           if(inherits(status, "try-error")) {
-            message("Download still failing. Shit connection to IMR servers; sitting in Tromsoe perhaps?. Trying once more...")
+            message("Download still failing. Trying once more...")
             status <- suppressMessages(
               suppressWarnings(try(utils::download.file(url, dest), silent = TRUE))
-            ) 
+            )
           }
-          
+
           if(inherits(status, "try-error")) {
-            message("Still no success. Your internet could also suck? Trying once more...")
+            message("Still no success. Trying once more...")
             status <- suppressMessages(
               suppressWarnings(try(utils::download.file(url, dest), silent = TRUE))
-            ) 
+            )
           }
-          
+
           if(inherits(status, "try-error")) {
             if(!is.na(file.info(dest)$size)) {
-              stop("Giving up...redownload failed. Could this be download timeout error? Current timeout ", getOption('timeout'),". Set a higher timeout limit using options(timeout = ...), or try again. Maybe it was just bad server connection as so often.")
+              stop("Giving up after 4 attempts. Could this be a download timeout? Current timeout: ", getOption('timeout'), " seconds. Set a higher limit with options(timeout = ...) and try again.")
             } else {
-              message("Olet spede! Painu vittuun.")
+              message(paste("Year", h, "not found from the database. Skipping..."))
             }
           } else {
             message("Redownload succeeded!")

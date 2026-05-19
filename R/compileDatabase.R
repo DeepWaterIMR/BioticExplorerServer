@@ -6,6 +6,7 @@
 #' @param dbName Character string or \code{NULL}. If \code{NULL} uses the default names ("bioticexploer"). 
 #' @param overwrite Logical indicating whether existing information in the \link[duckdb]{duckdb} database (\code{dbPath}) should be downloaded again and overwritten.
 #' @details Runs the \code{\link{prepareCruiseSeriesList}}, \code{\link{prepareGearList}}, \code{\link{downloadDatabase}} and \code{\link{indexDatabase}} functions, and saves the results into a \link[duckdb]{duckdb}. Be aware that running these functions requires access to the IMR intranet and reasonably stable internet. It is advisable to run the function in a separate R session or in a screen session in the terminal on Unix machines, as downloading the database takes several hours and requires a stable internet connection. If the connection is unstable, the function may return an error. In such cases, ensure that the connection is stable and rerun the function. The function should continue downloading from where it left off.
+#' @return Called for its side effects: creates and populates a DuckDB database and index file. Returns \code{NULL} invisibly.
 #' @import data.table
 #' @author Mikko Vihtakari, Ibrahim Umar (Institute of Marine Research)
 #' @export

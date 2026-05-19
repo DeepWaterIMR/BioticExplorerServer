@@ -1,9 +1,10 @@
-#' @title Download and parse NMD data for the BioticExplorer database
-#' @description Downloads annual NMD data from the API and writes them as MonetDB database
-#' @param dest Character string specifying the file path where the database should be downloaded to. 
-#' @param method,save Switches that do not make much sense at the moment. Leave them as they are.
+#' @title Download and parse NMD Biotic data to files
+#' @description Downloads annual NMD Biotic data from the API and saves them as XML and/or RDS files on disk. Unlike \code{\link{downloadDatabase}}, this function does not write to a DuckDB database.
+#' @param dest Character string specifying the folder path where downloaded files should be saved. Subdirectories \code{XMLfiles/} and \code{Rdata/} are created automatically.
+#' @param method Character string controlling what to do when a file already exists. \code{"compare"} (default) re-downloads and overwrites; \code{"keep"} skips existing files.
+#' @param save Character vector of output formats. Can include \code{"xml"} (raw XML, always saved) and/or \code{"rds"} (parsed \code{\link{bioticToDatabase}} output as RDS).
 #' @inheritParams downloadDatabase
-#' @details This function is scarily powerful. Do not run a large number of years unless you think you know what you are doing
+#' @return Called for its side effects: saves XML and/or RDS files to \code{dest}. Returns \code{NULL} invisibly.
 #' @import data.table
 #' @author Ibrahim Umar, Mikko Vihtakari (Institute of Marine Research)
 #' @export

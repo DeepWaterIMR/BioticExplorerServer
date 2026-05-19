@@ -6,8 +6,11 @@
 \usage{
 prepareGearList()
 }
+\value{
+A \code{\link[data.table]{data.table}} with columns \code{code}, \code{gearname}, \code{gearcategory}, and \code{description}.
+}
 \description{
-Prepares gear list using the IMR database API. Stored as data object in the package. Refreshes any new gear codes. The function does not use any arguments.
+Downloads and compiles the gear code reference list from the IMR API. The result is bundled as \code{\link{gearList}} package data. Run this function and save with \code{usethis::use_data(gearList, overwrite = TRUE)} to refresh the bundled data.
 }
 \author{
 Mikko Vihtakari, Ibrahim Umar

@@ -23,6 +23,9 @@ compileDatabase(
 
 \item{overwrite}{Logical indicating whether existing information in the \link[duckdb]{duckdb} database (\code{dbPath}) should be downloaded again and overwritten.}
 }
+\value{
+Called for its side effects: creates and populates a DuckDB database and index file. Returns \code{NULL} invisibly.
+}
 \description{
 Downloads, formulates and indexes IMR Biotic database into a format used by BioticExplorer
 }

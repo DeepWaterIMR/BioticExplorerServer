@@ -1,0 +1,55 @@
+template:
+  bootstrap: 5
+  bootswatch: cerulean
+  bslib:
+    primary: "#003399"
+
+url: https://deepwaterimr.github.io/BioticExplorerServer/
+
+reference:
+
+- title: Package documentation
+  desc: >
+    Quick access to the package documentation.
+  contents:
+  - BioticExplorerServer-package
+
+- title: Main workflow
+  desc: >
+    Functions to download and compile IMR Biotic survey data into a DuckDB database.
+    `compileDatabase()` is the main entry point and orchestrates the full workflow.
+    The other functions are called internally but can also be used independently.
+    All functions require IMR intranet access (VPN or HI-adm WiFi).
+  contents:
+  - compileDatabase
+  - downloadDatabase
+  - downloadDatabaseToFiles
+  - indexDatabase
+
+- title: Biotic data processing
+  desc: >
+    Functions to parse a single NMD Biotic XML file into R data tables.
+    Called internally by the download functions but can be used independently
+    to inspect or process individual XML files.
+  contents:
+  - bioticToDatabase
+  - print.bioticProcData
+
+- title: Reference data preparation
+  desc: >
+    Functions to download and refresh the bundled reference datasets from the IMR API.
+    Run these to update cruise series, gear codes, or taxa lists, then save the result
+    with `usethis::use_data(..., overwrite = TRUE)`.
+  contents:
+  - prepareCruiseSeriesList
+  - prepareGearList
+  - prepareTaxaList
+
+- title: Bundled datasets
+  desc: >
+    Reference datasets bundled with the package. Updated by running the
+    corresponding `prepare*()` functions.
+  contents:
+  - cruiseSeries
+  - gearList
+  - icesAreas

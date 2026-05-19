@@ -7,10 +7,13 @@
 prepareTaxaList(verbose = FALSE)
 }
 \arguments{
-\item{verbose}{Logical indicating whether the function should return status information as messages.}
+\item{verbose}{Logical indicating whether the function should print progress messages.}
+}
+\value{
+A \code{\link[data.table]{data.table}} with columns \code{tsn} and \code{name} (plus additional synonym columns where available). Rows where \code{name} is \code{NA} are excluded.
 }
 \description{
-Prepares taxa list using the IMR database API. Stored as data object in the package. Refreshes any new taxa codes.
+Downloads and compiles the taxa reference list from the IMR API. The result can be bundled as package data. Run this function and save with \code{usethis::use_data(taxaList, overwrite = TRUE)} to refresh the bundled data.
 }
 \author{
 Mikko Vihtakari, Ibrahim Umar

@@ -26,6 +26,9 @@ downloadDatabase(
 
 \item{overwrite}{Logical indicating whether existing information in the \link[duckdb]{duckdb} database (\code{dbPath}) should be downloaded again and overwritten.}
 }
+\value{
+Called for its side effects: appends parsed Biotic data to the DuckDB database. Returns \code{NULL} invisibly.
+}
 \description{
 Downloads annual NMD data from the API and writes them as a DuckDB database
 }
