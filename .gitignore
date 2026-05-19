@@ -48,3 +48,6 @@ vignettes/*.pdf
 # The html file
 README.html
 
+# Claude Code
+CLAUDE.md
+.claude/

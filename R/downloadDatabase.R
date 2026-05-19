@@ -12,7 +12,7 @@
 #' @export
 
 # years = 1914; connection = con_db; icesAreas = icesAreas; cruiseSeries = cruiseSeries; gearCodes = gearCodes; overwrite = FALSE
-downloadDatabase <- function(years, connection, icesAreas = icesAreas, cruiseSeries = cruiseSeries, gearCodes = gearCodes, overwrite = FALSE) {
+downloadDatabase <- function(years, connection, icesAreas = NULL, cruiseSeries = NULL, gearCodes = NULL, overwrite = FALSE) {
   
   timeStart <- Sys.time()
   

@@ -78,7 +78,7 @@ compileDatabase <- function(
     gearCodes <- prepareGearList()
   } else {
     gearCodes <- dplyr::collect(dplyr::tbl(con_db, "gearindex"))
-    message("Gead codes found from ", dbName, 
+    message("Gear codes found from ", dbName,
             ". The information was not rewritten. Delete the database or use the overwrite argument if you want to re-download the data.")
   }
   
@@ -91,7 +91,7 @@ compileDatabase <- function(
   
   message("3. Compiling database")
   downloadDatabase(
-      years = years, connection = con_db, icesAreas = icesAreas, 
+      years = years, connection = con_db,
       cruiseSeries = cruiseSeries, gearCodes = gearCodes, overwrite = overwrite)
   
   # Index

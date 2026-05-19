@@ -12,7 +12,7 @@
 # icesAreaShape = icesAreas; cruiseSeries = cruiseSeriesList; gearCodes = gearList
 # method = "compare", "keep", "update"
 # save = "xml", "rds", 
-downloadDatabaseToFiles <- function(years, dest, method = "compare", save = c("xml", "rds"), icesAreas = icesAreas, cruiseSeries = cruiseSeries, gearCodes = gearCodes) {
+downloadDatabaseToFiles <- function(years, dest, method = "compare", save = c("xml", "rds"), icesAreas = NULL, cruiseSeries = NULL, gearCodes = NULL) {
 
   if(!dir.exists(dest)) {
     
@@ -43,7 +43,7 @@ downloadDatabaseToFiles <- function(years, dest, method = "compare", save = c("x
       return("xml file already found. Method = keep. Skipping...")
     }
     
-    url <- paste0("http://tomcat7.imr.no:8080/apis/nmdapi/biotic/v3/", h, "/cache?version=3.1")
+    url <- paste0("https://biotic-api.hi.no/apis/nmdapi/biotic/v3/", h, "/cache?version=3.1")
     status <- suppressMessages(suppressWarnings(try(utils::download.file(url, paste0(file.path(dest, "XMLfiles"), "/", h, ".xml"), silent = TRUE))))
 
     if(inherits(status, "try-error")) {

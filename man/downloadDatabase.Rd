@@ -7,9 +7,9 @@
 downloadDatabase(
   years,
   connection,
-  icesAreas = icesAreas,
-  cruiseSeries = cruiseSeries,
-  gearCodes = gearCodes,
+  icesAreas = NULL,
+  cruiseSeries = NULL,
+  gearCodes = NULL,
   overwrite = FALSE
 )
 }

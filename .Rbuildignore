@@ -1,3 +1,5 @@
+^CLAUDE\.md$
+^\.claude$
 ^.*\.Rproj$
 ^\.Rproj\.user$
-README.*
+^\.positai$

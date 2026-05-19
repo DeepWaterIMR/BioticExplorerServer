@@ -10,9 +10,9 @@ bioticToDatabase(
   convertColumns = FALSE,
   returnOriginal = FALSE,
   missionidPrefix = NULL,
-  icesAreas = icesAreas,
-  cruiseSeries = cruiseSeries,
-  gearCodes = gearCodes
+  icesAreas = NULL,
+  cruiseSeries = NULL,
+  gearCodes = NULL
 )
 }
 \arguments{

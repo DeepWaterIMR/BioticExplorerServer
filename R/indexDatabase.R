@@ -12,7 +12,7 @@
 indexDatabase <- function(connection, dbIndexFile = "~/IMR_biotic_BES_database/dbIndex.rda", 
                           fileOnly = TRUE) {
   
-  pb <- utils::txtProgressBar(max = 6, style = 3)
+  pb <- utils::txtProgressBar(max = 7, style = 3)
   
   utils::setTxtProgressBar(pb, 1)
   
@@ -37,7 +37,7 @@ indexDatabase <- function(connection, dbIndexFile = "~/IMR_biotic_BES_database/d
   
   utils::setTxtProgressBar(pb, 3)
   
-  index$commonname <- rv$inputData$stnall %>% select(commonname) %>% distinct() %>% pull() %>% sort()
+  index$commonname <- rv$inputData$stnall %>% filter(!is.na(commonname)) %>% select(commonname) %>% distinct() %>% pull() %>% sort()
   index$platformname <- rv$inputData$stnall %>% select(platformname) %>% distinct() %>% pull() %>% sort()
   index$serialnumber <- rv$inputData$stnall %>% select(serialnumber) %>% distinct() %>% pull() %>% sort()
   index$gear <- rv$inputData$stnall %>% select(gear) %>% distinct() %>% pull() %>% sort()

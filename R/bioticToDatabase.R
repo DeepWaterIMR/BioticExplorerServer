@@ -15,12 +15,16 @@
 # Debugging parameters
 # removeEmpty = FALSE; convertColumns = FALSE; returnOriginal = FALSE; missionidPrefix = NULL
 # file = dest; missionidPrefix = h; icesAreaShape = icesAreaShape;
-bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = FALSE, returnOriginal = FALSE, missionidPrefix = NULL, icesAreas = icesAreas, cruiseSeries = cruiseSeries, gearCodes = gearCodes) {
-  
-  pb <- utils::txtProgressBar(max = 10, style = 3)
-  
+bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = FALSE, returnOriginal = FALSE, missionidPrefix = NULL, icesAreas = NULL, cruiseSeries = NULL, gearCodes = NULL) {
+
+  if (is.null(icesAreas)) icesAreas <- BioticExplorerServer::icesAreas
+  if (is.null(cruiseSeries)) cruiseSeries <- BioticExplorerServer::cruiseSeries
+  if (is.null(gearCodes)) gearCodes <- BioticExplorerServer::gearList
+
+  pb <- utils::txtProgressBar(max = 11, style = 3)
+
   ## Checks
-  
+
   if(!file.exists(file)) stop("file does not exist. Check your file path.")
   
   utils::setTxtProgressBar(pb, 1)
@@ -104,13 +108,6 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = FALSE, 
   
   stn <- merge(stn, gearCodes[,!names(gearCodes) %in% c("description"), with = FALSE], by.x = c("gear"), by.y = c("code"), all.x = TRUE, sort = FALSE)
   
-  ### Convert date columns
-  
-  # if (convertColumns) { # Fixes the time issue. Left here in case unforeseen consequences. 
-  #   #date.cols <- grep("date", names(stn), value = TRUE)
-  #   #stn[, eval(date.cols) := lapply(.SD, as.Date), .SDcols = eval(date.cols)]
-  # }
-  
   utils::setTxtProgressBar(pb, 4)
   
   ##________________
@@ -135,40 +132,42 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = FALSE, 
   
   utils::setTxtProgressBar(pb, 6)
   
-  # if (nrow(age) == 0) {
-  #   age <- rapply(age, as.integer, how = "replace")
-  # }
-  
   ## Compiled datasets ----
-  
+
   coredat <- merge(msn[, setdiff(names(msn), c("purpose")), with = FALSE], stn, by = intersect(names(msn), names(stn)), all = TRUE)
-  
+
   utils::setTxtProgressBar(pb, 7)
-  
+
   # Stndat
-  
-  stndat <- merge(coredat, cth, all.y = TRUE, by = c("missiontype", "missionnumber", "startyear", "platform", "serialnumber"))
-  stndat[is.na(commonname), commonname := "Empty"]
-  
+
+  stndat <- merge(coredat, cth, all = TRUE, by = c("missiontype", "missionnumber", "startyear", "platform", "serialnumber"))
+
   utils::setTxtProgressBar(pb, 8)
-  
+
   # Inddat
-  
+
   inddat <- merge(stndat[, setdiff(names(stndat), c("purpose", "stationcomment", "catchcomment")), with = FALSE], ind, all.y = TRUE, by = intersect(names(stndat), names(ind)))
-  
+
+  n_na_ind <- sum(is.na(inddat$commonname))
+  if (n_na_ind > 0) {
+    warning(paste(n_na_ind, "individual records could not be matched to a catch sample entry and will be excluded from indall. This may indicate a data quality issue in the source XML."))
+    inddat <- inddat[!is.na(commonname)]
+  }
+
   # Agedat
-  # age[,numberofreads:=length(age),.(startyear,platform,serialnumber,catchsampleid,specimenid)]
-  
-  agedat <- merge(inddat, age, by = intersect(names(inddat), names(age)), all.y = T)
-  agedat[,numberofreads:=length(age),.(startyear,platform,serialnumber,catchpartnumber,specimenid)]
-  
+
+  if (nrow(age) > 0) {
+    agedat <- merge(inddat, age, by = intersect(names(inddat), names(age)), all.y = TRUE)
+    agedat[, numberofreads := length(age), .(startyear, platform, serialnumber, catchpartnumber, specimenid)]
+  } else {
+    agedat <- inddat[0, ]
+  }
+
   # More inddat
-  
+
   inddat[is.na(preferredagereading), preferredagereading := 1]
-  
+
   inddat <- merge(inddat, age, by.x = c(intersect(names(inddat), names(age)), "preferredagereading"), by.y = c(intersect(names(inddat), names(age)), "agedeterminationid"), all.x = TRUE)
-  
-  if(sum(is.na(inddat$commonname)) > 0) stop(paste(sum(is.na(inddat$commonname)), "missing commonname records. This is likely due to merging error between individual and agedetermination data tables. File a bug report."))
   
   utils::setTxtProgressBar(pb, 9)
   
@@ -242,7 +241,7 @@ print.bioticProcData <- function(x, ...) {
   cat(sum(is.na(x$stnall$longitudestart) | is.na(x$stnall$latitudestart)))
   cat(NULL, sep = "\n")
   cat("Unique species: ", sep = "")
-  cat(sort(unique(x$stnall$commonname)), sep = ", ")
+  cat(sort(unique(x$stnall$commonname[!is.na(x$stnall$commonname)])), sep = ", ")
   cat(NULL, sep = "\n")
   cat(NULL, sep = "\n")
   

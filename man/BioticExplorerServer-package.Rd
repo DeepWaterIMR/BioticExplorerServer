@@ -18,6 +18,7 @@ The database can be downloaded and compiled using the \code{\link{compileDatabas
 
 Authors:
 \itemize{
+  \item Mikko Vihtakari \email{mikko.vihtakari@hi.no}
   \item Ibrahim Umar
   \item The Stox Project team
 }

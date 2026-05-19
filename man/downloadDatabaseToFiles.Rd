@@ -9,9 +9,9 @@ downloadDatabaseToFiles(
   dest,
   method = "compare",
   save = c("xml", "rds"),
-  icesAreas = icesAreas,
-  cruiseSeries = cruiseSeries,
-  gearCodes = gearCodes
+  icesAreas = NULL,
+  cruiseSeries = NULL,
+  gearCodes = NULL
 )
 }
 \arguments{
