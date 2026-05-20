@@ -1,12 +1,18 @@
+
 # BioticExplorerServer
+
 **R Package for Downloading Server-Side Data for BioticExplorer**
 
 [![Website](https://img.shields.io/badge/pkgdown-website-blue)](https://deepwaterimr.github.io/BioticExplorerServer/)
 
-This package downloads and compiles the IMR Biotic survey database into a [DuckDB](https://duckdb.org/docs/api/r.html) database, providing programmatic access to all of the institute's Biotic data from R. It serves as the data backend for the [BioticExplorer](https://github.com/DeepWaterIMR/BioticExplorer) Shiny application.
+This package downloads and compiles the IMR Biotic survey database into
+a [DuckDB](https://duckdb.org/docs/api/r.html) database, providing
+programmatic access to all of the institute’s Biotic data from R. It
+serves as the data backend for the
+[BioticExplorer](https://github.com/DeepWaterIMR/BioticExplorer) Shiny
+application.
 
 ## Installation
-
 
 ``` r
 remotes::install_github("DeepWaterIMR/BioticExplorerServer")
@@ -16,8 +22,27 @@ remotes::install_github("DeepWaterIMR/BioticExplorerServer")
 
 ### Download the IMR biotic database
 
-The BioticExplorerServer package (BES) downloads and compiles the IMR Biotic database into a [duckdb](https://cran.r-project.org/package=duckdb) database. The download requires stable intranet access (VPN, cable within the institute web or HI-adm WiFi). The **database requires more than 2 Gb of disk space**. Make sure to modify the `dbPath` argument to choose an appropriate location for the database. **Do not store it in a folder that is synced to the cloud** due to its size, and be mindful of the [institute's data policy](https://www.hi.no/resources/Data-policy-HI.pdf). While most of the data is licensed under NLOD (the governmental version of CCBY), **some external data within the database must not be shared outside the institute**. **By using this package, you accept the responsibility of handling the IMR Biotic data according to the licenses and regulations**. It is advisable to run the download command in a separate R session or in a screen session in the terminal on Unix machines, as downloading the database takes several hours and requires a stable internet connection. If the connection is unstable, the function may return an error. In such cases, ensure that the connection is stable and rerun the command. The function should continue downloading from where it left off.
-
+The BioticExplorerServer package (BES) downloads and compiles the IMR
+Biotic database into a
+[duckdb](https://cran.r-project.org/package=duckdb) database. The
+download requires stable intranet access (VPN, cable within the
+institute web or HI-adm WiFi). The **database requires more than 2 Gb of
+disk space**. Make sure to modify the `dbPath` argument to choose an
+appropriate location for the database. **Do not store it in a folder
+that is synced to the cloud** due to its size, and be mindful of the
+[institute’s data
+policy](https://www.hi.no/resources/Data-policy-HI.pdf). While most of
+the data is licensed under NLOD (the governmental version of CCBY),
+**some external data within the database must not be shared outside the
+institute**. **By using this package, you accept the responsibility of
+handling the IMR Biotic data according to the licenses and
+regulations**. It is advisable to run the download command in a separate
+R session or in a screen session in the terminal on Unix machines, as
+downloading the database takes several hours and requires a stable
+internet connection. If the connection is unstable, the function may
+return an error. In such cases, ensure that the connection is stable and
+rerun the command. The function should continue downloading from where
+it left off.
 
 ``` r
 library(BioticExplorerServer)
@@ -26,8 +51,9 @@ compileDatabase(dbPath = "~/IMR_biotic_BES_database") # default dbPath, written 
 
 ### Update the database
 
-Currently, the entire database must be re-downloaded to update it because IMR Biotic database does not have last modified tags. To update the database, you can do the following:
-
+Currently, the entire database must be re-downloaded to update it
+because IMR Biotic database does not have last modified tags. To update
+the database, you can do the following:
 
 ``` r
 library(BioticExplorerServer)
@@ -40,8 +66,12 @@ file.rename(
                 mustWork = FALSE))
 ```
 
-This process first downloads the database to a file named `bioticexplorer-next.duckdb`, then deletes the old database and renames `bioticexplorer-next.duckdb` to `bioticexplorer.duckdb`. Since downloading takes time, you can continue using the database in another R session while the download is in progress. If it is not a priority, you can also overwrite the existing database:
-
+This process first downloads the database to a file named
+`bioticexplorer-next.duckdb`, then deletes the old database and renames
+`bioticexplorer-next.duckdb` to `bioticexplorer.duckdb`. Since
+downloading takes time, you can continue using the database in another R
+session while the download is in progress. If it is not a priority, you
+can also overwrite the existing database:
 
 ``` r
 compileDatabase(dbPath = "~/IMR_biotic_BES_database", overwrite = TRUE)
@@ -49,12 +79,17 @@ compileDatabase(dbPath = "~/IMR_biotic_BES_database", overwrite = TRUE)
 
 ### Uninstall the database
 
-If you want to remove the database from your computer, simply delete the folder at the specified `dbPath`. Remember to empty your trash bin as well.
+If you want to remove the database from your computer, simply delete the
+folder at the specified `dbPath`. Remember to empty your trash bin as
+well.
 
 ### Control the database through R
 
-Once the database has been downloaded and saved to a [duckdb](https://cran.r-project.org/package=duckdb) database, you can use standard [DBI](https://cran.r-project.org/package=DBI) or [dplyr](https://cran.r-project.org/package=dplyr) functions to access it:
-
+Once the database has been downloaded and saved to a
+[duckdb](https://cran.r-project.org/package=duckdb) database, you can
+use standard [DBI](https://cran.r-project.org/package=DBI) or
+[dplyr](https://cran.r-project.org/package=dplyr) functions to access
+it:
 
 ``` r
 # Packages required to replicate the example:
@@ -89,47 +124,67 @@ gearlist <- dplyr::tbl(con_db, "gearindex") %>% collect() # gear index
 
 These data objects can now be used in R:
 
-
 ``` r
 head(mission)
 ```
 
-```
-## # Source:   SQL [?? x 14]
-## # Database: DuckDB 1.5.2 [root@Darwin 25.4.0:R 4.6.0//Users/a22357/IMR_biotic_BES_database/bioticexplorer.duckdb]
-##   startyear platformname               cruise missiontype platform missionnumber
-##       <int> <chr>                      <chr>  <chr>       <chr>            <int>
-## 1      1906 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
-## 2      1907 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
-## 3      1908 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
-## 4      1909 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
-## 5      1910 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
-## 6      1911 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
-## # ℹ 8 more variables: missiontypename <chr>, callsignal <chr>,
-## #   missionstartdate <chr>, missionstopdate <chr>, purpose <chr>,
-## #   missionid <chr>, cruiseseriescode <chr>, idCruiseseriesSample <chr>
-```
+    ## # Source:   SQL [?? x 14]
+    ## # Database: DuckDB 1.5.2 [root@Darwin 25.4.0:R 4.6.0//Users/a22357/IMR_biotic_BES_database/bioticexplorer.duckdb]
+    ##   startyear platformname               cruise missiontype platform missionnumber
+    ##       <int> <chr>                      <chr>  <chr>       <chr>            <int>
+    ## 1      1906 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
+    ## 2      1907 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
+    ## 3      1908 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
+    ## 4      1909 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
+    ## 5      1910 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
+    ## 6      1911 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
+    ## # ℹ 8 more variables: missiontypename <chr>, callsignal <chr>,
+    ## #   missionstartdate <chr>, missionstopdate <chr>, purpose <chr>,
+    ## #   missionid <chr>, cruiseseriescode <chr>, idCruiseseriesSample <chr>
 
-The [dplyr package can also be used with databases](https://solutions.posit.co/connections/db/r-packages/dplyr/). The only difference from normal use is that you'll need to [`collect()`](https://dbplyr.tidyverse.org/reference/collapse.tbl_sql.html) the data from the database after filtering. Note that you are handling large amounts of data, and using the collect function incorrectly may cause your computer to crash due to insufficient RAM. Therefore, always filter before collecting and consider using [`compute()`](https://dbplyr.tidyverse.org/reference/collapse.tbl_sql.html) or use the [data.table](https://cran.r-project.org/web/packages/data.table/index.html) package, if you'll need to handle very large proportions of the IMR Biotic database. 
-
+The [dplyr package can also be used with
+databases](https://solutions.posit.co/connections/db/r-packages/dplyr/).
+The only difference from normal use is that you’ll need to
+[`collect()`](https://dbplyr.tidyverse.org/reference/collapse.tbl_sql.html)
+the data from the database after filtering. Note that you are handling
+large amounts of data, and using the collect function incorrectly may
+cause your computer to crash due to insufficient RAM. Therefore, always
+filter before collecting and consider using
+[`compute()`](https://dbplyr.tidyverse.org/reference/collapse.tbl_sql.html)
+or use the
+[data.table](https://cran.r-project.org/web/packages/data.table/index.html)
+package, if you’ll need to handle very large proportions of the IMR
+Biotic database. Stations with no catch (i.e., where `commonname` is NA)
+can be now found by `stnall |> filter(!is.na(commonname))` (Figure 1).
 
 ``` r
 stnall %>%
   filter(!is.na(cruise)) %>%
   collect() %>%
   group_by(startyear) %>%
-  reframe(n = length(unique(paste(cruise, platformname, serialnumber)))) %>%
-  ggplot(aes(x = startyear, y = n)) +
-  geom_col() +
+  reframe(
+    n = length(unique(paste(cruise, platformname, serialnumber))),
+    zero_catch = length(unique(paste(cruise, platformname, serialnumber)[is.na(
+      commonname
+    )]))
+  ) %>%
+  mutate(n = n - zero_catch) %>%
+  rename(Positive = n, Zero = zero_catch) %>%
+  pivot_longer(cols = c(Positive, Zero), names_to = "type", values_to = "n") %>%
+  ggplot() +
+  geom_col(aes(x = startyear, y = n, fill = type)) +
+  scale_fill_manual(values = c("Positive" = "grey", "Zero" = "#C99A9A")) +
   scale_x_continuous(breaks = seq(1910, 2020, by = 10), expand = c(0, 0)) +
   scale_y_continuous(expand = expansion(mult = c(0, 0.05))) +
   labs(
     x = "Year",
     y = "Number of stations",
-    title = "Number of sampling stations in IMR survey data over years"
+    title = "Number of sampling stations in IMR survey data over years",
+    fill = "Catch type"
   ) +
   theme_classic() +
   theme(
+    legend.position = "bottom",
     panel.grid.major.y = element_line(color = "grey80", linewidth = 0.5),
     panel.grid.minor.y = element_line(color = "grey90", linewidth = 0.25),
     panel.grid.major.x = element_line(color = "grey80", linewidth = 0.25),
@@ -137,38 +192,49 @@ stnall %>%
   )
 ```
 
-<img src="man/figures/README-unnamed-chunk-8-1.png" alt="Bar chart showing the number of IMR Biotic sampling stations per year from around 1914 to present."  />
+<div class="figure">
+
+<img src="man/figures/README-unnamed-chunk-8-1.png" alt="Figure 1. Number of IMR Biotic sampling stations per year from around 1914 to present. Zero catch stations (is.na(commonname)) are shown in red, while stations with positive catches are shown in grey."  />
+<p class="caption">
+
+Figure 1. Number of IMR Biotic sampling stations per year from around
+1914 to present. Zero catch stations (is.na(commonname)) are shown in
+red, while stations with positive catches are shown in grey.
+</p>
+
+</div>
 
 The duckdb database contains following data tables:
-
 
 ``` r
 DBI::dbListTables(con_db)
 ```
 
-```
-## [1] "ageall"    "csindex"   "filesize"  "gearindex" "indall"    "metadata" 
-## [7] "mission"   "stnall"
-```
+    ## [1] "ageall"    "csindex"   "filesize"  "gearindex" "indall"    "metadata" 
+    ## [7] "mission"   "stnall"
 
 ### Explore the database using Biotic Explorer shiny app
 
-Once downloaded, you can also use the database through the [Biotic Explorer](https://github.com/DeepWaterIMR/BioticExplorer) shiny app. 
+Once downloaded, you can also use the database through the [Biotic
+Explorer](https://github.com/DeepWaterIMR/BioticExplorer) shiny app.
 
 ## Troubleshooting
 
 If you get an error something like:
 
-> Error:
-> ! error in evaluating the argument 'drv' in selecting a method for function 'dbConnect':
-> rapi_startup: Failed to open database: {"exception_type":"IO","exception_message":"Could not set lock on file
-> ...
+> Error: ! error in evaluating the argument ‘drv’ in selecting a method
+> for function ‘dbConnect’: rapi_startup: Failed to open database:
+> {“exception_type”:“IO”,“exception_message”:“Could not set lock on file
+> …
 
-You likely have database connection with write privileges open elsewhere within your R session. DuckDB supports only one write connection, but multiple simultaneus read only connections can be established. Close the connections to the database:
-
+You likely have database connection with write privileges open elsewhere
+within your R session. DuckDB supports only one write connection, but
+multiple simultaneus read only connections can be established. Close the
+connections to the database:
 
 ``` r
 DBI::dbDisconnect(con_db)
 ```
 
-and connect to the database in read only mode: `duckdb::duckdb(read_only = TRUE)`.
+and connect to the database in read only mode:
+`duckdb::duckdb(read_only = TRUE)`.

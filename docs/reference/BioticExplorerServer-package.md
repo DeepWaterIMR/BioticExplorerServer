@@ -10,6 +10,15 @@ The database can be downloaded and compiled using the
 [`compileDatabase`](https://deepwaterimr.github.io/BioticExplorerServer/reference/compileDatabase.md)
 function.
 
+## See also
+
+Useful links:
+
+- <https://deepwaterimr.github.io/BioticExplorerServer>
+
+- Report bugs at
+  <https://github.com/DeepWaterIMR/BioticExplorerServer/issues>
+
 ## Author
 
 **Maintainer**: Mikko Vihtakari <mikko.vihtakari@hi.no>

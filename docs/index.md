@@ -23,13 +23,14 @@ remotes::install_github("DeepWaterIMR/BioticExplorerServer")
 ### Download the IMR biotic database
 
 The BioticExplorerServer package (BES) downloads and compiles the IMR
-database into a [duckdb](https://cran.r-project.org/package=duckdb)
-database. The download requires stable intranet access (VPN, cable
-within the institute web or HI-adm WiFi). The **database requires more
-than 2 Gb of disk space**. Make sure to modify the `dbPath` argument to
-choose an appropriate location for the database. **Do not store it in a
-folder that is synced to the cloud** due to its size, and be mindful of
-the [institute’s data
+Biotic database into a
+[duckdb](https://cran.r-project.org/package=duckdb) database. The
+download requires stable intranet access (VPN, cable within the
+institute web or HI-adm WiFi). The **database requires more than 2 Gb of
+disk space**. Make sure to modify the `dbPath` argument to choose an
+appropriate location for the database. **Do not store it in a folder
+that is synced to the cloud** due to its size, and be mindful of the
+[institute’s data
 policy](https://www.hi.no/resources/Data-policy-HI.pdf). While most of
 the data is licensed under NLOD (the governmental version of CCBY),
 **some external data within the database must not be shared outside the
@@ -132,19 +133,21 @@ These data objects can now be used in R:
 head(mission)
 ```
 
-    ## # Source:   SQL [?? x 14]
-    ## # Database: DuckDB 1.5.2 [root@Darwin 25.4.0:R 4.6.0//Users/a22357/IMR_biotic_BES_database/bioticexplorer.duckdb]
-    ##   startyear platformname               cruise missiontype platform missionnumber
-    ##       <int> <chr>                      <chr>  <chr>       <chr>            <int>
-    ## 1      1906 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
-    ## 2      1907 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
-    ## 3      1908 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
-    ## 4      1909 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
-    ## 5      1910 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
-    ## 6      1911 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
-    ## # ℹ 8 more variables: missiontypename <chr>, callsignal <chr>,
-    ## #   missionstartdate <chr>, missionstopdate <chr>, purpose <chr>,
-    ## #   missionid <chr>, cruiseseriescode <chr>, idCruiseseriesSample <chr>
+``` R
+## # Source:   SQL [?? x 14]
+## # Database: DuckDB 1.5.2 [root@Darwin 25.4.0:R 4.6.0//Users/a22357/IMR_biotic_BES_database/bioticexplorer.duckdb]
+##   startyear platformname               cruise missiontype platform missionnumber
+##       <int> <chr>                      <chr>  <chr>       <chr>            <int>
+## 1      1906 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
+## 2      1907 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
+## 3      1908 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
+## 4      1909 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
+## 5      1910 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
+## 6      1911 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
+## # ℹ 8 more variables: missiontypename <chr>, callsignal <chr>,
+## #   missionstartdate <chr>, missionstopdate <chr>, purpose <chr>,
+## #   missionid <chr>, cruiseseriescode <chr>, idCruiseseriesSample <chr>
+```
 
 The [dplyr package can also be used with
 databases](https://solutions.posit.co/connections/db/r-packages/dplyr/).
@@ -158,7 +161,8 @@ filter before collecting and consider using
 or use the
 [data.table](https://cran.r-project.org/web/packages/data.table/index.html)
 package, if you’ll need to handle very large proportions of the IMR
-Biotic database.
+Biotic database. Stations with no catch (i.e., where `commonname` is NA)
+can be now found by `stnall |> filter(!is.na(commonname))` (Figure 1).
 
 ``` r
 
@@ -166,18 +170,29 @@ stnall %>%
   filter(!is.na(cruise)) %>%
   collect() %>%
   group_by(startyear) %>%
-  reframe(n = length(unique(paste(cruise, platformname, serialnumber)))) %>%
-  ggplot(aes(x = startyear, y = n)) +
-  geom_col() +
+  reframe(
+    n = length(unique(paste(cruise, platformname, serialnumber))),
+    zero_catch = length(unique(paste(cruise, platformname, serialnumber)[is.na(
+      commonname
+    )]))
+  ) %>%
+  mutate(n = n - zero_catch) %>%
+  rename(Positive = n, Zero = zero_catch) %>%
+  pivot_longer(cols = c(Positive, Zero), names_to = "type", values_to = "n") %>%
+  ggplot() +
+  geom_col(aes(x = startyear, y = n, fill = type)) +
+  scale_fill_manual(values = c("Positive" = "grey", "Zero" = "#C99A9A")) +
   scale_x_continuous(breaks = seq(1910, 2020, by = 10), expand = c(0, 0)) +
   scale_y_continuous(expand = expansion(mult = c(0, 0.05))) +
   labs(
     x = "Year",
     y = "Number of stations",
-    title = "Number of sampling stations in IMR survey data over years"
+    title = "Number of sampling stations in IMR survey data over years",
+    fill = "Catch type"
   ) +
   theme_classic() +
   theme(
+    legend.position = "bottom",
     panel.grid.major.y = element_line(color = "grey80", linewidth = 0.5),
     panel.grid.minor.y = element_line(color = "grey90", linewidth = 0.25),
     panel.grid.major.x = element_line(color = "grey80", linewidth = 0.25),
@@ -185,9 +200,14 @@ stnall %>%
   )
 ```
 
-![Bar chart showing the number of IMR Biotic sampling stations per year
-from around 1914 to
-present.](reference/figures/README-unnamed-chunk-8-1.png)
+![Figure 1. Number of IMR Biotic sampling stations per year from around
+1914 to present. Zero catch stations (is.na(commonname)) are shown in
+red, while stations with positive catches are shown in
+grey.](reference/figures/README-unnamed-chunk-8-1.png)
+
+Figure 1. Number of IMR Biotic sampling stations per year from around
+1914 to present. Zero catch stations (is.na(commonname)) are shown in
+red, while stations with positive catches are shown in grey.
 
 The duckdb database contains following data tables:
 
@@ -196,8 +216,10 @@ The duckdb database contains following data tables:
 DBI::dbListTables(con_db)
 ```
 
-    ## [1] "ageall"    "csindex"   "filesize"  "gearindex" "indall"    "metadata"
-    ## [7] "mission"   "stnall"
+``` R
+## [1] "ageall"    "csindex"   "filesize"  "gearindex" "indall"    "metadata" 
+## [7] "mission"   "stnall"
+```
 
 ### Explore the database using Biotic Explorer shiny app
 

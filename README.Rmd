@@ -1,8 +1,8 @@
 ---
-output: 
-  html_document: 
-    keep_md: yes
-editor_options: 
+output:
+  github_document:
+    html_preview: true
+editor_options:
   chunk_output_type: console
 ---
 
@@ -102,25 +102,36 @@ These data objects can now be used in R:
 head(mission)
 ```
 
-The [dplyr package can also be used with databases](https://solutions.posit.co/connections/db/r-packages/dplyr/). The only difference from normal use is that you'll need to [`collect()`](https://dbplyr.tidyverse.org/reference/collapse.tbl_sql.html) the data from the database after filtering. Note that you are handling large amounts of data, and using the collect function incorrectly may cause your computer to crash due to insufficient RAM. Therefore, always filter before collecting and consider using [`compute()`](https://dbplyr.tidyverse.org/reference/collapse.tbl_sql.html) or use the [data.table](https://cran.r-project.org/web/packages/data.table/index.html) package, if you'll need to handle very large proportions of the IMR Biotic database. 
+The [dplyr package can also be used with databases](https://solutions.posit.co/connections/db/r-packages/dplyr/). The only difference from normal use is that you'll need to [`collect()`](https://dbplyr.tidyverse.org/reference/collapse.tbl_sql.html) the data from the database after filtering. Note that you are handling large amounts of data, and using the collect function incorrectly may cause your computer to crash due to insufficient RAM. Therefore, always filter before collecting and consider using [`compute()`](https://dbplyr.tidyverse.org/reference/collapse.tbl_sql.html) or use the [data.table](https://cran.r-project.org/web/packages/data.table/index.html) package, if you'll need to handle very large proportions of the IMR Biotic database. Stations with no catch (i.e., where `commonname` is NA) can be now found by `stnall |> filter(!is.na(commonname))` (Figure 1). 
 
-```{r, fig.alt = "Bar chart showing the number of IMR Biotic sampling stations per year from around 1914 to present."}
+```{r, fig.cap = "Figure 1. Number of IMR Biotic sampling stations per year from around 1914 to present. Zero catch stations (is.na(commonname)) are shown in red, while stations with positive catches are shown in grey.", fig.alt = "Figure 1. Number of IMR Biotic sampling stations per year from around 1914 to present. Zero catch stations (is.na(commonname)) are shown in red, while stations with positive catches are shown in grey."}
 stnall %>%
   filter(!is.na(cruise)) %>%
   collect() %>%
   group_by(startyear) %>%
-  reframe(n = length(unique(paste(cruise, platformname, serialnumber)))) %>%
-  ggplot(aes(x = startyear, y = n)) +
-  geom_col() +
+  reframe(
+    n = length(unique(paste(cruise, platformname, serialnumber))),
+    zero_catch = length(unique(paste(cruise, platformname, serialnumber)[is.na(
+      commonname
+    )]))
+  ) %>%
+  mutate(n = n - zero_catch) %>%
+  rename(Positive = n, Zero = zero_catch) %>%
+  pivot_longer(cols = c(Positive, Zero), names_to = "type", values_to = "n") %>%
+  ggplot() +
+  geom_col(aes(x = startyear, y = n, fill = type)) +
+  scale_fill_manual(values = c("Positive" = "grey", "Zero" = "#C99A9A")) +
   scale_x_continuous(breaks = seq(1910, 2020, by = 10), expand = c(0, 0)) +
   scale_y_continuous(expand = expansion(mult = c(0, 0.05))) +
   labs(
     x = "Year",
     y = "Number of stations",
-    title = "Number of sampling stations in IMR survey data over years"
+    title = "Number of sampling stations in IMR survey data over years",
+    fill = "Catch type"
   ) +
   theme_classic() +
   theme(
+    legend.position = "bottom",
     panel.grid.major.y = element_line(color = "grey80", linewidth = 0.5),
     panel.grid.minor.y = element_line(color = "grey90", linewidth = 0.25),
     panel.grid.major.x = element_line(color = "grey80", linewidth = 0.25),
