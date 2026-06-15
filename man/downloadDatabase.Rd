@@ -10,6 +10,7 @@ downloadDatabase(
   icesAreas = NULL,
   cruiseSeries = NULL,
   gearCodes = NULL,
+  taxaList = NULL,
   overwrite = FALSE
 )
 }
@@ -24,6 +25,8 @@ downloadDatabase(
 
 \item{gearCodes}{a data.table object of NMD gear code list. Used to make gearname and gearcategory columns. See \code{\link{prepareGearList}}.}
 
+\item{taxaList}{a data.table object of NMD taxa reference data. Written to the \code{taxaindex} DuckDB table. See \code{\link{prepareTaxaList}}.}
+
 \item{overwrite}{Logical indicating whether existing information in the \link[duckdb]{duckdb} database (\code{dbPath}) should be downloaded again and overwritten.}
 }
 \value{
@@ -33,7 +36,7 @@ Called for its side effects: appends parsed Biotic data to the DuckDB database. 
 Downloads annual NMD data from the API and writes them as a DuckDB database
 }
 \details{
-The function downloads NMD data from the API per year, saves these in temp files, reformats them for the DuckDB and writes them into the database.
+The function writes the taxa reference list to the database, downloads NMD data from the API per year, saves these in temp files, reformats them for the DuckDB and writes them into the database.
 }
 \author{
 Ibrahim Umar, Mikko Vihtakari (Institute of Marine Research)

@@ -35,12 +35,16 @@ IMR NMD API (XML)
 downloadDatabase()      ← called per year inside compileDatabase()
        │
        ▼
+downloadDatabase()      ← writes taxaindex prepared by prepareTaxaList()
+       │
+       ▼
 bioticToDatabase()      ← parses XML via RstoxData::readXmlFile(), merges
        │                   mission/station/catchsample/individual/age tables,
        │                   adds ICES area (spatial join via sf),
        │                   adds gear category (lookup via gearCodes)
        ▼
-DuckDB tables: mission, stnall, indall, ageall, filesize, metadata
+DuckDB tables: mission, stnall, indall, ageall, filesize, metadata,
+               csindex, gearindex, taxaindex
        │
        ▼
 indexDatabase()         ← creates dbIndex.rda for BioticExplorer Shiny app
@@ -48,15 +52,17 @@ indexDatabase()         ← creates dbIndex.rda for BioticExplorer Shiny app
 
 ### Main Entry Point
 
-`compileDatabase()` orchestrates the full workflow. It calls `prepareCruiseSeriesList()` and `prepareGearList()` for reference data, then loops over years calling `downloadDatabase()`, and finally calls `indexDatabase()`. The database typically takes several hours to compile from scratch and requires >2 GB of disk space.
+`compileDatabase()` orchestrates the full workflow. It calls `prepareCruiseSeriesList()`, `prepareGearList()`, and `prepareTaxaList()` for reference data, then loops over years calling `downloadDatabase()`, and finally calls `indexDatabase()`. The database typically takes several hours to compile from scratch and requires >2 GB of disk space.
 
 ### Key Design Points
 
 - **DuckDB connection**: Only one write connection is allowed at a time; read-only connections can coexist. The connection is passed explicitly between functions (not stored globally).
 - **S3 class**: `bioticToDatabase()` returns a `bioticProcData` object with a custom `print` method. The main tables are `$stnall`, `$indall`, `$ageall`, `$mission`.
+- **Reference tables**: `csindex`, `gearindex`, and `taxaindex` are written to DuckDB. `compileDatabase()` writes `csindex` and `gearindex`; `downloadDatabase()` writes `taxaindex` and also ensures it exists for callers that bypass `compileDatabase()`.
 - **Bundled reference data**: `data/cruiseSeries.rda`, `data/gearList.rda`, and `data/icesAreas.rda` are pre-compiled and loaded automatically. They are updated by running `prepareCruiseSeriesList()`, `prepareGearList()`, and `prepareICESareas()` respectively, then saved with `usethis::use_data(..., overwrite = TRUE)`.
 - **Network retries**: `downloadDatabase()` retries failed downloads up to 4 times before giving up on a year.
 - **Timeout**: `zzz.R` sets `options(timeout = 3000)` on package attach to handle large XML downloads.
+- **Privacy**: Do not commit generated docs or examples that include absolute local paths, usernames, database locations, credentials, or other machine-specific output.
 
 ### API Endpoints
 
@@ -71,4 +77,5 @@ stnall  <- dplyr::tbl(con, "stnall")   # station-level data (lazy)
 indall  <- dplyr::tbl(con, "indall")   # individual fish measurements (lazy)
 ageall  <- dplyr::tbl(con, "ageall")   # age readings (lazy)
 mission <- dplyr::tbl(con, "mission")  # cruise/mission metadata (lazy)
+taxaindex <- dplyr::tbl(con, "taxaindex") # taxa reference data (lazy)
 ```

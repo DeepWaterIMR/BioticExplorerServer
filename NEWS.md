@@ -1,3 +1,11 @@
+# BioticExplorerServer 0.6.0
+
+*2026-06-15*
+
+- Added taxa reference export to DuckDB as the `taxaindex` table through `downloadDatabase()`.
+- Updated database examples and agent guidance for the taxa index.
+- Removed generated documentation output that exposed local machine-specific database paths.
+
 # BioticExplorerServer 0.5.0
 
 *2026-05-19*

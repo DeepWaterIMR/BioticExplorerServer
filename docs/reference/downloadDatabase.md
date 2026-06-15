@@ -12,6 +12,7 @@ downloadDatabase(
   icesAreas = NULL,
   cruiseSeries = NULL,
   gearCodes = NULL,
+  taxaList = NULL,
   overwrite = FALSE
 )
 ```
@@ -48,6 +49,12 @@ downloadDatabase(
   gearcategory columns. See
   [`prepareGearList`](https://deepwaterimr.github.io/BioticExplorerServer/reference/prepareGearList.md).
 
+- taxaList:
+
+  a data.table object of NMD taxa reference data. Written to the
+  `taxaindex` DuckDB table. See
+  [`prepareTaxaList`](https://deepwaterimr.github.io/BioticExplorerServer/reference/prepareTaxaList.md).
+
 - overwrite:
 
   Logical indicating whether existing information in the
@@ -61,9 +68,9 @@ database. Returns `NULL` invisibly.
 
 ## Details
 
-The function downloads NMD data from the API per year, saves these in
-temp files, reformats them for the DuckDB and writes them into the
-database.
+The function writes the taxa reference list to the database, downloads
+NMD data from the API per year, saves these in temp files, reformats
+them for the DuckDB and writes them into the database.
 
 ## Author
 

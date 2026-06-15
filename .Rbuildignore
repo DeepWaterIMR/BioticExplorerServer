@@ -18,3 +18,4 @@
 ^\.positai$
 ^\.claude$
 ^CLAUDE\.md$
+^AGENTS\.md$

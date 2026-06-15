@@ -120,6 +120,7 @@ meta <- dplyr::tbl(con_db, "metadata") %>% # time of download
   collect() %>% mutate_all(as.POSIXct)
 csindex <- dplyr::tbl(con_db, "csindex") # cruise series index
 gearlist <- dplyr::tbl(con_db, "gearindex") %>% collect() # gear index
+taxalist <- dplyr::tbl(con_db, "taxaindex") %>% collect() # taxa index
 ```
 
 These data objects can now be used in R:
@@ -129,7 +130,7 @@ head(mission)
 ```
 
     ## # Source:   SQL [?? x 14]
-    ## # Database: DuckDB 1.5.2 [root@Darwin 25.4.0:R 4.6.0//Users/a22357/IMR_biotic_BES_database/bioticexplorer.duckdb]
+    ## # Database: DuckDB 1.5.2 [root@Darwin 25.4.0:R 4.6.0/path/to/IMR_biotic_BES_database/bioticexplorer.duckdb]
     ##   startyear platformname               cruise missiontype platform missionnumber
     ##       <int> <chr>                      <chr>  <chr>       <chr>            <int>
     ## 1      1906 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
@@ -211,7 +212,7 @@ DBI::dbListTables(con_db)
 ```
 
     ## [1] "ageall"    "csindex"   "filesize"  "gearindex" "indall"    "metadata" 
-    ## [7] "mission"   "stnall"
+    ## [7] "mission"   "stnall"    "taxaindex"
 
 ### Explore the database using Biotic Explorer shiny app
 

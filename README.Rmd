@@ -94,6 +94,7 @@ meta <- dplyr::tbl(con_db, "metadata") %>% # time of download
   collect() %>% mutate_all(as.POSIXct)
 csindex <- dplyr::tbl(con_db, "csindex") # cruise series index
 gearlist <- dplyr::tbl(con_db, "gearindex") %>% collect() # gear index
+taxalist <- dplyr::tbl(con_db, "taxaindex") %>% collect() # taxa index
 ```
 
 These data objects can now be used in R:

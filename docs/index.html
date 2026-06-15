@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">BioticExplorerServer</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -123,12 +123,13 @@
 <span><span class="va">meta</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/tbl.html" class="external-link">tbl</a></span><span class="op">(</span><span class="va">con_db</span>, <span class="st">"metadata"</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="co"># time of download</span></span>
 <span>  <span class="fu">collect</span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">mutate_all</span><span class="op">(</span><span class="va">as.POSIXct</span><span class="op">)</span></span>
 <span><span class="va">csindex</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/tbl.html" class="external-link">tbl</a></span><span class="op">(</span><span class="va">con_db</span>, <span class="st">"csindex"</span><span class="op">)</span> <span class="co"># cruise series index</span></span>
-<span><span class="va">gearlist</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/tbl.html" class="external-link">tbl</a></span><span class="op">(</span><span class="va">con_db</span>, <span class="st">"gearindex"</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">collect</span><span class="op">(</span><span class="op">)</span> <span class="co"># gear index</span></span></code></pre></div>
+<span><span class="va">gearlist</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/tbl.html" class="external-link">tbl</a></span><span class="op">(</span><span class="va">con_db</span>, <span class="st">"gearindex"</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">collect</span><span class="op">(</span><span class="op">)</span> <span class="co"># gear index</span></span>
+<span><span class="va">taxalist</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/tbl.html" class="external-link">tbl</a></span><span class="op">(</span><span class="va">con_db</span>, <span class="st">"taxaindex"</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">collect</span><span class="op">(</span><span class="op">)</span> <span class="co"># taxa index</span></span></code></pre></div>
 <p>These data objects can now be used in R:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">mission</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb7"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="do">## # Source:   SQL [?? x 14]</span></span>
-<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="do">## # Database: DuckDB 1.5.2 [root@Darwin 25.4.0:R 4.6.0//Users/a22357/IMR_biotic_BES_database/bioticexplorer.duckdb]</span></span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="do">## # Database: DuckDB 1.5.2 [root@Darwin 25.4.0:R 4.6.0/path/to/IMR_biotic_BES_database/bioticexplorer.duckdb]</span></span>
 <span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="do">##   startyear platformname               cruise missiontype platform missionnumber</span></span>
 <span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="do">##       &lt;int&gt; &lt;chr&gt;                      &lt;chr&gt;  &lt;chr&gt;       &lt;chr&gt;            &lt;int&gt;</span></span>
 <span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="do">## 1      1906 NVG-sampling (Norsk vårgy… &lt;NA&gt;   1           10016                1</span></span>
@@ -183,7 +184,7 @@ Figure 1. Number of IMR Biotic sampling stations per year from around 1914 to pr
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbListTables.html" class="external-link">dbListTables</a></span><span class="op">(</span><span class="va">con_db</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb10"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="do">## [1] "ageall"    "csindex"   "filesize"  "gearindex" "indall"    "metadata" </span></span>
-<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="do">## [7] "mission"   "stnall"</span></span></code></pre></div>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="do">## [7] "mission"   "stnall"    "taxaindex"</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="explore-the-database-using-biotic-explorer-shiny-app">Explore the database using Biotic Explorer shiny app<a class="anchor" aria-label="anchor" href="#explore-the-database-using-biotic-explorer-shiny-app"></a>

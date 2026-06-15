@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">BioticExplorerServer</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -45,6 +45,7 @@
 <span>  icesAreas <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  cruiseSeries <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  gearCodes <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  taxaList <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  overwrite <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -73,6 +74,10 @@
 <dd><p>a data.table object of NMD gear code list. Used to make gearname and gearcategory columns. See <code><a href="prepareGearList.html">prepareGearList</a></code>.</p></dd>
 
 
+<dt id="arg-taxalist">taxaList<a class="anchor" aria-label="anchor" href="#arg-taxalist"></a></dt>
+<dd><p>a data.table object of NMD taxa reference data. Written to the <code>taxaindex</code> DuckDB table. See <code><a href="prepareTaxaList.html">prepareTaxaList</a></code>.</p></dd>
+
+
 <dt id="arg-overwrite">overwrite<a class="anchor" aria-label="anchor" href="#arg-overwrite"></a></dt>
 <dd><p>Logical indicating whether existing information in the <a href="https://r.duckdb.org/reference/duckdb.html" class="external-link">duckdb</a> database (<code>dbPath</code>) should be downloaded again and overwritten.</p></dd>
 
@@ -83,7 +88,7 @@
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>The function downloads NMD data from the API per year, saves these in temp files, reformats them for the DuckDB and writes them into the database.</p>
+    <p>The function writes the taxa reference list to the database, downloads NMD data from the API per year, saves these in temp files, reformats them for the DuckDB and writes them into the database.</p>
     </div>
     <div class="section level2">
     <h2 id="author">Author<a class="anchor" aria-label="anchor" href="#author"></a></h2>
