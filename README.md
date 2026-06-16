@@ -126,11 +126,10 @@ taxalist <- dplyr::tbl(con_db, "taxaindex") %>% collect() # taxa index
 These data objects can now be used in R:
 
 ``` r
-head(mission)
+mission %>% head() %>% collect()
 ```
 
-    ## # Source:   SQL [?? x 14]
-    ## # Database: DuckDB 1.5.2 [root@Darwin 25.5.0:R 4.6.0//Users/a22357/IMR_biotic_BES_database/bioticexplorer.duckdb]
+    ## # A tibble: 6 x 14
     ##   startyear platformname               cruise missiontype platform missionnumber
     ##       <int> <chr>                      <chr>  <chr>       <chr>            <int>
     ## 1      1906 NVG-sampling (Norsk vårgy… <NA>   1           10016                1

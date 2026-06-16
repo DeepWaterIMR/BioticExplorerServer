@@ -100,7 +100,7 @@ taxalist <- dplyr::tbl(con_db, "taxaindex") %>% collect() # taxa index
 These data objects can now be used in R:
 
 ```{r}
-head(mission)
+mission %>% head() %>% collect()
 ```
 
 The [dplyr package can also be used with databases](https://solutions.posit.co/connections/db/r-packages/dplyr/). The only difference from normal use is that you'll need to [`collect()`](https://dbplyr.tidyverse.org/reference/collapse.tbl_sql.html) the data from the database after filtering. Note that you are handling large amounts of data, and using the collect function incorrectly may cause your computer to crash due to insufficient RAM. Therefore, always filter before collecting and consider using [`compute()`](https://dbplyr.tidyverse.org/reference/collapse.tbl_sql.html) or use the [data.table](https://cran.r-project.org/web/packages/data.table/index.html) package, if you'll need to handle very large proportions of the IMR Biotic database. Stations with no catch (i.e., where `commonname` is NA) can be now found by `stnall |> filter(!is.na(commonname))` (Figure 1). 
