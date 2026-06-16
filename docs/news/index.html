@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">BioticExplorerServer</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -32,6 +32,10 @@
       <small>Source: <a href="https://github.com/DeepWaterIMR/BioticExplorerServer/blob/HEAD/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="development version" id="bioticexplorerserver-development-version">BioticExplorerServer (development version)<a class="anchor" aria-label="anchor" href="#bioticexplorerserver-development-version"></a></h2>
+<ul><li>Added <code><a href="../reference/prepareReferenceCodes.html">prepareReferenceCodes()</a></code>, which pulls the simple coded <code>KeyType</code> fields (<code>sex</code>, <code>maturationstage</code>, <code>missiontype</code>, <code>nation</code>, …) from the NMD Reference API and writes them to the DuckDB database as the long-format <code>codeindex</code> table via <code><a href="../reference/compileDatabase.html">compileDatabase()</a></code>. This lets agents and the Shiny app decode these fields offline with a join instead of a per-code API call. Editor-identity columns (<code>updatedBy</code>/<code>insertedBy</code>/timestamps) are stripped on build so no staff usernames enter the database. Composite taxa/sex-keyed tables (<code>specialstage</code>, <code>eggstage</code>, …) are left to the API.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.6.0" id="bioticexplorerserver-060">BioticExplorerServer 0.6.0<a class="anchor" aria-label="anchor" href="#bioticexplorerserver-060"></a></h2>
 <p><em>2026-06-15</em></p>

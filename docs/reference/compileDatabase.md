@@ -58,20 +58,24 @@ Runs the
 [`prepareCruiseSeriesList`](https://deepwaterimr.github.io/BioticExplorerServer/reference/prepareCruiseSeriesList.md),
 [`prepareGearList`](https://deepwaterimr.github.io/BioticExplorerServer/reference/prepareGearList.md),
 [`prepareTaxaList`](https://deepwaterimr.github.io/BioticExplorerServer/reference/prepareTaxaList.md),
+[`prepareReferenceCodes`](https://deepwaterimr.github.io/BioticExplorerServer/reference/prepareReferenceCodes.md),
 [`downloadDatabase`](https://deepwaterimr.github.io/BioticExplorerServer/reference/downloadDatabase.md)
 and
 [`indexDatabase`](https://deepwaterimr.github.io/BioticExplorerServer/reference/indexDatabase.md)
 functions, and saves the results into a
 [duckdb](https://r.duckdb.org/reference/duckdb.html). The cruise-series,
 gear and taxa reference lists are written as the `csindex`, `gearindex`
-and `taxaindex` tables, respectively. Be aware that running these
-functions requires access to the IMR intranet and reasonably stable
-internet. It is advisable to run the function in a separate R session or
-in a screen session in the terminal on Unix machines, as downloading the
-database takes several hours and requires a stable internet connection.
-If the connection is unstable, the function may return an error. In such
-cases, ensure that the connection is stable and rerun the function. The
-function should continue downloading from where it left off.
+and `taxaindex` tables, respectively, and the coded `KeyType` fields
+(`sex`, `maturationstage`, `missiontype`, `nation`, …) are written as
+the long-format `codeindex` table so they can be decoded offline with a
+join. Be aware that running these functions requires access to the IMR
+intranet and reasonably stable internet. It is advisable to run the
+function in a separate R session or in a screen session in the terminal
+on Unix machines, as downloading the database takes several hours and
+requires a stable internet connection. If the connection is unstable,
+the function may return an error. In such cases, ensure that the
+connection is stable and rerun the function. The function should
+continue downloading from where it left off.
 
 ## Author
 

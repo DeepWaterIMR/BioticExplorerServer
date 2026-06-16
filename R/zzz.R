@@ -14,7 +14,7 @@ utils::globalVariables(
     "longitudestart", "latitudestart", "description", "cruiseseriescode", 
     "timestart", "timeend", "..ints", "name", "cruiseSeriesList", "cruise_series",
     "ICESareas", "gearcategory", "area", "gearList", "icesAreas", "filesize", 
-    "language", "numberofreads", "catchpartnumber", "catchsampleid", "platform", 
-    "specimenid", ".", "con_db")
+    "language", "numberofreads", "catchpartnumber", "catchsampleid", "platform",
+    "specimenid", ".", "con_db", "reftable", "..keep")
   )
 

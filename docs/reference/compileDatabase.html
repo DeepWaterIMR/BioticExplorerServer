@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">BioticExplorerServer</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -78,7 +78,7 @@
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>Runs the <code><a href="prepareCruiseSeriesList.html">prepareCruiseSeriesList</a></code>, <code><a href="prepareGearList.html">prepareGearList</a></code>, <code><a href="prepareTaxaList.html">prepareTaxaList</a></code>, <code><a href="downloadDatabase.html">downloadDatabase</a></code> and <code><a href="indexDatabase.html">indexDatabase</a></code> functions, and saves the results into a <a href="https://r.duckdb.org/reference/duckdb.html" class="external-link">duckdb</a>. The cruise-series, gear and taxa reference lists are written as the <code>csindex</code>, <code>gearindex</code> and <code>taxaindex</code> tables, respectively. Be aware that running these functions requires access to the IMR intranet and reasonably stable internet. It is advisable to run the function in a separate R session or in a screen session in the terminal on Unix machines, as downloading the database takes several hours and requires a stable internet connection. If the connection is unstable, the function may return an error. In such cases, ensure that the connection is stable and rerun the function. The function should continue downloading from where it left off.</p>
+    <p>Runs the <code><a href="prepareCruiseSeriesList.html">prepareCruiseSeriesList</a></code>, <code><a href="prepareGearList.html">prepareGearList</a></code>, <code><a href="prepareTaxaList.html">prepareTaxaList</a></code>, <code><a href="prepareReferenceCodes.html">prepareReferenceCodes</a></code>, <code><a href="downloadDatabase.html">downloadDatabase</a></code> and <code><a href="indexDatabase.html">indexDatabase</a></code> functions, and saves the results into a <a href="https://r.duckdb.org/reference/duckdb.html" class="external-link">duckdb</a>. The cruise-series, gear and taxa reference lists are written as the <code>csindex</code>, <code>gearindex</code> and <code>taxaindex</code> tables, respectively, and the coded <code>KeyType</code> fields (<code>sex</code>, <code>maturationstage</code>, <code>missiontype</code>, <code>nation</code>, …) are written as the long-format <code>codeindex</code> table so they can be decoded offline with a join. Be aware that running these functions requires access to the IMR intranet and reasonably stable internet. It is advisable to run the function in a separate R session or in a screen session in the terminal on Unix machines, as downloading the database takes several hours and requires a stable internet connection. If the connection is unstable, the function may return an error. In such cases, ensure that the connection is stable and rerun the function. The function should continue downloading from where it left off.</p>
     </div>
     <div class="section level2">
     <h2 id="author">Author<a class="anchor" aria-label="anchor" href="#author"></a></h2>

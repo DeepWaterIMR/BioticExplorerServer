@@ -136,7 +136,7 @@ head(mission)
 
 ``` R
 ## # Source:   SQL [?? x 14]
-## # Database: DuckDB 1.5.2 [root@Darwin 25.4.0:R 4.6.0/path/to/IMR_biotic_BES_database/bioticexplorer.duckdb]
+## # Database: DuckDB 1.5.2 [root@Darwin 25.5.0:R 4.6.0//Users/a22357/IMR_biotic_BES_database/bioticexplorer.duckdb]
 ##   startyear platformname               cruise missiontype platform missionnumber
 ##       <int> <chr>                      <chr>  <chr>       <chr>            <int>
 ## 1      1906 NVG-sampling (Norsk vårgy… <NA>   1           10016                1

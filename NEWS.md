@@ -1,3 +1,7 @@
+# BioticExplorerServer (development version) 
+
+- Added `prepareReferenceCodes()`, which pulls the simple coded `KeyType` fields (`sex`, `maturationstage`, `missiontype`, `nation`, …) from the NMD Reference API and writes them to the DuckDB database as the long-format `codeindex` table via `compileDatabase()`. This lets agents and the Shiny app decode these fields offline with a join instead of a per-code API call. Editor-identity columns (`updatedBy`/`insertedBy`/timestamps) are stripped on build so no staff usernames enter the database. Composite taxa/sex-keyed tables (`specialstage`, `eggstage`, …) are left to the API.
+
 # BioticExplorerServer 0.6.0
 
 *2026-06-15*

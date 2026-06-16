@@ -5,7 +5,7 @@
 #' @param dbIndexFile Character string specifying the file path where the index of the database should be saved. Must include \code{.rda} at the end. The index is used by \href{https://github.com/DeepWaterIMR/BioticExplorer}{BioticExplorer}.
 #' @param dbName Character string or \code{NULL}. If \code{NULL} uses the default names ("bioticexploer").
 #' @param overwrite Logical indicating whether existing information in the \link[duckdb]{duckdb} database (\code{dbPath}) should be downloaded again and overwritten.
-#' @details Runs the \code{\link{prepareCruiseSeriesList}}, \code{\link{prepareGearList}}, \code{\link{prepareTaxaList}}, \code{\link{downloadDatabase}} and \code{\link{indexDatabase}} functions, and saves the results into a \link[duckdb]{duckdb}. The cruise-series, gear and taxa reference lists are written as the \code{csindex}, \code{gearindex} and \code{taxaindex} tables, respectively. Be aware that running these functions requires access to the IMR intranet and reasonably stable internet. It is advisable to run the function in a separate R session or in a screen session in the terminal on Unix machines, as downloading the database takes several hours and requires a stable internet connection. If the connection is unstable, the function may return an error. In such cases, ensure that the connection is stable and rerun the function. The function should continue downloading from where it left off.
+#' @details Runs the \code{\link{prepareCruiseSeriesList}}, \code{\link{prepareGearList}}, \code{\link{prepareTaxaList}}, \code{\link{prepareReferenceCodes}}, \code{\link{downloadDatabase}} and \code{\link{indexDatabase}} functions, and saves the results into a \link[duckdb]{duckdb}. The cruise-series, gear and taxa reference lists are written as the \code{csindex}, \code{gearindex} and \code{taxaindex} tables, respectively, and the coded \code{KeyType} fields (\code{sex}, \code{maturationstage}, \code{missiontype}, \code{nation}, …) are written as the long-format \code{codeindex} table so they can be decoded offline with a join. Be aware that running these functions requires access to the IMR intranet and reasonably stable internet. It is advisable to run the function in a separate R session or in a screen session in the terminal on Unix machines, as downloading the database takes several hours and requires a stable internet connection. If the connection is unstable, the function may return an error. In such cases, ensure that the connection is stable and rerun the function. The function should continue downloading from where it left off.
 #' @return Called for its side effects: creates and populates a DuckDB database and index file. Returns \code{NULL} invisibly.
 #' @import data.table
 #' @author Mikko Vihtakari, Ibrahim Umar (Institute of Marine Research)
@@ -137,9 +137,34 @@ compileDatabase <- function(
     )
   }
 
+  ## Reference codes (coded KeyType fields: sex, maturationstage, …)
+
+  message("4. Compiling reference codes")
+
+  if (
+    inherits(try(dplyr::tbl(con_db, "codeindex"), silent = TRUE), "try-error") |
+      overwrite
+  ) {
+    codeIndex <- prepareReferenceCodes()
+    if (nrow(codeIndex) > 0) {
+      DBI::dbWriteTable(con_db, "codeindex", codeIndex, overwrite = overwrite)
+    } else {
+      message(
+        "No reference codes could be read (off the IMR network?). The codeindex table ",
+        "was not written; agents fall back to the cached codes in BAIT or the API."
+      )
+    }
+  } else {
+    message(
+      "Reference codes found from ",
+      dbName,
+      ". The information was not rewritten. Delete the database or use the overwrite argument if you want to re-download the data."
+    )
+  }
+
   ## Download
 
-  message("4. Compiling database")
+  message("5. Compiling database")
   downloadDatabase(
     years = years,
     connection = con_db,
@@ -151,7 +176,7 @@ compileDatabase <- function(
 
   # Index
 
-  message("5. Indexing database")
+  message("6. Indexing database")
   indexDatabase(connection = con_db, dbIndexFile = dbIndexFile)
 
   DBI::dbDisconnect(con_db)

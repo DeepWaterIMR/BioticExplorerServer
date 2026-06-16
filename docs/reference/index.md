@@ -58,6 +58,8 @@ lists, then save the result with
   : Prepare cruise series list
 - [`prepareGearList()`](https://deepwaterimr.github.io/BioticExplorerServer/reference/prepareGearList.md)
   : Prepare gear list
+- [`prepareReferenceCodes()`](https://deepwaterimr.github.io/BioticExplorerServer/reference/prepareReferenceCodes.md)
+  : Prepare coded-field reference list
 - [`prepareTaxaList()`](https://deepwaterimr.github.io/BioticExplorerServer/reference/prepareTaxaList.md)
   : Prepare taxa list
 
