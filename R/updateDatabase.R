@@ -53,9 +53,8 @@
   out
 }
 
-.discover_source_manifest <- function(years = NULL, verbose = TRUE) {
+.discover_source_deliveries <- function(years = NULL) {
   missiontypes <- .api_list_field(.BIOTIC_API_BASE, "missiontypename")
-  checked_at <- format(Sys.time(), tz = "UTC", usetz = TRUE)
   result <- list()
   n <- 0L
 
@@ -73,22 +72,12 @@
           .api_path(missiontype, year, platform), "delivery"
         )
         for (delivery in deliveries) {
-          if (verbose) {
-            message("Checking metadata: ", missiontype, " / ", year, " / ",
-                    platform, " / ", delivery)
-          }
-          headers <- .api_delivery_headers(missiontype, year, platform, delivery)
           n <- n + 1L
           result[[n]] <- data.frame(
             missiontype = missiontype,
             data_year = as.integer(year),
             platform = platform,
             delivery = as.character(delivery),
-            last_modified = unname(headers[["last_modified"]]),
-            last_snapshot_code = unname(headers[["last_snapshot_code"]]),
-            last_snapshot_time = unname(headers[["last_snapshot_time"]]),
-            format_version = unname(headers[["format_version"]]),
-            checked_at = checked_at,
             stringsAsFactors = FALSE
           )
         }
@@ -96,7 +85,60 @@
     }
   }
 
-  if (!length(result)) return(.empty_source_manifest())
+  if (!length(result)) {
+    return(data.frame(
+      missiontype = character(), data_year = integer(), platform = character(),
+      delivery = character(), stringsAsFactors = FALSE
+    ))
+  }
+  do.call(rbind, result)
+}
+
+.discover_source_manifest <- function(years = NULL, verbose = FALSE) {
+  deliveries <- .discover_source_deliveries(years)
+  total <- nrow(deliveries)
+  if (!total) return(.empty_source_manifest())
+
+  checked_at <- format(Sys.time(), tz = "UTC", usetz = TRUE)
+  result <- vector("list", total)
+  progress <- !verbose && interactive()
+  progress_bar <- NULL
+  if (progress) {
+    progress_bar <- utils::txtProgressBar(min = 0, max = total, style = 3)
+    on.exit(close(progress_bar), add = TRUE)
+  } else if (!verbose) {
+    message("Checking metadata for ", total, " deliveries.")
+  }
+  progress_marks <- unique(pmax(1L, ceiling(total * seq(0.1, 1, by = 0.1))))
+
+  for (n in seq_len(total)) {
+    delivery <- deliveries[n, , drop = FALSE]
+    if (verbose) {
+      message("Checking metadata: ", delivery$missiontype, " / ",
+              delivery$data_year, " / ", delivery$platform, " / ",
+              delivery$delivery)
+    }
+    headers <- .api_delivery_headers(
+      delivery$missiontype, delivery$data_year, delivery$platform,
+      delivery$delivery
+    )
+    result[[n]] <- data.frame(
+      delivery,
+      last_modified = unname(headers[["last_modified"]]),
+      last_snapshot_code = unname(headers[["last_snapshot_code"]]),
+      last_snapshot_time = unname(headers[["last_snapshot_time"]]),
+      format_version = unname(headers[["format_version"]]),
+      checked_at = checked_at,
+      stringsAsFactors = FALSE
+    )
+    if (progress) {
+      utils::setTxtProgressBar(progress_bar, n)
+    } else if (!verbose && n %in% progress_marks) {
+      message("Metadata progress: ", n, "/", total, " (",
+              round(100 * n / total), "%).")
+    }
+  }
+
   do.call(rbind, result)
 }
 
@@ -282,7 +324,9 @@
 #' @param years Optional integer vector limiting metadata checks and incremental
 #'   replacements. A schema compatibility rebuild always includes all years.
 #' @inheritParams compileDatabase
-#' @param verbose Logical; emit delivery metadata-check progress messages.
+#' @param verbose Logical; emit one metadata-check message per delivery. The
+#'   default uses a progress bar in interactive sessions and bounded milestone
+#'   messages in non-interactive logs.
 #' @return Invisibly returns a list describing the update mode and changed years.
 #' @export
 updateDatabase <- function(
@@ -290,7 +334,7 @@ updateDatabase <- function(
   dbPath = "~/IMR_biotic_BES_database",
   dbIndexFile = file.path(dbPath, "dbIndex.rda"),
   dbName = NULL,
-  verbose = TRUE
+  verbose = FALSE
 ) {
   time_start <- Sys.time()
   if (is.null(dbName)) dbName <- "bioticexplorer"

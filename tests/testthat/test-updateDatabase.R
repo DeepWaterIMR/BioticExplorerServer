@@ -1,3 +1,68 @@
+test_that("metadata discovery keeps non-interactive logs concise", {
+  deliveries <- data.frame(
+    missiontype = rep("Survey", 25),
+    data_year = rep(2020L, 25),
+    platform = rep("Platform", 25),
+    delivery = as.character(seq_len(25)),
+    stringsAsFactors = FALSE
+  )
+  headers <- c(
+    last_modified = "Wed, 01 Jan 2025 00:00:00 GMT",
+    last_snapshot_code = "snapshot",
+    last_snapshot_time = "2025-01-01T00:00:00Z",
+    format_version = "3.1"
+  )
+
+  local_mocked_bindings(
+    .discover_source_deliveries = function(years) deliveries,
+    .api_delivery_headers = function(...) headers,
+    .package = "BioticExplorerServer"
+  )
+
+  messages <- capture.output(
+    manifest <- BioticExplorerServer:::.discover_source_manifest(verbose = FALSE),
+    type = "message"
+  )
+
+  expect_equal(nrow(manifest), 25)
+  expect_lte(length(messages), 11)
+  expect_match(messages[[1]], "Checking metadata for 25 deliveries")
+  expect_true(any(grepl("25/25 \\(100%\\)", messages)))
+  expect_false(any(grepl("Survey / 2020", messages)))
+})
+
+test_that("verbose metadata discovery retains per-delivery detail", {
+  deliveries <- data.frame(
+    missiontype = "Survey",
+    data_year = 2020L,
+    platform = "Platform",
+    delivery = c("1", "2"),
+    stringsAsFactors = FALSE
+  )
+  headers <- c(
+    last_modified = "Wed, 01 Jan 2025 00:00:00 GMT",
+    last_snapshot_code = "snapshot",
+    last_snapshot_time = "2025-01-01T00:00:00Z",
+    format_version = "3.1"
+  )
+
+  local_mocked_bindings(
+    .discover_source_deliveries = function(years) deliveries,
+    .api_delivery_headers = function(...) headers,
+    .package = "BioticExplorerServer"
+  )
+
+  messages <- capture.output(
+    manifest <- BioticExplorerServer:::.discover_source_manifest(verbose = TRUE),
+    type = "message"
+  )
+
+  expect_equal(nrow(manifest), 2)
+  expect_length(messages, 2)
+  expect_match(messages[[1]], "Checking metadata: Survey / 2020 / Platform / 1")
+  expect_match(messages[[2]], "Checking metadata: Survey / 2020 / Platform / 2")
+})
+
 test_that("an unchanged compatible database downloads nothing", {
   directory <- withr::local_tempdir()
   database <- file.path(directory, "bioticexplorer.duckdb")

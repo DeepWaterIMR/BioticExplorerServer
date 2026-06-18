@@ -9,7 +9,7 @@ updateDatabase(
   dbPath = "~/IMR_biotic_BES_database",
   dbIndexFile = file.path(dbPath, "dbIndex.rda"),
   dbName = NULL,
-  verbose = TRUE
+  verbose = FALSE
 )
 }
 \arguments{
@@ -22,7 +22,9 @@ replacements. A schema compatibility rebuild always includes all years.}
 
 \item{dbName}{Character string or \code{NULL}. If \code{NULL} uses the default name ("bioticexplorer").}
 
-\item{verbose}{Logical; emit delivery metadata-check progress messages.}
+\item{verbose}{Logical; emit one metadata-check message per delivery. The
+default uses a progress bar in interactive sessions and bounded milestone
+messages in non-interactive logs.}
 }
 \value{
 Invisibly returns a list describing the update mode and changed years.

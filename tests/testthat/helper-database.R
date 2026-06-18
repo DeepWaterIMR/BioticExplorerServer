@@ -43,7 +43,7 @@ create_test_database <- function(path, schema_version = 1L, legacy = FALSE,
     stringsAsFactors = FALSE
   )
   if (!legacy) {
-    metadata$package_version <- "0.7.0"
+    metadata$package_version <- "0.7.1"
     metadata$database_schema_version <- schema_version
     metadata$update_mode <- "compile"
   }

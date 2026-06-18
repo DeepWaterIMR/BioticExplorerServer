@@ -1,5 +1,15 @@
 # BioticExplorerServer (development version)
 
+# BioticExplorerServer 0.7.1
+
+*2026-06-18*
+
+- Made `updateDatabase()` less verbose by default while still showing progress:
+  interactive sessions now use a progress bar, background runs emit concise
+  milestone updates, and `verbose = TRUE` retains per-delivery logging.
+- Added tests covering concise non-interactive progress reporting and verbose
+  delivery-level output.
+
 # BioticExplorerServer 0.7.0
 
 *2026-06-18*
