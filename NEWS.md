@@ -1,5 +1,16 @@
 # BioticExplorerServer (development version)
 
+# BioticExplorerServer 0.7.2
+
+*2026-06-18*
+
+- Fixed `updateDatabase()` aborting when a delivery disappears between API
+  listing and metadata lookup. HTTP 404 responses are now skipped with one
+  aggregate warning, while other HTTP failures remain fatal.
+- Fixed incremental writes from `data.table` objects selecting a literal
+  `target_fields` column instead of the database's actual columns.
+- Added regression tests for unavailable deliveries and `data.table` writes.
+
 # BioticExplorerServer 0.7.1
 
 *2026-06-18*

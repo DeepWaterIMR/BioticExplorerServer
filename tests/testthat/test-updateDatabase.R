@@ -63,6 +63,71 @@ test_that("verbose metadata discovery retains per-delivery detail", {
   expect_match(messages[[2]], "Checking metadata: Survey / 2020 / Platform / 2")
 })
 
+test_that("metadata discovery skips deliveries that disappear from the API", {
+  deliveries <- data.frame(
+    missiontype = "Survey",
+    data_year = 2020L,
+    platform = "Platform",
+    delivery = c("available", "gone"),
+    stringsAsFactors = FALSE
+  )
+  headers <- c(
+    last_modified = "Wed, 01 Jan 2025 00:00:00 GMT",
+    last_snapshot_code = "snapshot",
+    last_snapshot_time = "2025-01-01T00:00:00Z",
+    format_version = "3.1"
+  )
+
+  local_mocked_bindings(
+    .discover_source_deliveries = function(years) deliveries,
+    .api_delivery_headers = function(missiontype, year, platform, delivery) {
+      if (delivery == "gone") NULL else headers
+    },
+    .package = "BioticExplorerServer"
+  )
+
+  expect_warning(
+    manifest <- BioticExplorerServer:::.discover_source_manifest(verbose = FALSE),
+    "Skipped 1 delivery"
+  )
+  expect_equal(nrow(manifest), 1)
+  expect_identical(manifest$delivery, "available")
+})
+
+test_that("delivery metadata treats HTTP 404 as unavailable", {
+  response <- structure(
+    list(status_code = 404L),
+    class = "httr2_response"
+  )
+  local_mocked_bindings(
+    req_perform = function(request) response,
+    .package = "httr2"
+  )
+
+  expect_null(BioticExplorerServer:::.api_delivery_headers(
+    "Survey", 2020L, "Platform", "gone"
+  ))
+})
+
+test_that("metadata discovery returns an empty manifest when all deliveries disappear", {
+  deliveries <- data.frame(
+    missiontype = "Survey", data_year = 2020L, platform = "Platform",
+    delivery = "gone", stringsAsFactors = FALSE
+  )
+
+  local_mocked_bindings(
+    .discover_source_deliveries = function(years) deliveries,
+    .api_delivery_headers = function(...) NULL,
+    .package = "BioticExplorerServer"
+  )
+
+  expect_warning(
+    manifest <- BioticExplorerServer:::.discover_source_manifest(verbose = FALSE),
+    "Skipped 1 delivery"
+  )
+  expect_identical(manifest, BioticExplorerServer:::.empty_source_manifest())
+})
+
 test_that("an unchanged compatible database downloads nothing", {
   directory <- withr::local_tempdir()
   database <- file.path(directory, "bioticexplorer.duckdb")
@@ -152,6 +217,20 @@ test_that("year replacement rolls back on schema mismatch", {
   )
   expect_identical(DBI::dbGetQuery(con, "SELECT value FROM mission")$value, "old")
   expect_equal(DBI::dbGetQuery(con, "SELECT filesize FROM filesize")$filesize, 100)
+})
+
+test_that("database appends select data.table columns by name", {
+  database <- tempfile(fileext = ".duckdb")
+  con <- DBI::dbConnect(duckdb::duckdb(), dbdir = database)
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  DBI::dbWriteTable(con, "example", data.frame(first = "old", second = 1L))
+  value <- data.table::data.table(second = 2L, first = "new")
+
+  BioticExplorerServer:::.append_table_by_name(con, "example", value)
+
+  result <- DBI::dbReadTable(con, "example")
+  expect_identical(result$first, c("old", "new"))
+  expect_identical(result$second, c(1L, 2L))
 })
 
 test_that("legacy compatible databases are stamped without rebuilding", {

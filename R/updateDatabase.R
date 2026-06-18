@@ -34,7 +34,11 @@
   request <- httr2::req_method(request, "HEAD")
   request <- httr2::req_retry(request, max_tries = 4)
   request <- httr2::req_timeout(request, 60)
+  request <- httr2::req_error(request, is_error = function(response) {
+    httr2::resp_status(response) >= 400 && httr2::resp_status(response) != 404
+  })
   response <- httr2::req_perform(request)
+  if (httr2::resp_status(response) == 404) return(NULL)
   httr2::resp_check_status(response)
 
   value <- function(name) {
@@ -101,6 +105,7 @@
 
   checked_at <- format(Sys.time(), tz = "UTC", usetz = TRUE)
   result <- vector("list", total)
+  unavailable <- 0L
   progress <- !verbose && interactive()
   progress_bar <- NULL
   if (progress) {
@@ -122,15 +127,19 @@
       delivery$missiontype, delivery$data_year, delivery$platform,
       delivery$delivery
     )
-    result[[n]] <- data.frame(
-      delivery,
-      last_modified = unname(headers[["last_modified"]]),
-      last_snapshot_code = unname(headers[["last_snapshot_code"]]),
-      last_snapshot_time = unname(headers[["last_snapshot_time"]]),
-      format_version = unname(headers[["format_version"]]),
-      checked_at = checked_at,
-      stringsAsFactors = FALSE
-    )
+    if (is.null(headers)) {
+      unavailable <- unavailable + 1L
+    } else {
+      result[[n]] <- data.frame(
+        delivery,
+        last_modified = unname(headers[["last_modified"]]),
+        last_snapshot_code = unname(headers[["last_snapshot_code"]]),
+        last_snapshot_time = unname(headers[["last_snapshot_time"]]),
+        format_version = unname(headers[["format_version"]]),
+        checked_at = checked_at,
+        stringsAsFactors = FALSE
+      )
+    }
     if (progress) {
       utils::setTxtProgressBar(progress_bar, n)
     } else if (!verbose && n %in% progress_marks) {
@@ -139,6 +148,15 @@
     }
   }
 
+  if (unavailable) {
+    warning(
+      "Skipped ", unavailable, if (unavailable == 1L) " delivery" else " deliveries",
+      " that disappeared from the API during metadata discovery.",
+      call. = FALSE
+    )
+  }
+  result <- Filter(Negate(is.null), result)
+  if (!length(result)) return(.empty_source_manifest())
   do.call(rbind, result)
 }
 

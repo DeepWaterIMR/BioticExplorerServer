@@ -104,7 +104,12 @@
       "). Increment the database schema version and rebuild the database."
     )
   }
-  DBI::dbAppendTable(connection, table, value[, target_fields, drop = FALSE])
+  value <- if (data.table::is.data.table(value)) {
+    value[, target_fields, with = FALSE]
+  } else {
+    value[, target_fields, drop = FALSE]
+  }
+  DBI::dbAppendTable(connection, table, value)
   invisible(NULL)
 }
 
