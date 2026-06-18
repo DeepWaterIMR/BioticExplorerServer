@@ -32,10 +32,7 @@ downloadDatabase <- function(years, connection, icesAreas = NULL, cruiseSeries =
   # h <- years[[1]]
   lapply(years, function(h) {
     
-    tmp <- try(dplyr::filter(dplyr::tbl(connection, "stnall"), startyear == h), silent = TRUE)
-    
-    if(ifelse(inherits(tmp, "try-error"), TRUE, 
-              length(dplyr::pull(head(tmp), startyear)) == 0) | overwrite) {
+    if (!.database_has_year(connection, h) || overwrite) {
       
       message(paste("Downloading:", h))
       
@@ -84,20 +81,18 @@ downloadDatabase <- function(years, connection, icesAreas = NULL, cruiseSeries =
       } 
       
       if(!skip) {
-        filesize <- data.table::data.table(dbyear = h, filesize = file.info(dest)$size)
-        DBI::dbWriteTable(connection, "filesize", filesize, transaction = FALSE, append = TRUE)
-        
         # Do transformations
         
         a <- bioticToDatabase(dest, missionidPrefix = h, icesAreas = icesAreas, cruiseSeries = cruiseSeries, gearCodes = gearCodes)
-        
-        lapply(names(a), function(i) {
-          message(paste("Parsing", i))
-          
-          if(nrow(a[[i]]) > 0) {
-            DBI::dbWriteTable(connection, i, a[[i]], csvdump = TRUE, transaction = FALSE, append = TRUE)
-          }
-        })
+
+        message("Writing year ", h, if (overwrite) " (replacing existing data)" else "")
+        .write_database_year(
+          connection = connection,
+          year = h,
+          parsed = a,
+          filesize = file.info(dest)$size,
+          replace = overwrite
+        )
         
         message(paste("Year", h, "is parsed successfully."))
         unlink(dest)
@@ -109,5 +104,5 @@ downloadDatabase <- function(years, connection, icesAreas = NULL, cruiseSeries =
   
   timeEnd <- Sys.time()
   
-  DBI::dbWriteTable(connection, "metadata", data.frame(timestart = as.character(timeStart), timeend = as.character(timeEnd)), transaction = FALSE, overwrite = TRUE)
+  .write_database_metadata(connection, timeStart, timeEnd, update_mode = "compile")
 }

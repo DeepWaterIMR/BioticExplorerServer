@@ -50,7 +50,7 @@ access.
            │                   adds gear category (lookup via gearCodes)
            ▼
     DuckDB tables: mission, stnall, indall, ageall, filesize, metadata,
-                   csindex, gearindex, taxaindex
+                   source_manifest, csindex, gearindex, taxaindex
            │
            ▼
     indexDatabase()         ← creates dbIndex.rda for BioticExplorer Shiny app
@@ -69,6 +69,16 @@ and finally calls
 [`indexDatabase()`](https://deepwaterimr.github.io/BioticExplorerServer/reference/indexDatabase.md).
 The database typically takes several hours to compile from scratch and
 requires \>2 GB of disk space.
+
+[`updateDatabase()`](https://deepwaterimr.github.io/BioticExplorerServer/reference/updateDatabase.md)
+performs routine updates. It builds a metadata-only delivery manifest
+from the Biotic API and transactionally replaces only changed years. If
+the stored database schema version differs from the package schema
+version, it calls
+[`compileDatabase()`](https://deepwaterimr.github.io/BioticExplorerServer/reference/compileDatabase.md)
+to build and validate a complete sibling database before swapping it
+into place. Any future change to fact table structure or derived-data
+semantics must increment `.BES_DATABASE_SCHEMA_VERSION`.
 
 ### Key Design Points
 

@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">BioticExplorerServer</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -50,7 +50,7 @@
       </dl></div><div class="section level2">
       <h2 id="main-workflow">Main workflow<a class="anchor" aria-label="anchor" href="#main-workflow"></a></h2>
 
-      <div class="section-desc"><p>Functions to download and compile IMR Biotic survey data into a DuckDB database. <code><a href="../reference/compileDatabase.html">compileDatabase()</a></code> is the main entry point and orchestrates the full workflow. The other functions are called internally but can also be used independently. All functions require IMR intranet access (VPN or HI-adm WiFi).</p></div>
+      <div class="section-desc"><p>Functions to download and compile IMR Biotic survey data into a DuckDB database. <code><a href="../reference/compileDatabase.html">compileDatabase()</a></code> creates a database and <code><a href="../reference/updateDatabase.html">updateDatabase()</a></code> refreshes changed years. The other functions are called internally but can also be used independently. All functions require IMR intranet access (VPN or HI-adm WiFi).</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -63,6 +63,13 @@
 
         </dt>
         <dd>Download IMR Biotic database and to place it into a <a href="https://r.duckdb.org/reference/duckdb.html" class="external-link">duckdb</a> database</dd>
+
+        <dt>
+
+          <code><a href="updateDatabase.html">updateDatabase()</a></code>
+
+        </dt>
+        <dd>Incrementally update a BioticExplorer database</dd>
 
         <dt>
 

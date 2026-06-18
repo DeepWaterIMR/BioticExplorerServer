@@ -1,4 +1,15 @@
-# BioticExplorerServer (development version) 
+# BioticExplorerServer (development version)
+
+# BioticExplorerServer 0.7.0
+
+*2026-06-18*
+
+- Added `updateDatabase()`, which uses delivery-level API metadata to download and
+  atomically replace only years whose data changed, were added, or were removed.
+- Added database schema and package-version metadata. An incompatible schema now
+  triggers a full sibling rebuild through `compileDatabase()` and a validated swap.
+- Fixed `overwrite = TRUE` so existing annual data are replaced instead of duplicated.
+- Added a delivery manifest containing metadata-only change signals from the Biotic API.
 
 - Added `prepareReferenceCodes()`, which pulls the simple coded `KeyType` fields (`sex`, `maturationstage`, `missiontype`, `nation`, …) from the NMD Reference API and writes them to the DuckDB database as the long-format `codeindex` table via `compileDatabase()`. This lets agents and the Shiny app decode these fields offline with a join instead of a per-code API call. Editor-identity columns (`updatedBy`/`insertedBy`/timestamps) are stripped on build so no staff usernames enter the database. Composite taxa/sex-keyed tables (`specialstage`, `eggstage`, …) are left to the API.
 

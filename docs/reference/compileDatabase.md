@@ -38,14 +38,16 @@ compileDatabase(
 
 - dbName:
 
-  Character string or `NULL`. If `NULL` uses the default names
-  ("bioticexploer").
+  Character string or `NULL`. If `NULL` uses the default name
+  ("bioticexplorer").
 
 - overwrite:
 
-  Logical indicating whether existing information in the
-  [duckdb](https://r.duckdb.org/reference/duckdb.html) database
-  (`dbPath`) should be downloaded again and overwritten.
+  Logical indicating whether requested years and reference tables
+  already present in the
+  [duckdb](https://r.duckdb.org/reference/duckdb.html) database should
+  be downloaded again and replaced. Existing annual rows are deleted
+  transactionally before replacement, so they are not duplicated.
 
 ## Value
 
@@ -68,7 +70,11 @@ gear and taxa reference lists are written as the `csindex`, `gearindex`
 and `taxaindex` tables, respectively, and the coded `KeyType` fields
 (`sex`, `maturationstage`, `missiontype`, `nation`, …) are written as
 the long-format `codeindex` table so they can be decoded offline with a
-join. Be aware that running these functions requires access to the IMR
+join. Completed databases are stamped with the package and
+database-schema versions used to build them;
+[`updateDatabase`](https://deepwaterimr.github.io/BioticExplorerServer/reference/updateDatabase.md)
+uses this information to decide whether an incremental update is safe.
+Be aware that running these functions requires access to the IMR
 intranet and reasonably stable internet. It is advisable to run the
 function in a separate R session or in a screen session in the terminal
 on Unix machines, as downloading the database takes several hours and

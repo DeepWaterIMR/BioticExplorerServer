@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">BioticExplorerServer</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -65,11 +65,11 @@
 
 
 <dt id="arg-dbname">dbName<a class="anchor" aria-label="anchor" href="#arg-dbname"></a></dt>
-<dd><p>Character string or <code>NULL</code>. If <code>NULL</code> uses the default names ("bioticexploer").</p></dd>
+<dd><p>Character string or <code>NULL</code>. If <code>NULL</code> uses the default name ("bioticexplorer").</p></dd>
 
 
 <dt id="arg-overwrite">overwrite<a class="anchor" aria-label="anchor" href="#arg-overwrite"></a></dt>
-<dd><p>Logical indicating whether existing information in the <a href="https://r.duckdb.org/reference/duckdb.html" class="external-link">duckdb</a> database (<code>dbPath</code>) should be downloaded again and overwritten.</p></dd>
+<dd><p>Logical indicating whether requested years and reference tables already present in the <a href="https://r.duckdb.org/reference/duckdb.html" class="external-link">duckdb</a> database should be downloaded again and replaced. Existing annual rows are deleted transactionally before replacement, so they are not duplicated.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -78,7 +78,7 @@
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>Runs the <code><a href="prepareCruiseSeriesList.html">prepareCruiseSeriesList</a></code>, <code><a href="prepareGearList.html">prepareGearList</a></code>, <code><a href="prepareTaxaList.html">prepareTaxaList</a></code>, <code><a href="prepareReferenceCodes.html">prepareReferenceCodes</a></code>, <code><a href="downloadDatabase.html">downloadDatabase</a></code> and <code><a href="indexDatabase.html">indexDatabase</a></code> functions, and saves the results into a <a href="https://r.duckdb.org/reference/duckdb.html" class="external-link">duckdb</a>. The cruise-series, gear and taxa reference lists are written as the <code>csindex</code>, <code>gearindex</code> and <code>taxaindex</code> tables, respectively, and the coded <code>KeyType</code> fields (<code>sex</code>, <code>maturationstage</code>, <code>missiontype</code>, <code>nation</code>, …) are written as the long-format <code>codeindex</code> table so they can be decoded offline with a join. Be aware that running these functions requires access to the IMR intranet and reasonably stable internet. It is advisable to run the function in a separate R session or in a screen session in the terminal on Unix machines, as downloading the database takes several hours and requires a stable internet connection. If the connection is unstable, the function may return an error. In such cases, ensure that the connection is stable and rerun the function. The function should continue downloading from where it left off.</p>
+    <p>Runs the <code><a href="prepareCruiseSeriesList.html">prepareCruiseSeriesList</a></code>, <code><a href="prepareGearList.html">prepareGearList</a></code>, <code><a href="prepareTaxaList.html">prepareTaxaList</a></code>, <code><a href="prepareReferenceCodes.html">prepareReferenceCodes</a></code>, <code><a href="downloadDatabase.html">downloadDatabase</a></code> and <code><a href="indexDatabase.html">indexDatabase</a></code> functions, and saves the results into a <a href="https://r.duckdb.org/reference/duckdb.html" class="external-link">duckdb</a>. The cruise-series, gear and taxa reference lists are written as the <code>csindex</code>, <code>gearindex</code> and <code>taxaindex</code> tables, respectively, and the coded <code>KeyType</code> fields (<code>sex</code>, <code>maturationstage</code>, <code>missiontype</code>, <code>nation</code>, …) are written as the long-format <code>codeindex</code> table so they can be decoded offline with a join. Completed databases are stamped with the package and database-schema versions used to build them; <code><a href="updateDatabase.html">updateDatabase</a></code> uses this information to decide whether an incremental update is safe. Be aware that running these functions requires access to the IMR intranet and reasonably stable internet. It is advisable to run the function in a separate R session or in a screen session in the terminal on Unix machines, as downloading the database takes several hours and requires a stable internet connection. If the connection is unstable, the function may return an error. In such cases, ensure that the connection is stable and rerun the function. The function should continue downloading from where it left off.</p>
     </div>
     <div class="section level2">
     <h2 id="author">Author<a class="anchor" aria-label="anchor" href="#author"></a></h2>

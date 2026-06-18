@@ -57,9 +57,11 @@ downloadDatabase(
 
 - overwrite:
 
-  Logical indicating whether existing information in the
-  [duckdb](https://r.duckdb.org/reference/duckdb.html) database
-  (`dbPath`) should be downloaded again and overwritten.
+  Logical indicating whether requested years and reference tables
+  already present in the
+  [duckdb](https://r.duckdb.org/reference/duckdb.html) database should
+  be downloaded again and replaced. Existing annual rows are deleted
+  transactionally before replacement, so they are not duplicated.
 
 ## Value
 

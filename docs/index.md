@@ -11,6 +11,10 @@ serves as the data backend for the
 [BioticExplorer](https://github.com/DeepWaterIMR/BioticExplorer) Shiny
 application.
 
+See the [package
+website](https://deepwaterimr.github.io/BioticExplorerServer/) for
+documentation and function reference.
+
 ## Installation
 
 ``` r
@@ -52,32 +56,29 @@ compileDatabase(dbPath = "~/IMR_biotic_BES_database") # default dbPath, written 
 
 ### Update the database
 
-Currently, the entire database must be re-downloaded to update it
-because IMR Biotic database does not have last modified tags. To update
-the database, you can do the following:
+Once a database has been compiled, update it without downloading
+unchanged years:
 
 ``` r
 
 library(BioticExplorerServer)
-compileDatabase(dbPath = "~/IMR_biotic_BES_database",
-                dbName = "bioticexplorer-next")
-unlink(normalizePath("~/IMR_biotic_BES_database/bioticexplorer.duckdb"))
-file.rename(
-  normalizePath("~/IMR_biotic_BES_database/bioticexplorer-next.duckdb"),
-  normalizePath("~/IMR_biotic_BES_database/bioticexplorer.duckdb", 
-                mustWork = FALSE))
+updateDatabase(dbPath = "~/IMR_biotic_BES_database")
 ```
 
-This process first downloads the database to a file named
-`bioticexplorer-next.duckdb`, then deletes the old database and renames
-`bioticexplorer-next.duckdb` to `bioticexplorer.duckdb`. Since
-downloading takes time, you can continue using the database in another R
-session while the download is in progress. If it is not a priority, you
-can also overwrite the existing database:
+[`updateDatabase()`](https://deepwaterimr.github.io/BioticExplorerServer/reference/updateDatabase.md)
+checks metadata for each API delivery and transactionally replaces only
+years containing changed, added, or removed deliveries. If the database
+was built with an incompatible BioticExplorerServer schema, it uses
+[`compileDatabase()`](https://deepwaterimr.github.io/BioticExplorerServer/reference/compileDatabase.md)
+to build and validate a complete sibling database before safely swapping
+it into place. To deliberately re-download particular years without
+running the metadata check, use:
 
 ``` r
 
-compileDatabase(dbPath = "~/IMR_biotic_BES_database", overwrite = TRUE)
+compileDatabase(years = 2024:2026,
+                dbPath = "~/IMR_biotic_BES_database",
+                overwrite = TRUE)
 ```
 
 ### Uninstall the database
@@ -109,9 +110,9 @@ if (any(installed_packages == FALSE)) {
 invisible(lapply(packages, library, character.only = TRUE, quietly = TRUE))
 
 # Connect to the database (assuming you used standard dbPath and name)
-con_db <- "~/IMR_biotic_BES_database/bioticexplorer.duckdb" %>% 
-  normalizePath() %>% 
-  duckdb::duckdb(read_only = TRUE) %>% 
+con_db <- "~/IMR_biotic_BES_database/bioticexplorer.duckdb" %>%
+  normalizePath() %>%
+  duckdb::duckdb(read_only = TRUE) %>%
   DBI::dbConnect()
 
 ## Create the data objects
@@ -135,7 +136,7 @@ mission %>% head() %>% collect()
 ```
 
 ``` R
-## # A tibble: 6 x 14
+## # A tibble: 6 × 14
 ##   startyear platformname               cruise missiontype platform missionnumber
 ##       <int> <chr>                      <chr>  <chr>       <chr>            <int>
 ## 1      1906 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
@@ -217,14 +218,25 @@ DBI::dbListTables(con_db)
 ```
 
 ``` R
-## [1] "ageall"    "csindex"   "filesize"  "gearindex" "indall"    "metadata" 
-## [7] "mission"   "stnall"    "taxaindex"
+##  [1] "ageall"    "codeindex" "csindex"   "filesize"  "gearindex" "indall"
+##  [7] "metadata"  "mission"   "stnall"    "taxaindex"
 ```
+
+`source_manifest`, created by
+[`updateDatabase()`](https://deepwaterimr.github.io/BioticExplorerServer/reference/updateDatabase.md),
+stores metadata-only change signals used to identify which years need
+refreshing.
 
 ### Explore the database using Biotic Explorer shiny app
 
 Once downloaded, you can also use the database through the [Biotic
 Explorer](https://github.com/DeepWaterIMR/BioticExplorer) shiny app.
+
+### Human and AI-assisted workflows
+
+For reusable, privacy-conscious workflows for people and AI agents
+working with IMR Biotic data, see
+[BAIT](https://deepwaterimr.github.io/BAIT/).
 
 ## Troubleshooting
 

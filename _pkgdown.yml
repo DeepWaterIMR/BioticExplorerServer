@@ -17,11 +17,12 @@ reference:
 - title: Main workflow
   desc: >
     Functions to download and compile IMR Biotic survey data into a DuckDB database.
-    `compileDatabase()` is the main entry point and orchestrates the full workflow.
+    `compileDatabase()` creates a database and `updateDatabase()` refreshes changed years.
     The other functions are called internally but can also be used independently.
     All functions require IMR intranet access (VPN or HI-adm WiFi).
   contents:
   - compileDatabase
+  - updateDatabase
   - downloadDatabase
   - downloadDatabaseToFiles
   - indexDatabase

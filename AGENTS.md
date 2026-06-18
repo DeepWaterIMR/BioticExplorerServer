@@ -44,7 +44,7 @@ bioticToDatabase()      ← parses XML via RstoxData::readXmlFile(), merges
        │                   adds gear category (lookup via gearCodes)
        ▼
 DuckDB tables: mission, stnall, indall, ageall, filesize, metadata,
-               csindex, gearindex, taxaindex
+               source_manifest, csindex, gearindex, taxaindex
        │
        ▼
 indexDatabase()         ← creates dbIndex.rda for BioticExplorer Shiny app
@@ -53,6 +53,12 @@ indexDatabase()         ← creates dbIndex.rda for BioticExplorer Shiny app
 ### Main Entry Point
 
 `compileDatabase()` orchestrates the full workflow. It calls `prepareCruiseSeriesList()`, `prepareGearList()`, and `prepareTaxaList()` for reference data, then loops over years calling `downloadDatabase()`, and finally calls `indexDatabase()`. The database typically takes several hours to compile from scratch and requires >2 GB of disk space.
+
+`updateDatabase()` performs routine updates. It builds a metadata-only delivery manifest from
+the Biotic API and transactionally replaces only changed years. If the stored database schema
+version differs from the package schema version, it calls `compileDatabase()` to build and
+validate a complete sibling database before swapping it into place. Any future change to fact
+table structure or derived-data semantics must increment `.BES_DATABASE_SCHEMA_VERSION`.
 
 ### Key Design Points
 

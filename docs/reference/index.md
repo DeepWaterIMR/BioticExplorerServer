@@ -13,15 +13,20 @@ Quick access to the package documentation.
 Functions to download and compile IMR Biotic survey data into a DuckDB
 database.
 [`compileDatabase()`](https://deepwaterimr.github.io/BioticExplorerServer/reference/compileDatabase.md)
-is the main entry point and orchestrates the full workflow. The other
-functions are called internally but can also be used independently. All
-functions require IMR intranet access (VPN or HI-adm WiFi).
+creates a database and
+[`updateDatabase()`](https://deepwaterimr.github.io/BioticExplorerServer/reference/updateDatabase.md)
+refreshes changed years. The other functions are called internally but
+can also be used independently. All functions require IMR intranet
+access (VPN or HI-adm WiFi).
 
 - [`compileDatabase()`](https://deepwaterimr.github.io/BioticExplorerServer/reference/compileDatabase.md)
   :
 
   Download IMR Biotic database and to place it into a
   [duckdb](https://r.duckdb.org/reference/duckdb.html) database
+
+- [`updateDatabase()`](https://deepwaterimr.github.io/BioticExplorerServer/reference/updateDatabase.md)
+  : Incrementally update a BioticExplorer database
 
 - [`downloadDatabase()`](https://deepwaterimr.github.io/BioticExplorerServer/reference/downloadDatabase.md)
   : Download and parse NMD data for the BioticExplorer database

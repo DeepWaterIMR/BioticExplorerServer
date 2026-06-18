@@ -2,6 +2,26 @@
 
 ## BioticExplorerServer (development version)
 
+## BioticExplorerServer 0.7.0
+
+*2026-06-18*
+
+- Added
+  [`updateDatabase()`](https://deepwaterimr.github.io/BioticExplorerServer/reference/updateDatabase.md),
+  which uses delivery-level API metadata to download and atomically
+  replace only years whose data changed, were added, or were removed.
+
+- Added database schema and package-version metadata. An incompatible
+  schema now triggers a full sibling rebuild through
+  [`compileDatabase()`](https://deepwaterimr.github.io/BioticExplorerServer/reference/compileDatabase.md)
+  and a validated swap.
+
+- Fixed `overwrite = TRUE` so existing annual data are replaced instead
+  of duplicated.
+
+- Added a delivery manifest containing metadata-only change signals from
+  the Biotic API.
+
 - Added
   [`prepareReferenceCodes()`](https://deepwaterimr.github.io/BioticExplorerServer/reference/prepareReferenceCodes.md),
   which pulls the simple coded `KeyType` fields (`sex`,

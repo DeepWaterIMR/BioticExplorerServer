@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">BioticExplorerServer</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -79,7 +79,7 @@
 
 
 <dt id="arg-overwrite">overwrite<a class="anchor" aria-label="anchor" href="#arg-overwrite"></a></dt>
-<dd><p>Logical indicating whether existing information in the <a href="https://r.duckdb.org/reference/duckdb.html" class="external-link">duckdb</a> database (<code>dbPath</code>) should be downloaded again and overwritten.</p></dd>
+<dd><p>Logical indicating whether requested years and reference tables already present in the <a href="https://r.duckdb.org/reference/duckdb.html" class="external-link">duckdb</a> database should be downloaded again and replaced. Existing annual rows are deleted transactionally before replacement, so they are not duplicated.</p></dd>
 
 </dl></div>
     <div class="section level2">

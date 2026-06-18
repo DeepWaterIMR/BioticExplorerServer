@@ -19,6 +19,8 @@ suppressPackageStartupMessages(library(tidyverse))
 
 This package downloads and compiles the IMR Biotic survey database into a [DuckDB](https://duckdb.org/docs/api/r.html) database, providing programmatic access to all of the institute's Biotic data from R. It serves as the data backend for the [BioticExplorer](https://github.com/DeepWaterIMR/BioticExplorer) Shiny application.
 
+See the [package website](https://deepwaterimr.github.io/BioticExplorerServer/) for documentation and function reference.
+
 ## Installation
 
 ```{r, eval = FALSE}
@@ -38,23 +40,23 @@ compileDatabase(dbPath = "~/IMR_biotic_BES_database") # default dbPath, written 
 
 ### Update the database
 
-Currently, the entire database must be re-downloaded to update it because IMR Biotic database does not have last modified tags. To update the database, you can do the following:
+Once a database has been compiled, update it without downloading unchanged years:
 
 ```{r, eval = FALSE}
 library(BioticExplorerServer)
-compileDatabase(dbPath = "~/IMR_biotic_BES_database",
-                dbName = "bioticexplorer-next")
-unlink(normalizePath("~/IMR_biotic_BES_database/bioticexplorer.duckdb"))
-file.rename(
-  normalizePath("~/IMR_biotic_BES_database/bioticexplorer-next.duckdb"),
-  normalizePath("~/IMR_biotic_BES_database/bioticexplorer.duckdb", 
-                mustWork = FALSE))
+updateDatabase(dbPath = "~/IMR_biotic_BES_database")
 ```
 
-This process first downloads the database to a file named `bioticexplorer-next.duckdb`, then deletes the old database and renames `bioticexplorer-next.duckdb` to `bioticexplorer.duckdb`. Since downloading takes time, you can continue using the database in another R session while the download is in progress. If it is not a priority, you can also overwrite the existing database:
+`updateDatabase()` checks metadata for each API delivery and transactionally replaces only
+years containing changed, added, or removed deliveries. If the database was built with an
+incompatible BioticExplorerServer schema, it uses `compileDatabase()` to build and validate
+a complete sibling database before safely swapping it into place. To deliberately re-download
+particular years without running the metadata check, use:
 
 ```{r, eval = FALSE}
-compileDatabase(dbPath = "~/IMR_biotic_BES_database", overwrite = TRUE)
+compileDatabase(years = 2024:2026,
+                dbPath = "~/IMR_biotic_BES_database",
+                overwrite = TRUE)
 ```
 
 ### Uninstall the database
@@ -146,9 +148,15 @@ The duckdb database contains following data tables:
 DBI::dbListTables(con_db)
 ```
 
+`source_manifest`, created by `updateDatabase()`, stores metadata-only change signals used to identify which years need refreshing.
+
 ### Explore the database using Biotic Explorer shiny app
 
 Once downloaded, you can also use the database through the [Biotic Explorer](https://github.com/DeepWaterIMR/BioticExplorer) shiny app. 
+
+### Human and AI-assisted workflows
+
+For reusable, privacy-conscious workflows for people and AI agents working with IMR Biotic data, see [BAIT](https://deepwaterimr.github.io/BAIT/).
 
 ## Troubleshooting
 

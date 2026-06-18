@@ -27,7 +27,7 @@ downloadDatabase(
 
 \item{taxaList}{a data.table object of NMD taxa reference data. Written to the \code{taxaindex} DuckDB table. See \code{\link{prepareTaxaList}}.}
 
-\item{overwrite}{Logical indicating whether existing information in the \link[duckdb]{duckdb} database (\code{dbPath}) should be downloaded again and overwritten.}
+\item{overwrite}{Logical indicating whether requested years and reference tables already present in the \link[duckdb]{duckdb} database should be downloaded again and replaced. Existing annual rows are deleted transactionally before replacement, so they are not duplicated.}
 }
 \value{
 Called for its side effects: appends parsed Biotic data to the DuckDB database. Returns \code{NULL} invisibly.

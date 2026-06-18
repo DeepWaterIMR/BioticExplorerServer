@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">BioticExplorerServer</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -52,6 +52,7 @@
 <p><strong>R Package for Downloading Server-Side Data for BioticExplorer</strong></p>
 <p><a href="https://deepwaterimr.github.io/BioticExplorerServer/"><img src="https://img.shields.io/badge/pkgdown-website-blue" alt="Website"></a></p>
 <p>This package downloads and compiles the IMR Biotic survey database into a <a href="https://duckdb.org/docs/api/r.html" class="external-link">DuckDB</a> database, providing programmatic access to all of the institute’s Biotic data from R. It serves as the data backend for the <a href="https://github.com/DeepWaterIMR/BioticExplorer" class="external-link">BioticExplorer</a> Shiny application.</p>
+<p>See the <a href="https://deepwaterimr.github.io/BioticExplorerServer/">package website</a> for documentation and function reference.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
@@ -72,19 +73,15 @@
 <div class="section level3">
 <h3 id="update-the-database">Update the database<a class="anchor" aria-label="anchor" href="#update-the-database"></a>
 </h3>
-<p>Currently, the entire database must be re-downloaded to update it because IMR Biotic database does not have last modified tags. To update the database, you can do the following:</p>
+<p>Once a database has been compiled, update it without downloading unchanged years:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://deepwaterimr.github.io/BioticExplorerServer">BioticExplorerServer</a></span><span class="op">)</span></span>
-<span><span class="fu"><a href="reference/compileDatabase.html">compileDatabase</a></span><span class="op">(</span>dbPath <span class="op">=</span> <span class="st">"~/IMR_biotic_BES_database"</span>,</span>
-<span>                dbName <span class="op">=</span> <span class="st">"bioticexplorer-next"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/unlink.html" class="external-link">unlink</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/normalizePath.html" class="external-link">normalizePath</a></span><span class="op">(</span><span class="st">"~/IMR_biotic_BES_database/bioticexplorer.duckdb"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.rename</a></span><span class="op">(</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/normalizePath.html" class="external-link">normalizePath</a></span><span class="op">(</span><span class="st">"~/IMR_biotic_BES_database/bioticexplorer-next.duckdb"</span><span class="op">)</span>,</span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/normalizePath.html" class="external-link">normalizePath</a></span><span class="op">(</span><span class="st">"~/IMR_biotic_BES_database/bioticexplorer.duckdb"</span>, </span>
-<span>                mustWork <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p>This process first downloads the database to a file named <code>bioticexplorer-next.duckdb</code>, then deletes the old database and renames <code>bioticexplorer-next.duckdb</code> to <code>bioticexplorer.duckdb</code>. Since downloading takes time, you can continue using the database in another R session while the download is in progress. If it is not a priority, you can also overwrite the existing database:</p>
+<span><span class="fu"><a href="reference/updateDatabase.html">updateDatabase</a></span><span class="op">(</span>dbPath <span class="op">=</span> <span class="st">"~/IMR_biotic_BES_database"</span><span class="op">)</span></span></code></pre></div>
+<p><code><a href="reference/updateDatabase.html">updateDatabase()</a></code> checks metadata for each API delivery and transactionally replaces only years containing changed, added, or removed deliveries. If the database was built with an incompatible BioticExplorerServer schema, it uses <code><a href="reference/compileDatabase.html">compileDatabase()</a></code> to build and validate a complete sibling database before safely swapping it into place. To deliberately re-download particular years without running the metadata check, use:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="reference/compileDatabase.html">compileDatabase</a></span><span class="op">(</span>dbPath <span class="op">=</span> <span class="st">"~/IMR_biotic_BES_database"</span>, overwrite <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="reference/compileDatabase.html">compileDatabase</a></span><span class="op">(</span>years <span class="op">=</span> <span class="fl">2024</span><span class="op">:</span><span class="fl">2026</span>,</span>
+<span>                dbPath <span class="op">=</span> <span class="st">"~/IMR_biotic_BES_database"</span>,</span>
+<span>                overwrite <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="uninstall-the-database">Uninstall the database<a class="anchor" aria-label="anchor" href="#uninstall-the-database"></a>
@@ -109,9 +106,9 @@
 <span><span class="fu"><a href="https://rdrr.io/r/base/invisible.html" class="external-link">invisible</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">packages</span>, <span class="va">library</span>, character.only <span class="op">=</span> <span class="cn">TRUE</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Connect to the database (assuming you used standard dbPath and name)</span></span>
-<span><span class="va">con_db</span> <span class="op">&lt;-</span> <span class="st">"~/IMR_biotic_BES_database/bioticexplorer.duckdb"</span> <span class="op">%&gt;%</span> </span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/normalizePath.html" class="external-link">normalizePath</a></span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
-<span>  <span class="fu">duckdb</span><span class="fu">::</span><span class="fu"><a href="https://r.duckdb.org/reference/duckdb.html" class="external-link">duckdb</a></span><span class="op">(</span>read_only <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span><span class="va">con_db</span> <span class="op">&lt;-</span> <span class="st">"~/IMR_biotic_BES_database/bioticexplorer.duckdb"</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/normalizePath.html" class="external-link">normalizePath</a></span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">duckdb</span><span class="fu">::</span><span class="fu"><a href="https://r.duckdb.org/reference/duckdb.html" class="external-link">duckdb</a></span><span class="op">(</span>read_only <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
 <span>  <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">## Create the data objects</span></span>
@@ -128,7 +125,7 @@
 <p>These data objects can now be used in R:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mission</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">collect</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb7"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="do">## # A tibble: 6 x 14</span></span>
+<div class="sourceCode" id="cb7"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="do">## # A tibble: 6 × 14</span></span>
 <span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="do">##   startyear platformname               cruise missiontype platform missionnumber</span></span>
 <span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="do">##       &lt;int&gt; &lt;chr&gt;                      &lt;chr&gt;  &lt;chr&gt;       &lt;chr&gt;            &lt;int&gt;</span></span>
 <span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="do">## 1      1906 NVG-sampling (Norsk vårgy… &lt;NA&gt;   1           10016                1</span></span>
@@ -137,7 +134,7 @@
 <span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a><span class="do">## 4      1909 NVG-sampling (Norsk vårgy… &lt;NA&gt;   1           10016                1</span></span>
 <span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a><span class="do">## 5      1910 NVG-sampling (Norsk vårgy… &lt;NA&gt;   1           10016                1</span></span>
 <span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a><span class="do">## 6      1911 NVG-sampling (Norsk vårgy… &lt;NA&gt;   1           10016                1</span></span>
-<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a><span class="do">## # i 8 more variables: missiontypename &lt;chr&gt;, callsignal &lt;chr&gt;,</span></span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a><span class="do">## # ℹ 8 more variables: missiontypename &lt;chr&gt;, callsignal &lt;chr&gt;,</span></span>
 <span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a><span class="do">## #   missionstartdate &lt;chr&gt;, missionstopdate &lt;chr&gt;, purpose &lt;chr&gt;,</span></span>
 <span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a><span class="do">## #   missionid &lt;chr&gt;, cruiseseriescode &lt;chr&gt;, idCruiseseriesSample &lt;chr&gt;</span></span></code></pre></div>
 <p>The <a href="https://solutions.posit.co/connections/db/r-packages/dplyr/" class="external-link">dplyr package can also be used with databases</a>. The only difference from normal use is that you’ll need to <a href="https://dbplyr.tidyverse.org/reference/collapse.tbl_sql.html" class="external-link"><code>collect()</code></a> the data from the database after filtering. Note that you are handling large amounts of data, and using the collect function incorrectly may cause your computer to crash due to insufficient RAM. Therefore, always filter before collecting and consider using <a href="https://dbplyr.tidyverse.org/reference/collapse.tbl_sql.html" class="external-link"><code>compute()</code></a> or use the <a href="https://cran.r-project.org/web/packages/data.table/index.html" class="external-link">data.table</a> package, if you’ll need to handle very large proportions of the IMR Biotic database. Stations with no catch (i.e., where <code>commonname</code> is NA) can be now found by <code>stnall |&gt; filter(!is.na(commonname))</code> (Figure 1).</p>
@@ -182,13 +179,19 @@ Figure 1. Number of IMR Biotic sampling stations per year from around 1914 to pr
 <p>The duckdb database contains following data tables:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbListTables.html" class="external-link">dbListTables</a></span><span class="op">(</span><span class="va">con_db</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb10"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="do">## [1] "ageall"    "csindex"   "filesize"  "gearindex" "indall"    "metadata" </span></span>
-<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="do">## [7] "mission"   "stnall"    "taxaindex"</span></span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="do">##  [1] "ageall"    "codeindex" "csindex"   "filesize"  "gearindex" "indall"</span></span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="do">##  [7] "metadata"  "mission"   "stnall"    "taxaindex"</span></span></code></pre></div>
+<p><code>source_manifest</code>, created by <code><a href="reference/updateDatabase.html">updateDatabase()</a></code>, stores metadata-only change signals used to identify which years need refreshing.</p>
 </div>
 <div class="section level3">
 <h3 id="explore-the-database-using-biotic-explorer-shiny-app">Explore the database using Biotic Explorer shiny app<a class="anchor" aria-label="anchor" href="#explore-the-database-using-biotic-explorer-shiny-app"></a>
 </h3>
 <p>Once downloaded, you can also use the database through the <a href="https://github.com/DeepWaterIMR/BioticExplorer" class="external-link">Biotic Explorer</a> shiny app.</p>
+</div>
+<div class="section level3">
+<h3 id="human-and-ai-assisted-workflows">Human and AI-assisted workflows<a class="anchor" aria-label="anchor" href="#human-and-ai-assisted-workflows"></a>
+</h3>
+<p>For reusable, privacy-conscious workflows for people and AI agents working with IMR Biotic data, see <a href="https://deepwaterimr.github.io/BAIT/" class="external-link">BAIT</a>.</p>
 </div>
 </div>
 <div class="section level2">
