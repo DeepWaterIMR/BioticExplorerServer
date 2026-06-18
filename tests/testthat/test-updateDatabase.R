@@ -128,6 +128,74 @@ test_that("metadata discovery returns an empty manifest when all deliveries disa
   expect_identical(manifest, BioticExplorerServer:::.empty_source_manifest())
 })
 
+test_that("metadata discovery stops checking a year after its first change", {
+  deliveries <- data.frame(
+    missiontype = rep("Survey", 3), data_year = rep(2020L, 3),
+    platform = rep("Platform", 3), delivery = c("1", "2", "3"),
+    stringsAsFactors = FALSE
+  )
+  old_headers <- c(
+    last_modified = "Wed, 01 Jan 2025 00:00:00 GMT",
+    last_snapshot_code = "old", last_snapshot_time = "2025-01-01T00:00:00Z",
+    format_version = "3.1"
+  )
+  stored <- do.call(rbind, lapply(seq_len(nrow(deliveries)), function(n) {
+    BioticExplorerServer:::.manifest_row(
+      deliveries[n, , drop = FALSE], old_headers, "2025-01-02 00:00:00 UTC"
+    )
+  }))
+  new_headers <- old_headers
+  new_headers[["last_modified"]] <- "Thu, 02 Jan 2025 00:00:00 GMT"
+  calls <- 0L
+
+  local_mocked_bindings(
+    .discover_source_deliveries = function(years) deliveries,
+    .api_delivery_headers = function(...) {
+      calls <<- calls + 1L
+      new_headers
+    },
+    .package = "BioticExplorerServer"
+  )
+
+  messages <- capture.output(
+    manifest <- BioticExplorerServer:::.discover_source_manifest(
+      verbose = FALSE, stored_manifest = stored
+    ),
+    type = "message"
+  )
+  expect_identical(calls, 1L)
+  expect_identical(attr(manifest, "changed_years"), 2020L)
+  expect_equal(nrow(manifest), 1)
+  expect_identical(manifest$delivery, "")
+  expect_true(any(grepl("skipped 2 remaining metadata requests", messages)))
+})
+
+test_that("a downloaded-year baseline does not trigger a repeated update", {
+  parsed <- parsed_year()
+  baseline <- BioticExplorerServer:::.baseline_manifest_from_parsed(
+    parsed, 2020L, as.POSIXct("2026-01-01 00:00:00", tz = "UTC")
+  )
+  deliveries <- baseline[c("missiontype", "data_year", "platform", "delivery")]
+  headers <- c(
+    last_modified = "Wed, 01 Jan 2025 00:00:00 GMT",
+    last_snapshot_code = "snapshot", last_snapshot_time = "2025-01-01T00:00:00Z",
+    format_version = "3.1"
+  )
+
+  local_mocked_bindings(
+    .discover_source_deliveries = function(years) deliveries,
+    .api_delivery_headers = function(...) headers,
+    .package = "BioticExplorerServer"
+  )
+
+  manifest <- BioticExplorerServer:::.discover_source_manifest(
+    verbose = FALSE, stored_manifest = baseline
+  )
+  expect_identical(attr(manifest, "changed_years"), integer())
+  expect_equal(nrow(manifest), 1)
+  expect_identical(manifest$last_snapshot_code, "snapshot")
+})
+
 test_that("an unchanged compatible database downloads nothing", {
   directory <- withr::local_tempdir()
   database <- file.path(directory, "bioticexplorer.duckdb")
@@ -136,7 +204,7 @@ test_that("an unchanged compatible database downloads nothing", {
   downloaded <- FALSE
 
   local_mocked_bindings(
-    .discover_source_manifest = function(years, verbose) manifest,
+    .discover_source_manifest = function(years, verbose, stored_manifest = NULL) manifest,
     .download_year_for_update = function(...) {
       downloaded <<- TRUE
       stop("should not download")
@@ -159,7 +227,7 @@ test_that("a changed delivery atomically replaces its year", {
   create_test_database(database, manifest = old_manifest)
 
   local_mocked_bindings(
-    .discover_source_manifest = function(years, verbose) new_manifest,
+    .discover_source_manifest = function(years, verbose, stored_manifest = NULL) new_manifest,
     .download_year_for_update = function(...) {
       list(parsed = parsed_year(value = "new"), filesize = 200)
     },
@@ -180,6 +248,34 @@ test_that("a changed delivery atomically replaces its year", {
   )
 })
 
+test_that("an early-exit update stores a post-download delivery baseline", {
+  directory <- withr::local_tempdir()
+  database <- file.path(directory, "bioticexplorer.duckdb")
+  create_test_database(database, manifest = manifest_row())
+  discovered <- BioticExplorerServer:::.year_baseline_placeholder(
+    2020L, "2026-01-01T00:00:00Z"
+  )
+  attr(discovered, "changed_years") <- 2020L
+
+  local_mocked_bindings(
+    .discover_source_manifest = function(...) discovered,
+    .download_year_for_update = function(...) {
+      list(parsed = parsed_year(value = "new"), filesize = 200)
+    },
+    indexDatabase = function(...) invisible(NULL),
+    .package = "BioticExplorerServer"
+  )
+
+  result <- updateDatabase(dbPath = directory, verbose = FALSE)
+  expect_identical(result$years, 2020L)
+  con <- DBI::dbConnect(duckdb::duckdb(), dbdir = database, read_only = TRUE)
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  baseline <- DBI::dbReadTable(con, "source_manifest")
+  expect_identical(baseline$delivery, "2020001")
+  expect_true(all(is.na(baseline$last_modified)))
+  expect_true(BioticExplorerServer:::.manifest_year_is_baseline(baseline))
+})
+
 test_that("a removed delivery removes its year", {
   directory <- withr::local_tempdir()
   database <- file.path(directory, "bioticexplorer.duckdb")
@@ -187,7 +283,7 @@ test_that("a removed delivery removes its year", {
   empty <- BioticExplorerServer:::.empty_source_manifest()
 
   local_mocked_bindings(
-    .discover_source_manifest = function(years, verbose) empty,
+    .discover_source_manifest = function(years, verbose, stored_manifest = NULL) empty,
     indexDatabase = function(...) invisible(NULL),
     .package = "BioticExplorerServer"
   )
@@ -241,7 +337,7 @@ test_that("legacy compatible databases are stamped without rebuilding", {
   rebuilt <- FALSE
 
   local_mocked_bindings(
-    .discover_source_manifest = function(years, verbose) manifest,
+    .discover_source_manifest = function(years, verbose, stored_manifest = NULL) manifest,
     .rebuild_incompatible_database = function(...) {
       rebuilt <<- TRUE
       stop("should not rebuild")

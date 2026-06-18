@@ -1,5 +1,15 @@
 # BioticExplorerServer (development version)
 
+# BioticExplorerServer 0.7.3
+
+*2026-06-18*
+
+- Speeded up `updateDatabase()` metadata checks by stopping after the first
+  changed delivery in each year, since any change already requires replacing
+  that year's complete cache.
+- Added post-download delivery baselines so early exit still detects later
+  additions, removals, and changes without repeatedly refreshing the same year.
+
 # BioticExplorerServer 0.7.2
 
 *2026-06-18*

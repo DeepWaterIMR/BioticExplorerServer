@@ -31,8 +31,9 @@ Invisibly returns a list describing the update mode and changed years.
 }
 \description{
 Uses metadata-only API requests to identify years containing changed, added,
-or removed deliveries. Only those annual XML caches are downloaded and
-transactionally replaced. If the database schema is incompatible with this
-package version, a complete sibling database is built with
+or removed deliveries. Once one changed delivery is found, remaining
+deliveries in that year are skipped because the complete annual XML cache
+must be replaced. If the database schema is incompatible with this package
+version, a complete sibling database is built with
 \code{\link{compileDatabase}} and safely swapped into place.
 }

@@ -98,15 +98,79 @@
   do.call(rbind, result)
 }
 
-.discover_source_manifest <- function(years = NULL, verbose = FALSE) {
+.manifest_delivery_keys <- function(value) {
+  if (!nrow(value)) return(character())
+  paste(value$missiontype, value$data_year, value$platform, value$delivery,
+        sep = "\r")
+}
+
+.manifest_year_is_baseline <- function(value) {
+  nrow(value) > 0L && all(
+    is.na(value$last_modified) &
+      is.na(value$last_snapshot_code) &
+      is.na(value$last_snapshot_time)
+  )
+}
+
+.manifest_row <- function(delivery, headers, checked_at) {
+  data.frame(
+    delivery,
+    last_modified = unname(headers[["last_modified"]]),
+    last_snapshot_code = unname(headers[["last_snapshot_code"]]),
+    last_snapshot_time = unname(headers[["last_snapshot_time"]]),
+    format_version = unname(headers[["format_version"]]),
+    checked_at = checked_at,
+    stringsAsFactors = FALSE
+  )
+}
+
+.year_baseline_placeholder <- function(year, checked_at) {
+  data.frame(
+    missiontype = "", data_year = as.integer(year), platform = "", delivery = "",
+    last_modified = NA_character_, last_snapshot_code = NA_character_,
+    last_snapshot_time = NA_character_, format_version = NA_character_,
+    checked_at = checked_at, stringsAsFactors = FALSE
+  )
+}
+
+.manifest_row_newer_than <- function(value, checked_at) {
+  baseline <- .parse_api_time(checked_at)
+  signals <- c(
+    .parse_api_time(value$last_modified),
+    .parse_api_time(value$last_snapshot_time)
+  )
+  signals <- signals[!is.na(signals)]
+  is.na(baseline) || !length(signals) || any(signals > baseline)
+}
+
+.report_metadata_progress <- function(progress, progress_bar, verbose, processed,
+                                      total, progress_marks, reported_marks) {
+  if (progress) {
+    utils::setTxtProgressBar(progress_bar, processed)
+  } else if (!verbose) {
+    marks <- progress_marks[
+      progress_marks <= processed & !progress_marks %in% reported_marks
+    ]
+    if (length(marks)) {
+      mark <- max(marks)
+      message("Metadata progress: ", mark, "/", total, " (",
+              round(100 * mark / total), "%).")
+    }
+    reported_marks <- c(reported_marks, marks)
+  }
+  reported_marks
+}
+
+.discover_source_manifest <- function(years = NULL, verbose = FALSE,
+                                      stored_manifest = NULL) {
   deliveries <- .discover_source_deliveries(years)
   total <- nrow(deliveries)
-  if (!total) return(.empty_source_manifest())
+  if (!total && is.null(stored_manifest)) return(.empty_source_manifest())
 
   checked_at <- format(Sys.time(), tz = "UTC", usetz = TRUE)
-  result <- vector("list", total)
+  result <- list()
   unavailable <- 0L
-  progress <- !verbose && interactive()
+  progress <- total > 0L && !verbose && interactive()
   progress_bar <- NULL
   if (progress) {
     progress_bar <- utils::txtProgressBar(min = 0, max = total, style = 3)
@@ -115,6 +179,112 @@
     message("Checking metadata for ", total, " deliveries.")
   }
   progress_marks <- unique(pmax(1L, ceiling(total * seq(0.1, 1, by = 0.1))))
+  reported_marks <- integer()
+  processed <- 0L
+
+  if (!is.null(stored_manifest)) {
+    changed_years <- integer()
+    check_years <- sort(unique(c(deliveries$data_year, stored_manifest$data_year)))
+
+    for (year in check_years) {
+      year_deliveries <- deliveries[deliveries$data_year == year, , drop = FALSE]
+      stored_year <- stored_manifest[stored_manifest$data_year == year, , drop = FALSE]
+      baseline <- .manifest_year_is_baseline(stored_year)
+      baseline_at <- if (baseline) stored_year$checked_at[[1]] else NA_character_
+      stored_inventory <- stored_year[
+        stored_year$missiontype != "" | stored_year$platform != "" |
+          stored_year$delivery != "",
+        , drop = FALSE
+      ]
+      stored_keys <- .manifest_delivery_keys(stored_inventory)
+      year_result <- list()
+      year_changed <- FALSE
+      last_checked <- 0L
+
+      for (n in seq_len(nrow(year_deliveries))) {
+        last_checked <- n
+        delivery <- year_deliveries[n, , drop = FALSE]
+        if (verbose) {
+          message("Checking metadata: ", delivery$missiontype, " / ",
+                  delivery$data_year, " / ", delivery$platform, " / ",
+                  delivery$delivery)
+        }
+        headers <- .api_delivery_headers(
+          delivery$missiontype, delivery$data_year, delivery$platform,
+          delivery$delivery
+        )
+        processed <- processed + 1L
+        reported_marks <- .report_metadata_progress(
+          progress, progress_bar, verbose, processed, total, progress_marks,
+          reported_marks
+        )
+        if (is.null(headers)) {
+          unavailable <- unavailable + 1L
+          next
+        }
+
+        row <- .manifest_row(delivery, headers, checked_at)
+        key <- .manifest_delivery_keys(row)
+        if (baseline) {
+          year_changed <- !key %in% stored_keys ||
+            .manifest_row_newer_than(row, baseline_at)
+        } else {
+          old <- stored_year[.manifest_delivery_keys(stored_year) == key, , drop = FALSE]
+          year_changed <- nrow(old) != 1L ||
+            !identical(.normalise_manifest(old), .normalise_manifest(row))
+        }
+        if (year_changed) break
+        year_result[[length(year_result) + 1L]] <- row
+      }
+
+      if (year_changed) {
+        changed_years <- c(changed_years, year)
+        if (nrow(year_deliveries)) {
+          result[[length(result) + 1L]] <- .year_baseline_placeholder(year, checked_at)
+        }
+        skipped <- nrow(year_deliveries) - last_checked
+        if (skipped > 0L) {
+          if (!verbose) {
+            message(
+              "Change found for ", year, "; skipped ", skipped,
+              if (skipped == 1L) " remaining metadata request."
+              else " remaining metadata requests."
+            )
+          }
+          processed <- processed + skipped
+          reported_marks <- .report_metadata_progress(
+            progress, progress_bar, verbose, processed, total, progress_marks,
+            reported_marks
+          )
+        }
+        next
+      }
+
+      current_year <- if (length(year_result)) {
+        do.call(rbind, year_result)
+      } else .empty_source_manifest()
+      if (!identical(sort(.manifest_delivery_keys(current_year)), sort(stored_keys))) {
+        changed_years <- c(changed_years, year)
+        if (nrow(year_deliveries)) {
+          result[[length(result) + 1L]] <- .year_baseline_placeholder(year, checked_at)
+        }
+      } else if (nrow(current_year)) {
+        result[[length(result) + 1L]] <- current_year
+      }
+    }
+
+    value <- if (length(result)) do.call(rbind, result) else .empty_source_manifest()
+    attr(value, "changed_years") <- sort(unique(as.integer(changed_years)))
+    if (unavailable) {
+      warning(
+        "Skipped ", unavailable,
+        if (unavailable == 1L) " delivery" else " deliveries",
+        " that disappeared from the API during metadata discovery.",
+        call. = FALSE
+      )
+    }
+    return(value)
+  }
 
   for (n in seq_len(total)) {
     delivery <- deliveries[n, , drop = FALSE]
@@ -130,15 +300,7 @@
     if (is.null(headers)) {
       unavailable <- unavailable + 1L
     } else {
-      result[[n]] <- data.frame(
-        delivery,
-        last_modified = unname(headers[["last_modified"]]),
-        last_snapshot_code = unname(headers[["last_snapshot_code"]]),
-        last_snapshot_time = unname(headers[["last_snapshot_time"]]),
-        format_version = unname(headers[["format_version"]]),
-        checked_at = checked_at,
-        stringsAsFactors = FALSE
-      )
+      result[[n]] <- .manifest_row(delivery, headers, checked_at)
     }
     if (progress) {
       utils::setTxtProgressBar(progress_bar, n)
@@ -207,6 +369,27 @@
   )
 }
 
+.baseline_manifest_from_parsed <- function(parsed, year, checked_at) {
+  mission <- parsed$mission
+  if (is.null(mission) || !nrow(mission)) return(.empty_source_manifest())
+  inventory <- unique(data.frame(
+    missiontype = as.character(mission$missiontypename),
+    data_year = as.integer(year),
+    platform = paste0(mission$platformname, "_", mission$platform),
+    delivery = as.character(mission$missionnumber),
+    stringsAsFactors = FALSE
+  ))
+  data.frame(
+    inventory,
+    last_modified = NA_character_,
+    last_snapshot_code = NA_character_,
+    last_snapshot_time = NA_character_,
+    format_version = NA_character_,
+    checked_at = format(checked_at, "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"),
+    stringsAsFactors = FALSE
+  )
+}
+
 .manifest_keys <- function(value) {
   if (!nrow(value)) return(character())
   sort(unique(paste(value$missiontype, value$data_year, value$platform,
@@ -214,10 +397,21 @@
 }
 
 .parse_api_time <- function(x) {
-  suppressWarnings(as.POSIXct(x, tz = "UTC", tryFormats = c(
+  x <- sub(" UTC$", "", as.character(x))
+  value <- rep(as.POSIXct(NA, tz = "UTC"), length(x))
+  formats <- c(
     "%a, %d %b %Y %H:%M:%S GMT", "%Y-%m-%dT%H:%M:%OSZ",
     "%Y-%m-%d %H:%M:%S"
-  )))
+  )
+  for (time_format in formats) {
+    missing <- is.na(value)
+    if (!any(missing)) break
+    parsed <- suppressWarnings(as.POSIXct(
+      x[missing], format = time_format, tz = "UTC"
+    ))
+    value[missing] <- parsed
+  }
+  value
 }
 
 .legacy_year_is_current <- function(connection, manifest, year) {
@@ -334,9 +528,10 @@
 #' Incrementally update a BioticExplorer database
 #'
 #' Uses metadata-only API requests to identify years containing changed, added,
-#' or removed deliveries. Only those annual XML caches are downloaded and
-#' transactionally replaced. If the database schema is incompatible with this
-#' package version, a complete sibling database is built with
+#' or removed deliveries. Once one changed delivery is found, remaining
+#' deliveries in that year are skipped because the complete annual XML cache
+#' must be replaced. If the database schema is incompatible with this package
+#' version, a complete sibling database is built with
 #' \code{\link{compileDatabase}} and safely swapped into place.
 #'
 #' @param years Optional integer vector limiting metadata checks and incremental
@@ -391,8 +586,17 @@ updateDatabase <- function(
   .ensure_source_manifest(connection)
 
   requested_years <- if (is.null(years)) NULL else sort(unique(as.integer(years)))
-  current_manifest <- .discover_source_manifest(requested_years, verbose = verbose)
   stored_manifest <- DBI::dbReadTable(connection, "source_manifest")
+  discovery_manifest <- if (is.null(requested_years)) {
+    stored_manifest
+  } else {
+    stored_manifest[stored_manifest$data_year %in% requested_years, , drop = FALSE]
+  }
+  current_manifest <- .discover_source_manifest(
+    requested_years, verbose = verbose,
+    stored_manifest = if (nrow(discovery_manifest)) discovery_manifest else NULL
+  )
+  discovered_changed_years <- attr(current_manifest, "changed_years")
   local_years <- if ("mission" %in% DBI::dbListTables(connection)) {
     DBI::dbGetQuery(connection, "SELECT DISTINCT startyear FROM mission")$startyear
   } else integer()
@@ -401,13 +605,17 @@ updateDatabase <- function(
   } else requested_years
 
   legacy_manifest <- !nrow(stored_manifest)
-  changed_years <- target_years[vapply(target_years, function(year) {
-    if (legacy_manifest) {
-      !.legacy_year_is_current(connection, current_manifest, year)
-    } else {
-      !.manifest_year_equal(stored_manifest, current_manifest, year)
-    }
-  }, logical(1))]
+  changed_years <- if (!is.null(discovered_changed_years)) {
+    intersect(target_years, discovered_changed_years)
+  } else {
+    target_years[vapply(target_years, function(year) {
+      if (legacy_manifest) {
+        !.legacy_year_is_current(connection, current_manifest, year)
+      } else {
+        !.manifest_year_equal(stored_manifest, current_manifest, year)
+      }
+    }, logical(1))]
+  }
 
   cruiseSeries <- if ("csindex" %in% DBI::dbListTables(connection)) {
     data.table::as.data.table(DBI::dbReadTable(connection, "csindex"))
@@ -420,9 +628,15 @@ updateDatabase <- function(
     year_manifest <- current_manifest[current_manifest$data_year == year, , drop = FALSE]
     if (nrow(year_manifest)) {
       message("Downloading changed year: ", year)
+      download_started_at <- Sys.time()
       downloaded <- .download_year_for_update(
         year, cruiseSeries = cruiseSeries, gearCodes = gearCodes
       )
+      if (!is.null(discovered_changed_years)) {
+        year_manifest <- .baseline_manifest_from_parsed(
+          downloaded$parsed, year, download_started_at
+        )
+      }
       .write_database_year(
         connection, year, downloaded$parsed, downloaded$filesize,
         replace = TRUE, manifest = year_manifest
