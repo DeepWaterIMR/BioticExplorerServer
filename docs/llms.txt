@@ -110,9 +110,9 @@ if (any(installed_packages == FALSE)) {
 invisible(lapply(packages, library, character.only = TRUE, quietly = TRUE))
 
 # Connect to the database (assuming you used standard dbPath and name)
-con_db <- "~/IMR_biotic_BES_database/bioticexplorer.duckdb" %>%
-  normalizePath() %>%
-  duckdb::duckdb(read_only = TRUE) %>%
+con_db <- "~/IMR_biotic_BES_database/bioticexplorer.duckdb" %>% 
+  normalizePath() %>% 
+  duckdb::duckdb(read_only = TRUE) %>% 
   DBI::dbConnect()
 
 ## Create the data objects
@@ -122,7 +122,8 @@ indall <- dplyr::tbl(con_db, "indall") # individual-based data
 ageall <- dplyr::tbl(con_db, "ageall") # age data
 mission <- dplyr::tbl(con_db, "mission") # information on
 meta <- dplyr::tbl(con_db, "metadata") %>% # time of download
-  collect() %>% mutate_all(as.POSIXct)
+  collect() %>%
+  mutate(across(c(timestart, timeend), as.POSIXct))
 csindex <- dplyr::tbl(con_db, "csindex") # cruise series index
 gearlist <- dplyr::tbl(con_db, "gearindex") %>% collect() # gear index
 taxalist <- dplyr::tbl(con_db, "taxaindex") %>% collect() # taxa index
@@ -132,19 +133,22 @@ These data objects can now be used in R:
 
 ``` r
 
-mission %>% head() %>% collect()
+mission %>%
+  arrange(startyear, platformname, missionnumber) %>%
+  head() %>%
+  collect()
 ```
 
 ``` R
 ## # A tibble: 6 × 14
 ##   startyear platformname               cruise missiontype platform missionnumber
 ##       <int> <chr>                      <chr>  <chr>       <chr>            <int>
-## 1      1906 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
-## 2      1907 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
-## 3      1908 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
-## 4      1909 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
-## 5      1910 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
-## 6      1911 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
+## 1        20 Falkungen                  <NA>   11          9688                 3
+## 2       199 Buland                     <NA>   1           3378                 1
+## 3      1906 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
+## 4      1907 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
+## 5      1908 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
+## 6      1909 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
 ## # ℹ 8 more variables: missiontypename <chr>, callsignal <chr>,
 ## #   missionstartdate <chr>, missionstopdate <chr>, purpose <chr>,
 ## #   missionid <chr>, cruiseseriescode <chr>, idCruiseseriesSample <chr>
@@ -163,7 +167,7 @@ or use the
 [data.table](https://cran.r-project.org/web/packages/data.table/index.html)
 package, if you’ll need to handle very large proportions of the IMR
 Biotic database. Stations with no catch (i.e., where `commonname` is NA)
-can be now found by `stnall |> filter(!is.na(commonname))` (Figure 1).
+can now be found with `stnall |> filter(is.na(commonname))` (Figure 1).
 
 ``` r
 
@@ -218,8 +222,9 @@ DBI::dbListTables(con_db)
 ```
 
 ``` R
-##  [1] "ageall"    "codeindex" "csindex"   "filesize"  "gearindex" "indall"
-##  [7] "metadata"  "mission"   "stnall"    "taxaindex"
+##  [1] "ageall"          "codeindex"       "csindex"         "filesize"       
+##  [5] "gearindex"       "indall"          "metadata"        "mission"        
+##  [9] "source_manifest" "stnall"          "taxaindex"
 ```
 
 `source_manifest`, created by
@@ -341,3 +346,4 @@ corresponding `prepare*()` functions.
   : Gear code list
 - [`icesAreas`](https://deepwaterimr.github.io/BioticExplorerServer/reference/icesAreas.md)
   : ICES fishing areas
+

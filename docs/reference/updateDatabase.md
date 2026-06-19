@@ -1,10 +1,12 @@
 # Incrementally update a BioticExplorer database
 
 Uses metadata-only API requests to identify years containing changed,
-added, or removed deliveries. Only those annual XML caches are
-downloaded and transactionally replaced. If the database schema is
-incompatible with this package version, a complete sibling database is
-built with
+added, or removed deliveries. Once one changed delivery is found,
+remaining deliveries in that year are skipped because the complete
+annual XML cache must be replaced. Cruise-series, gear, taxa, and
+coded-field reference tables are refreshed on every run. If the database
+schema is incompatible with this package version, a complete sibling
+database is built with
 [`compileDatabase`](https://deepwaterimr.github.io/BioticExplorerServer/reference/compileDatabase.md)
 and safely swapped into place.
 
@@ -16,7 +18,7 @@ updateDatabase(
   dbPath = "~/IMR_biotic_BES_database",
   dbIndexFile = file.path(dbPath, "dbIndex.rda"),
   dbName = NULL,
-  verbose = TRUE
+  verbose = FALSE
 )
 ```
 
@@ -49,7 +51,9 @@ updateDatabase(
 
 - verbose:
 
-  Logical; emit delivery metadata-check progress messages.
+  Logical; emit one metadata-check message per delivery. The default
+  uses a progress bar in interactive sessions and bounded milestone
+  messages in non-interactive logs.
 
 ## Value
 

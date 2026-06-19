@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">BioticExplorerServer</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -33,8 +33,15 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="development version" id="bioticexplorerserver-development-version">BioticExplorerServer (development version)<a class="anchor" aria-label="anchor" href="#bioticexplorerserver-development-version"></a></h2>
-</div>
+<h2 class="pkg-version" data-toc-text="0.8.0" id="bioticexplorerserver-080">BioticExplorerServer 0.8.0<a class="anchor" aria-label="anchor" href="#bioticexplorerserver-080"></a></h2>
+<p><em>2026-06-19</em></p>
+<ul><li>Added incremental update refinements to <code><a href="../reference/updateDatabase.html">updateDatabase()</a></code>. Progress reporting is now concise by default, interactive sessions use a progress bar, and <code>verbose = TRUE</code> still exposes delivery-level logging. Metadata scans stop after the first changed delivery in a year while still tracking post-download baselines so later additions, removals, and changes are detected reliably.</li>
+<li>Updated <code><a href="../reference/updateDatabase.html">updateDatabase()</a></code> to refresh the cruise-series, gear, taxa, and coded-field reference tables on every run. Reference tables are replaced together only after all downloads succeed, and fresh cruise-series and gear mappings are used immediately for changed annual data.</li>
+<li>Improved resilience for incremental updates. Missing deliveries that return HTTP 404 during metadata lookup are skipped with one aggregate warning, while other HTTP failures remain fatal, and incremental writes from <code>data.table</code> inputs now target the actual database columns correctly.</li>
+<li>Added start time, successful finish time, and elapsed minutes to the log output from <code><a href="../reference/compileDatabase.html">compileDatabase()</a></code> and <code><a href="../reference/updateDatabase.html">updateDatabase()</a></code>.</li>
+<li>Added the missing <code>dbplyr</code> runtime dependency required by <code><a href="../reference/indexDatabase.html">indexDatabase()</a></code> on fresh R installations.</li>
+<li>Added regression tests covering concise and verbose update progress output, unavailable deliveries, <code>data.table</code> writes, and operation timing helpers.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.7.0" id="bioticexplorerserver-070">BioticExplorerServer 0.7.0<a class="anchor" aria-label="anchor" href="#bioticexplorerserver-070"></a></h2>
 <p><em>2026-06-18</em></p>

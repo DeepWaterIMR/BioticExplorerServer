@@ -1,46 +1,26 @@
-# BioticExplorerServer 0.7.4
+# BioticExplorerServer 0.8.0
 
 *2026-06-19*
 
-- Added start time, successful finish time, and elapsed minutes to the log
-  output from `compileDatabase()` and `updateDatabase()`.
-- Added the missing `dbplyr` runtime dependency required by `indexDatabase()`
-  on fresh R installations.
+- Added incremental update refinements to `updateDatabase()`. Progress reporting
+  is now concise by default, interactive sessions use a progress bar, and
+  `verbose = TRUE` still exposes delivery-level logging. Metadata scans stop
+  after the first changed delivery in a year while still tracking post-download
+  baselines so later additions, removals, and changes are detected reliably.
 - Updated `updateDatabase()` to refresh the cruise-series, gear, taxa, and
   coded-field reference tables on every run. Reference tables are replaced
   together only after all downloads succeed, and fresh cruise-series and gear
   mappings are used immediately for changed annual data.
-
-# BioticExplorerServer 0.7.3
-
-*2026-06-18*
-
-- Speeded up `updateDatabase()` metadata checks by stopping after the first
-  changed delivery in each year, since any change already requires replacing
-  that year's complete cache.
-- Added post-download delivery baselines so early exit still detects later
-  additions, removals, and changes without repeatedly refreshing the same year.
-
-# BioticExplorerServer 0.7.2
-
-*2026-06-18*
-
-- Fixed `updateDatabase()` aborting when a delivery disappears between API
-  listing and metadata lookup. HTTP 404 responses are now skipped with one
-  aggregate warning, while other HTTP failures remain fatal.
-- Fixed incremental writes from `data.table` objects selecting a literal
-  `target_fields` column instead of the database's actual columns.
-- Added regression tests for unavailable deliveries and `data.table` writes.
-
-# BioticExplorerServer 0.7.1
-
-*2026-06-18*
-
-- Made `updateDatabase()` less verbose by default while still showing progress:
-  interactive sessions now use a progress bar, background runs emit concise
-  milestone updates, and `verbose = TRUE` retains per-delivery logging.
-- Added tests covering concise non-interactive progress reporting and verbose
-  delivery-level output.
+- Improved resilience for incremental updates. Missing deliveries that return
+  HTTP 404 during metadata lookup are skipped with one aggregate warning, while
+  other HTTP failures remain fatal, and incremental writes from `data.table`
+  inputs now target the actual database columns correctly.
+- Added start time, successful finish time, and elapsed minutes to the log
+  output from `compileDatabase()` and `updateDatabase()`.
+- Added the missing `dbplyr` runtime dependency required by `indexDatabase()`
+  on fresh R installations.
+- Added regression tests covering concise and verbose update progress output,
+  unavailable deliveries, `data.table` writes, and operation timing helpers.
 
 # BioticExplorerServer 0.7.0
 

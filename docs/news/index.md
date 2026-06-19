@@ -1,6 +1,38 @@
 # Changelog
 
-## BioticExplorerServer (development version)
+## BioticExplorerServer 0.8.0
+
+*2026-06-19*
+
+- Added incremental update refinements to
+  [`updateDatabase()`](https://deepwaterimr.github.io/BioticExplorerServer/reference/updateDatabase.md).
+  Progress reporting is now concise by default, interactive sessions use
+  a progress bar, and `verbose = TRUE` still exposes delivery-level
+  logging. Metadata scans stop after the first changed delivery in a
+  year while still tracking post-download baselines so later additions,
+  removals, and changes are detected reliably.
+- Updated
+  [`updateDatabase()`](https://deepwaterimr.github.io/BioticExplorerServer/reference/updateDatabase.md)
+  to refresh the cruise-series, gear, taxa, and coded-field reference
+  tables on every run. Reference tables are replaced together only after
+  all downloads succeed, and fresh cruise-series and gear mappings are
+  used immediately for changed annual data.
+- Improved resilience for incremental updates. Missing deliveries that
+  return HTTP 404 during metadata lookup are skipped with one aggregate
+  warning, while other HTTP failures remain fatal, and incremental
+  writes from `data.table` inputs now target the actual database columns
+  correctly.
+- Added start time, successful finish time, and elapsed minutes to the
+  log output from
+  [`compileDatabase()`](https://deepwaterimr.github.io/BioticExplorerServer/reference/compileDatabase.md)
+  and
+  [`updateDatabase()`](https://deepwaterimr.github.io/BioticExplorerServer/reference/updateDatabase.md).
+- Added the missing `dbplyr` runtime dependency required by
+  [`indexDatabase()`](https://deepwaterimr.github.io/BioticExplorerServer/reference/indexDatabase.md)
+  on fresh R installations.
+- Added regression tests covering concise and verbose update progress
+  output, unavailable deliveries, `data.table` writes, and operation
+  timing helpers.
 
 ## BioticExplorerServer 0.7.0
 
