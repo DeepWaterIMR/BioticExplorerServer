@@ -21,6 +21,14 @@ compileDatabase <- function(
   dbName = NULL,
   overwrite = FALSE
 ) {
+  operation_started_at <- .start_operation_timer("Compilation")
+  operation_succeeded <- FALSE
+  on.exit({
+    if (operation_succeeded) {
+      .finish_operation_timer("Compilation", operation_started_at)
+    }
+  }, add = TRUE)
+
   ## Create the database folder if it does not exist
 
   if (!dir.exists(dbPath)) {
@@ -180,4 +188,6 @@ compileDatabase <- function(
   indexDatabase(connection = con_db, dbIndexFile = dbIndexFile)
 
   DBI::dbDisconnect(con_db)
+  operation_succeeded <- TRUE
+  invisible(NULL)
 }

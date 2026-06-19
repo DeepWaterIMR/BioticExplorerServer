@@ -1,4 +1,13 @@
-# BioticExplorerServer (development version)
+# BioticExplorerServer 0.7.4
+
+*2026-06-19*
+
+- Added start time, successful finish time, and elapsed minutes to the log
+  output from `compileDatabase()` and `updateDatabase()`.
+- Updated `updateDatabase()` to refresh the cruise-series, gear, taxa, and
+  coded-field reference tables on every run. Reference tables are replaced
+  together only after all downloads succeed, and fresh cruise-series and gear
+  mappings are used immediately for changed annual data.
 
 # BioticExplorerServer 0.7.3
 

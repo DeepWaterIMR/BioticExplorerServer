@@ -455,6 +455,39 @@
   )
 }
 
+.refresh_reference_tables <- function(connection) {
+  message("Refreshing cruise series, gear, taxa, and reference-code tables")
+
+  # Download everything before opening the transaction so an API failure leaves
+  # every existing reference table untouched.
+  reference_tables <- list(
+    csindex = prepareCruiseSeriesList(),
+    gearindex = prepareGearList(),
+    taxaindex = prepareTaxaList(),
+    codeindex = prepareReferenceCodes()
+  )
+  empty <- names(reference_tables)[vapply(reference_tables, nrow, integer(1)) == 0L]
+  if (length(empty)) {
+    stop(
+      "Reference refresh returned no rows for: ", paste(empty, collapse = ", "),
+      ". Existing reference tables were left unchanged."
+    )
+  }
+
+  DBI::dbWithTransaction(connection, {
+    for (table in names(reference_tables)) {
+      DBI::dbWriteTable(
+        connection, table, reference_tables[[table]], overwrite = TRUE
+      )
+    }
+  })
+
+  invisible(list(
+    cruiseSeries = data.table::as.data.table(reference_tables$csindex),
+    gearCodes = data.table::as.data.table(reference_tables$gearindex)
+  ))
+}
+
 .validate_rebuilt_database <- function(path, index_file) {
   if (!file.exists(path) || !file.exists(index_file)) return(FALSE)
   index_environment <- new.env(parent = emptyenv())
@@ -530,7 +563,9 @@
 #' Uses metadata-only API requests to identify years containing changed, added,
 #' or removed deliveries. Once one changed delivery is found, remaining
 #' deliveries in that year are skipped because the complete annual XML cache
-#' must be replaced. If the database schema is incompatible with this package
+#' must be replaced. Cruise-series, gear, taxa, and coded-field reference tables
+#' are refreshed on every run. If the database schema is incompatible with this
+#' package
 #' version, a complete sibling database is built with
 #' \code{\link{compileDatabase}} and safely swapped into place.
 #'
@@ -549,6 +584,14 @@ updateDatabase <- function(
   dbName = NULL,
   verbose = FALSE
 ) {
+  operation_started_at <- .start_operation_timer("Update")
+  operation_succeeded <- FALSE
+  on.exit({
+    if (operation_succeeded) {
+      .finish_operation_timer("Update", operation_started_at)
+    }
+  }, add = TRUE)
+
   time_start <- Sys.time()
   if (is.null(dbName)) dbName <- "bioticexplorer"
   dbPath <- path.expand(dbPath)
@@ -559,6 +602,7 @@ updateDatabase <- function(
   if (!file.exists(database)) {
     message("No existing database found. Running compileDatabase().")
     compileDatabase(dbPath = dbPath, dbName = dbName, dbIndexFile = dbIndexFile)
+    operation_succeeded <- TRUE
     return(invisible(list(mode = "compile", years = NULL)))
   }
 
@@ -573,7 +617,9 @@ updateDatabase <- function(
   if (identical(status, "incompatible")) {
     DBI::dbDisconnect(connection, shutdown = TRUE)
     connection_open <- FALSE
-    return(.rebuild_incompatible_database(dbPath, dbName, dbIndexFile))
+    result <- .rebuild_incompatible_database(dbPath, dbName, dbIndexFile)
+    operation_succeeded <- TRUE
+    return(result)
   }
 
   if (identical(status, "legacy-compatible")) {
@@ -584,6 +630,8 @@ updateDatabase <- function(
     )
   }
   .ensure_source_manifest(connection)
+
+  refreshed_references <- .refresh_reference_tables(connection)
 
   requested_years <- if (is.null(years)) NULL else sort(unique(as.integer(years)))
   stored_manifest <- DBI::dbReadTable(connection, "source_manifest")
@@ -617,12 +665,8 @@ updateDatabase <- function(
     }, logical(1))]
   }
 
-  cruiseSeries <- if ("csindex" %in% DBI::dbListTables(connection)) {
-    data.table::as.data.table(DBI::dbReadTable(connection, "csindex"))
-  } else NULL
-  gearCodes <- if ("gearindex" %in% DBI::dbListTables(connection)) {
-    data.table::as.data.table(DBI::dbReadTable(connection, "gearindex"))
-  } else NULL
+  cruiseSeries <- refreshed_references$cruiseSeries
+  gearCodes <- refreshed_references$gearCodes
 
   for (year in changed_years) {
     year_manifest <- current_manifest[current_manifest$data_year == year, , drop = FALSE]
@@ -669,5 +713,6 @@ updateDatabase <- function(
   message(if (length(changed_years)) {
     paste("Updated years:", paste(changed_years, collapse = ", "))
   } else "Database is already up to date.")
+  operation_succeeded <- TRUE
   invisible(list(mode = "incremental", years = changed_years))
 }

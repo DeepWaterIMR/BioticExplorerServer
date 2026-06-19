@@ -204,6 +204,7 @@ test_that("an unchanged compatible database downloads nothing", {
   downloaded <- FALSE
 
   local_mocked_bindings(
+    .refresh_reference_tables = reuse_test_references,
     .discover_source_manifest = function(years, verbose, stored_manifest = NULL) manifest,
     .download_year_for_update = function(...) {
       downloaded <<- TRUE
@@ -219,6 +220,51 @@ test_that("an unchanged compatible database downloads nothing", {
   expect_false(downloaded)
 })
 
+test_that("reference tables are refreshed together", {
+  database <- tempfile(fileext = ".duckdb")
+  con <- DBI::dbConnect(duckdb::duckdb(), dbdir = database)
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  for (table in c("csindex", "gearindex", "taxaindex", "codeindex")) {
+    DBI::dbWriteTable(con, table, data.frame(value = "old"))
+  }
+
+  local_mocked_bindings(
+    prepareCruiseSeriesList = function() data.frame(value = "new cruises"),
+    prepareGearList = function() data.frame(value = "new gear"),
+    prepareTaxaList = function() data.frame(value = "new taxa"),
+    prepareReferenceCodes = function() data.frame(value = "new codes"),
+    .package = "BioticExplorerServer"
+  )
+
+  references <- BioticExplorerServer:::.refresh_reference_tables(con)
+
+  expect_identical(references$cruiseSeries$value, "new cruises")
+  expect_identical(references$gearCodes$value, "new gear")
+  expect_identical(DBI::dbReadTable(con, "taxaindex")$value, "new taxa")
+  expect_identical(DBI::dbReadTable(con, "codeindex")$value, "new codes")
+})
+
+test_that("an empty reference download preserves existing tables", {
+  database <- tempfile(fileext = ".duckdb")
+  con <- DBI::dbConnect(duckdb::duckdb(), dbdir = database)
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  DBI::dbWriteTable(con, "csindex", data.frame(value = "old"))
+
+  local_mocked_bindings(
+    prepareCruiseSeriesList = function() data.frame(value = "new cruises"),
+    prepareGearList = function() data.frame(value = character()),
+    prepareTaxaList = function() data.frame(value = "new taxa"),
+    prepareReferenceCodes = function() data.frame(value = "new codes"),
+    .package = "BioticExplorerServer"
+  )
+
+  expect_error(
+    BioticExplorerServer:::.refresh_reference_tables(con),
+    "gearindex"
+  )
+  expect_identical(DBI::dbReadTable(con, "csindex")$value, "old")
+})
+
 test_that("a changed delivery atomically replaces its year", {
   directory <- withr::local_tempdir()
   database <- file.path(directory, "bioticexplorer.duckdb")
@@ -227,6 +273,7 @@ test_that("a changed delivery atomically replaces its year", {
   create_test_database(database, manifest = old_manifest)
 
   local_mocked_bindings(
+    .refresh_reference_tables = reuse_test_references,
     .discover_source_manifest = function(years, verbose, stored_manifest = NULL) new_manifest,
     .download_year_for_update = function(...) {
       list(parsed = parsed_year(value = "new"), filesize = 200)
@@ -258,6 +305,7 @@ test_that("an early-exit update stores a post-download delivery baseline", {
   attr(discovered, "changed_years") <- 2020L
 
   local_mocked_bindings(
+    .refresh_reference_tables = reuse_test_references,
     .discover_source_manifest = function(...) discovered,
     .download_year_for_update = function(...) {
       list(parsed = parsed_year(value = "new"), filesize = 200)
@@ -283,6 +331,7 @@ test_that("a removed delivery removes its year", {
   empty <- BioticExplorerServer:::.empty_source_manifest()
 
   local_mocked_bindings(
+    .refresh_reference_tables = reuse_test_references,
     .discover_source_manifest = function(years, verbose, stored_manifest = NULL) empty,
     indexDatabase = function(...) invisible(NULL),
     .package = "BioticExplorerServer"
@@ -337,6 +386,7 @@ test_that("legacy compatible databases are stamped without rebuilding", {
   rebuilt <- FALSE
 
   local_mocked_bindings(
+    .refresh_reference_tables = reuse_test_references,
     .discover_source_manifest = function(years, verbose, stored_manifest = NULL) manifest,
     .rebuild_incompatible_database = function(...) {
       rebuilt <<- TRUE

@@ -51,3 +51,10 @@ create_test_database <- function(path, schema_version = 1L, legacy = FALSE,
   if (!is.null(manifest)) DBI::dbWriteTable(con, "source_manifest", manifest)
   invisible(path)
 }
+
+reuse_test_references <- function(connection) {
+  invisible(list(
+    cruiseSeries = data.table::as.data.table(DBI::dbReadTable(connection, "csindex")),
+    gearCodes = data.table::as.data.table(DBI::dbReadTable(connection, "gearindex"))
+  ))
+}
