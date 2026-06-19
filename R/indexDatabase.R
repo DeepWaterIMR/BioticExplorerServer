@@ -12,6 +12,9 @@
 # dbPath = "~/Desktop/IMR_db.duckdb"; dbIndexFile = "~/Desktop/dbIndex.rda"
 indexDatabase <- function(connection, dbIndexFile = "~/IMR_biotic_BES_database/dbIndex.rda", 
                           fileOnly = TRUE) {
+  if (!requireNamespace("dbplyr", quietly = TRUE)) {
+    stop("The dbplyr package is required to index database backends.", call. = FALSE)
+  }
   
   pb <- utils::txtProgressBar(max = 7, style = 3)
   
@@ -74,6 +77,4 @@ indexDatabase <- function(connection, dbIndexFile = "~/IMR_biotic_BES_database/d
     return(index)
   }
 }
-
-
 
