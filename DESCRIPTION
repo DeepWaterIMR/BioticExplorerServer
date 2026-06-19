@@ -16,7 +16,7 @@ Description: This package can be used to download the IMR Biotic database and
         to place it into a duckdb database, providing access to all of the 
         Institute's Biotic data from R.
 Depends: R (>= 3.5)
-Imports: data.table, DBI, RstoxData, duckdb, dplyr, httr2, sf, xml2
+Imports: data.table, DBI, RstoxData, dbplyr, duckdb, dplyr, httr2, sf, xml2
 Suggests: testthat (>= 3.0.0), withr
 Config/testthat/edition: 3
 URL: https://deepwaterimr.github.io/BioticExplorerServer

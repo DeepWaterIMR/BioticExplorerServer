@@ -4,6 +4,8 @@
 
 - Added start time, successful finish time, and elapsed minutes to the log
   output from `compileDatabase()` and `updateDatabase()`.
+- Added the missing `dbplyr` runtime dependency required by `indexDatabase()`
+  on fresh R installations.
 - Updated `updateDatabase()` to refresh the cruise-series, gear, taxa, and
   coded-field reference tables on every run. Reference tables are replaced
   together only after all downloads succeed, and fresh cruise-series and gear
