@@ -9,7 +9,8 @@ updateDatabase(
   dbPath = "~/IMR_biotic_BES_database",
   dbIndexFile = file.path(dbPath, "dbIndex.rda"),
   dbName = NULL,
-  verbose = FALSE
+  verbose = FALSE,
+  metadata_workers = 8L
 )
 }
 \arguments{
@@ -25,6 +26,10 @@ replacements. A schema compatibility rebuild always includes all years.}
 \item{verbose}{Logical; emit one metadata-check message per delivery. The
 default uses a progress bar in interactive sessions and bounded milestone
 messages in non-interactive logs.}
+
+\item{metadata_workers}{Positive integer controlling the maximum number of
+concurrent delivery-discovery and metadata requests. Database writes remain
+serial and transactional. Use \code{1} to disable parallel API checks.}
 }
 \value{
 Invisibly returns a list describing the update mode and changed years.

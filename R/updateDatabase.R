@@ -7,17 +7,22 @@
   paste(c(.BIOTIC_API_BASE, parts), collapse = "/")
 }
 
-.api_get_xml <- function(url) {
+.api_xml_request <- function(url) {
   request <- httr2::request(url)
-  request <- httr2::req_retry(request, max_tries = 4)
-  request <- httr2::req_timeout(request, 60)
+  request <- httr2::req_retry(
+    request, max_tries = 4, retry_on_failure = TRUE
+  )
+  httr2::req_timeout(request, 60)
+}
+
+.api_get_xml <- function(url) {
+  request <- .api_xml_request(url)
   response <- httr2::req_perform(request)
   httr2::resp_check_status(response)
   httr2::resp_body_xml(response)
 }
 
-.api_list_field <- function(url, field) {
-  document <- .api_get_xml(url)
+.api_list_field_from_document <- function(document, field) {
   nodes <- xml2::xml_find_all(
     document,
     paste0("//*[local-name()='element'][@name='", field, "']")
@@ -25,19 +30,46 @@
   trimws(xml2::xml_text(nodes))
 }
 
-.api_delivery_headers <- function(missiontype, year, platform, delivery) {
+.api_list_field <- function(url, field) {
+  document <- .api_get_xml(url)
+  .api_list_field_from_document(document, field)
+}
+
+.api_list_fields_parallel <- function(urls, field, max_active) {
+  if (!length(urls)) return(list())
+  requests <- lapply(urls, .api_xml_request)
+  responses <- httr2::req_perform_parallel(
+    requests,
+    on_error = "return",
+    progress = FALSE,
+    max_active = max_active
+  )
+  lapply(responses, function(response) {
+    if (inherits(response, "error")) stop(response)
+    httr2::resp_check_status(response)
+    document <- httr2::resp_body_xml(response)
+    .api_list_field_from_document(document, field)
+  })
+}
+
+.api_delivery_request <- function(missiontype, year, platform, delivery) {
   url <- paste0(
     .api_path(missiontype, year, platform, delivery, "dataset"),
     "?version=3.1"
   )
   request <- httr2::request(url)
   request <- httr2::req_method(request, "HEAD")
-  request <- httr2::req_retry(request, max_tries = 4)
+  request <- httr2::req_retry(
+    request, max_tries = 4, retry_on_failure = TRUE
+  )
   request <- httr2::req_timeout(request, 60)
-  request <- httr2::req_error(request, is_error = function(response) {
+  httr2::req_error(request, is_error = function(response) {
     httr2::resp_status(response) >= 400 && httr2::resp_status(response) != 404
   })
-  response <- httr2::req_perform(request)
+}
+
+.api_delivery_headers_from_response <- function(response, delivery) {
+  if (inherits(response, "error")) stop(response)
   if (httr2::resp_status(response) == 404) return(NULL)
   httr2::resp_check_status(response)
 
@@ -57,7 +89,35 @@
   out
 }
 
-.discover_source_deliveries <- function(years = NULL) {
+.api_delivery_headers <- function(missiontype, year, platform, delivery) {
+  request <- .api_delivery_request(missiontype, year, platform, delivery)
+  response <- httr2::req_perform(request)
+  .api_delivery_headers_from_response(response, delivery)
+}
+
+.api_delivery_headers_parallel <- function(deliveries, max_active) {
+  if (!nrow(deliveries)) return(list())
+  requests <- lapply(seq_len(nrow(deliveries)), function(n) {
+    delivery <- deliveries[n, , drop = FALSE]
+    .api_delivery_request(
+      delivery$missiontype, delivery$data_year, delivery$platform,
+      delivery$delivery
+    )
+  })
+  responses <- httr2::req_perform_parallel(
+    requests,
+    on_error = "return",
+    progress = FALSE,
+    max_active = max_active
+  )
+  lapply(seq_along(responses), function(n) {
+    .api_delivery_headers_from_response(
+      responses[[n]], deliveries$delivery[[n]]
+    )
+  })
+}
+
+.discover_source_deliveries_sequential <- function(years = NULL) {
   missiontypes <- .api_list_field(.BIOTIC_API_BASE, "missiontypename")
   result <- list()
   n <- 0L
@@ -96,6 +156,95 @@
     ))
   }
   do.call(rbind, result)
+}
+
+.discover_source_deliveries_parallel <- function(years = NULL, workers = 8L) {
+  missiontypes <- .api_list_field(.BIOTIC_API_BASE, "missiontypename")
+  year_values <- .api_list_fields_parallel(
+    lapply(missiontypes, .api_path), "year", workers
+  )
+
+  mission_years <- list()
+  for (n in seq_along(missiontypes)) {
+    available_years <- suppressWarnings(as.integer(year_values[[n]]))
+    available_years <- available_years[!is.na(available_years)]
+    if (!is.null(years)) available_years <- intersect(available_years, years)
+    if (length(available_years)) {
+      mission_years[[length(mission_years) + 1L]] <- data.frame(
+        missiontype = missiontypes[[n]], data_year = available_years,
+        stringsAsFactors = FALSE
+      )
+    }
+  }
+  if (!length(mission_years)) {
+    return(data.frame(
+      missiontype = character(), data_year = integer(), platform = character(),
+      delivery = character(), stringsAsFactors = FALSE
+    ))
+  }
+  mission_years <- do.call(rbind, mission_years)
+
+  platform_values <- .api_list_fields_parallel(
+    lapply(seq_len(nrow(mission_years)), function(n) {
+      .api_path(mission_years$missiontype[[n]], mission_years$data_year[[n]])
+    }),
+    "platformpath", workers
+  )
+  mission_platforms <- list()
+  for (n in seq_len(nrow(mission_years))) {
+    if (length(platform_values[[n]])) {
+      mission_platforms[[length(mission_platforms) + 1L]] <- data.frame(
+        missiontype = mission_years$missiontype[[n]],
+        data_year = mission_years$data_year[[n]],
+        platform = platform_values[[n]], stringsAsFactors = FALSE
+      )
+    }
+  }
+  if (!length(mission_platforms)) {
+    return(data.frame(
+      missiontype = character(), data_year = integer(), platform = character(),
+      delivery = character(), stringsAsFactors = FALSE
+    ))
+  }
+  mission_platforms <- do.call(rbind, mission_platforms)
+
+  delivery_values <- .api_list_fields_parallel(
+    lapply(seq_len(nrow(mission_platforms)), function(n) {
+      .api_path(
+        mission_platforms$missiontype[[n]],
+        mission_platforms$data_year[[n]],
+        mission_platforms$platform[[n]]
+      )
+    }),
+    "delivery", workers
+  )
+  result <- list()
+  for (n in seq_len(nrow(mission_platforms))) {
+    if (length(delivery_values[[n]])) {
+      result[[length(result) + 1L]] <- data.frame(
+        missiontype = mission_platforms$missiontype[[n]],
+        data_year = mission_platforms$data_year[[n]],
+        platform = mission_platforms$platform[[n]],
+        delivery = as.character(delivery_values[[n]]),
+        stringsAsFactors = FALSE
+      )
+    }
+  }
+  if (!length(result)) {
+    return(data.frame(
+      missiontype = character(), data_year = integer(), platform = character(),
+      delivery = character(), stringsAsFactors = FALSE
+    ))
+  }
+  do.call(rbind, result)
+}
+
+.discover_source_deliveries <- function(years = NULL, workers = 1L) {
+  if (workers > 1L) {
+    .discover_source_deliveries_parallel(years, workers)
+  } else {
+    .discover_source_deliveries_sequential(years)
+  }
 }
 
 .manifest_delivery_keys <- function(value) {
@@ -162,8 +311,18 @@
 }
 
 .discover_source_manifest <- function(years = NULL, verbose = FALSE,
-                                      stored_manifest = NULL) {
-  deliveries <- .discover_source_deliveries(years)
+                                      stored_manifest = NULL,
+                                      metadata_workers = 1L) {
+  metadata_workers <- as.integer(metadata_workers)
+  if (length(metadata_workers) != 1L || is.na(metadata_workers) ||
+      metadata_workers < 1L) {
+    stop("metadata_workers must be a positive integer.", call. = FALSE)
+  }
+  deliveries <- if (metadata_workers > 1L) {
+    .discover_source_deliveries(years, metadata_workers)
+  } else {
+    .discover_source_deliveries(years)
+  }
   total <- nrow(deliveries)
   if (!total && is.null(stored_manifest)) return(.empty_source_manifest())
 
@@ -200,6 +359,9 @@
       year_result <- list()
       year_changed <- FALSE
       last_checked <- 0L
+      parallel_headers <- if (metadata_workers > 1L && nrow(year_deliveries)) {
+        .api_delivery_headers_parallel(year_deliveries, metadata_workers)
+      } else NULL
 
       for (n in seq_len(nrow(year_deliveries))) {
         last_checked <- n
@@ -209,10 +371,14 @@
                   delivery$data_year, " / ", delivery$platform, " / ",
                   delivery$delivery)
         }
-        headers <- .api_delivery_headers(
-          delivery$missiontype, delivery$data_year, delivery$platform,
-          delivery$delivery
-        )
+        headers <- if (metadata_workers > 1L) {
+          parallel_headers[[n]]
+        } else {
+          .api_delivery_headers(
+            delivery$missiontype, delivery$data_year, delivery$platform,
+            delivery$delivery
+          )
+        }
         processed <- processed + 1L
         reported_marks <- .report_metadata_progress(
           progress, progress_bar, verbose, processed, total, progress_marks,
@@ -245,11 +411,15 @@
         skipped <- nrow(year_deliveries) - last_checked
         if (skipped > 0L) {
           if (!verbose) {
-            message(
-              "Change found for ", year, "; skipped ", skipped,
-              if (skipped == 1L) " remaining metadata request."
-              else " remaining metadata requests."
-            )
+            if (metadata_workers > 1L) {
+              message("Change found for ", year, ".")
+            } else {
+              message(
+                "Change found for ", year, "; skipped ", skipped,
+                if (skipped == 1L) " remaining metadata request."
+                else " remaining metadata requests."
+              )
+            }
           }
           processed <- processed + skipped
           reported_marks <- .report_metadata_progress(
@@ -286,6 +456,16 @@
     return(value)
   }
 
+  parallel_headers <- vector("list", total)
+  if (metadata_workers > 1L) {
+    for (year in sort(unique(deliveries$data_year))) {
+      indices <- which(deliveries$data_year == year)
+      parallel_headers[indices] <- .api_delivery_headers_parallel(
+        deliveries[indices, , drop = FALSE], metadata_workers
+      )
+    }
+  }
+
   for (n in seq_len(total)) {
     delivery <- deliveries[n, , drop = FALSE]
     if (verbose) {
@@ -293,10 +473,14 @@
               delivery$data_year, " / ", delivery$platform, " / ",
               delivery$delivery)
     }
-    headers <- .api_delivery_headers(
-      delivery$missiontype, delivery$data_year, delivery$platform,
-      delivery$delivery
-    )
+    headers <- if (metadata_workers > 1L) {
+      parallel_headers[[n]]
+    } else {
+      .api_delivery_headers(
+        delivery$missiontype, delivery$data_year, delivery$platform,
+        delivery$delivery
+      )
+    }
     if (is.null(headers)) {
       unavailable <- unavailable + 1L
     } else {
@@ -575,6 +759,9 @@
 #' @param verbose Logical; emit one metadata-check message per delivery. The
 #'   default uses a progress bar in interactive sessions and bounded milestone
 #'   messages in non-interactive logs.
+#' @param metadata_workers Positive integer controlling the maximum number of
+#'   concurrent delivery-discovery and metadata requests. Database writes remain
+#'   serial and transactional. Use \code{1} to disable parallel API checks.
 #' @return Invisibly returns a list describing the update mode and changed years.
 #' @export
 updateDatabase <- function(
@@ -582,7 +769,8 @@ updateDatabase <- function(
   dbPath = "~/IMR_biotic_BES_database",
   dbIndexFile = file.path(dbPath, "dbIndex.rda"),
   dbName = NULL,
-  verbose = FALSE
+  verbose = FALSE,
+  metadata_workers = 8L
 ) {
   operation_started_at <- .start_operation_timer("Update")
   operation_succeeded <- FALSE
@@ -642,7 +830,8 @@ updateDatabase <- function(
   }
   current_manifest <- .discover_source_manifest(
     requested_years, verbose = verbose,
-    stored_manifest = if (nrow(discovery_manifest)) discovery_manifest else NULL
+    stored_manifest = if (nrow(discovery_manifest)) discovery_manifest else NULL,
+    metadata_workers = metadata_workers
   )
   discovered_changed_years <- attr(current_manifest, "changed_years")
   local_years <- if ("mission" %in% DBI::dbListTables(connection)) {

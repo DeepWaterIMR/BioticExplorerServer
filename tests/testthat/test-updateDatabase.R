@@ -14,7 +14,7 @@ test_that("metadata discovery keeps non-interactive logs concise", {
   )
 
   local_mocked_bindings(
-    .discover_source_deliveries = function(years) deliveries,
+    .discover_source_deliveries = function(years, workers = 1L) deliveries,
     .api_delivery_headers = function(...) headers,
     .package = "BioticExplorerServer"
   )
@@ -107,6 +107,70 @@ test_that("delivery metadata treats HTTP 404 as unavailable", {
   expect_null(BioticExplorerServer:::.api_delivery_headers(
     "Survey", 2020L, "Platform", "gone"
   ))
+})
+
+test_that("delivery requests retry transport failures", {
+  request <- BioticExplorerServer:::.api_delivery_request(
+    "Survey", 2020L, "Platform", "delivery"
+  )
+
+  expect_true(request$policies$retry_on_failure)
+  expect_equal(request$policies$retry_max_tries, 4)
+})
+
+test_that("metadata discovery uses bounded parallel requests", {
+  deliveries <- data.frame(
+    missiontype = rep("Survey", 3), data_year = rep(2020L, 3),
+    platform = rep("Platform", 3), delivery = c("1", "2", "3"),
+    stringsAsFactors = FALSE
+  )
+  headers <- c(
+    last_modified = "Wed, 01 Jan 2025 00:00:00 GMT",
+    last_snapshot_code = "snapshot",
+    last_snapshot_time = "2025-01-01T00:00:00Z",
+    format_version = "3.1"
+  )
+  observed_workers <- NULL
+
+  local_mocked_bindings(
+    .discover_source_deliveries = function(years, workers = 1L) deliveries,
+    .api_delivery_headers_parallel = function(value, max_active) {
+      observed_workers <<- max_active
+      rep(list(headers), nrow(value))
+    },
+    .api_delivery_headers = function(...) stop("sequential request used"),
+    .package = "BioticExplorerServer"
+  )
+
+  manifest <- BioticExplorerServer:::.discover_source_manifest(
+    metadata_workers = 3L
+  )
+  expect_identical(observed_workers, 3L)
+  expect_equal(nrow(manifest), 3)
+})
+
+test_that("delivery inventory discovery is parallelized by level", {
+  observed_workers <- integer()
+  local_mocked_bindings(
+    .api_list_field = function(url, field) c("Survey A", "Survey B"),
+    .api_list_fields_parallel = function(urls, field, max_active) {
+      observed_workers <<- c(observed_workers, max_active)
+      switch(
+        field,
+        year = list(c("2020", "2021"), "2021"),
+        platformpath = list("A_1", "A_2", "B_1"),
+        delivery = list(c("1", "2"), "3", "4")
+      )
+    },
+    .package = "BioticExplorerServer"
+  )
+
+  deliveries <- BioticExplorerServer:::.discover_source_deliveries_parallel(
+    workers = 4L
+  )
+  expect_equal(nrow(deliveries), 4)
+  expect_identical(sort(unique(deliveries$data_year)), c(2020L, 2021L))
+  expect_identical(observed_workers, c(4L, 4L, 4L))
 })
 
 test_that("metadata discovery returns an empty manifest when all deliveries disappear", {
@@ -205,7 +269,7 @@ test_that("an unchanged compatible database downloads nothing", {
 
   local_mocked_bindings(
     .refresh_reference_tables = reuse_test_references,
-    .discover_source_manifest = function(years, verbose, stored_manifest = NULL) manifest,
+    .discover_source_manifest = function(...) manifest,
     .download_year_for_update = function(...) {
       downloaded <<- TRUE
       stop("should not download")
@@ -274,7 +338,7 @@ test_that("a changed delivery atomically replaces its year", {
 
   local_mocked_bindings(
     .refresh_reference_tables = reuse_test_references,
-    .discover_source_manifest = function(years, verbose, stored_manifest = NULL) new_manifest,
+    .discover_source_manifest = function(...) new_manifest,
     .download_year_for_update = function(...) {
       list(parsed = parsed_year(value = "new"), filesize = 200)
     },
@@ -332,7 +396,7 @@ test_that("a removed delivery removes its year", {
 
   local_mocked_bindings(
     .refresh_reference_tables = reuse_test_references,
-    .discover_source_manifest = function(years, verbose, stored_manifest = NULL) empty,
+    .discover_source_manifest = function(...) empty,
     indexDatabase = function(...) invisible(NULL),
     .package = "BioticExplorerServer"
   )
@@ -387,7 +451,7 @@ test_that("legacy compatible databases are stamped without rebuilding", {
 
   local_mocked_bindings(
     .refresh_reference_tables = reuse_test_references,
-    .discover_source_manifest = function(years, verbose, stored_manifest = NULL) manifest,
+    .discover_source_manifest = function(...) manifest,
     .rebuild_incompatible_database = function(...) {
       rebuilt <<- TRUE
       stop("should not rebuild")

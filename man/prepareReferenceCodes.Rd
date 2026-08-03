@@ -8,7 +8,8 @@ prepareReferenceCodes(tables = NULL, lang = c("en", "no"))
 }
 \arguments{
 \item{tables}{Character vector of reference-table names to pull. Defaults to the coded
-\code{KeyType} columns that actually occur in \code{mission}/\code{stnall}/\code{indall}.
+\code{KeyType} columns that occur in \code{mission}/\code{stnall}/\code{indall}
+and are exposed as Reference API datasets.
 Note that a few Biotic columns map to a differently named reference dataset (e.g. the
 \code{gear} column resolves against the \code{equipment} table — handled separately by
 \code{\link{prepareGearList}} and therefore not included here).}
@@ -24,7 +25,7 @@ A \code{\link[data.table]{data.table}} with columns \code{reftable}, \code{code}
 Downloads and compiles the simple (non-composite) coded-field reference
   tables from the IMR NMD Reference API into a single long-format lookup. These are the
   Biotic columns flagged as codes of type \code{KeyType} (e.g. \code{sex},
-  \code{maturationstage}, \code{missiontype}, \code{nation}) whose meaning is otherwise
+  \code{maturationstage}, \code{nation}) whose meaning is otherwise
   only resolvable against the API. The result is written to the DuckDB database as the
   \code{codeindex} table by \code{\link{compileDatabase}}, so agents and the Shiny app can
   decode these fields offline with a join instead of a per-code network call.

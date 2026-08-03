@@ -6,6 +6,9 @@
   series, gear, taxa, and coded-field reference tables. This keeps both
   `updateDatabase()` and `compileDatabase()` from failing on a dropped TLS
   connection during reference refreshes.
+- Retried transient Biotic API timeouts and parallelized delivery-inventory and
+  metadata discovery with bounded concurrency. Reference-code tables that are
+  not exposed by the Reference API are no longer requested.
 
 # BioticExplorerServer 0.8.0
 
