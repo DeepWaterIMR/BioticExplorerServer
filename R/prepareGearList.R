@@ -7,7 +7,9 @@
 prepareGearList <- function() {
   
   # Read gear list reference
-  doc <- xml2::read_xml("https://reference-api.hi.no/apis/nmdapi/reference/v2/dataset/equipment?version=2.0")
+  doc <- .reference_api_get_xml(paste0(
+    .REFERENCE_API_BASE, "/dataset/equipment?version=2.0"
+  ))
   
   tmp <- lapply(xml2::xml_find_all(doc, "//d1:row"), function(x) {
     ch <- xml2::xml_children(x)

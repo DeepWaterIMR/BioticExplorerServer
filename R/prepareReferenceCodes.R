@@ -51,11 +51,10 @@ prepareReferenceCodes <- function(tables = NULL, lang = c("en", "no")) {
     tab <- tables[i]
 
     url <- sprintf(
-      "https://reference-api.hi.no/apis/nmdapi/reference/v2/dataset/%s?version=2.0&lang=%s",
-      tab, lang
+      "%s/dataset/%s?version=2.0&lang=%s", .REFERENCE_API_BASE, tab, lang
     )
 
-    doc <- try(xml2::read_xml(url), silent = TRUE)
+    doc <- try(.reference_api_get_xml(url), silent = TRUE)
     if (inherits(doc, "try-error")) {
       warning("Could not read reference table '", tab, "' (skipped): ",
               conditionMessage(attr(doc, "condition")), call. = FALSE)

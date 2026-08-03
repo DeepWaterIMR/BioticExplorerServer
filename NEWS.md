@@ -1,3 +1,12 @@
+# BioticExplorerServer 0.8.1
+
+*2026-08-03*
+
+- Retried transient Reference API connection failures while preparing cruise
+  series, gear, taxa, and coded-field reference tables. This keeps both
+  `updateDatabase()` and `compileDatabase()` from failing on a dropped TLS
+  connection during reference refreshes.
+
 # BioticExplorerServer 0.8.0
 
 *2026-06-19*

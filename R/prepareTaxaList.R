@@ -8,9 +8,10 @@
 prepareTaxaList <- function(verbose = FALSE) {
   
   # Read gear list reference
-  if(verbose) message("Downloading https://reference-api.hi.no/apis/nmdapi/reference/v2/dataset/taxa?version=2.0...")
+  taxa_url <- paste0(.REFERENCE_API_BASE, "/dataset/taxa?version=2.0")
+  if(verbose) message("Downloading ", taxa_url, "...")
   
-  doc <- xml2::read_xml("https://reference-api.hi.no/apis/nmdapi/reference/v2/dataset/taxa?version=2.0")
+  doc <- .reference_api_get_xml(taxa_url)
   
   if(verbose) message("Reading the xml file...")
   
