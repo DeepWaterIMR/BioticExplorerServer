@@ -260,6 +260,80 @@ test_that("a downloaded-year baseline does not trigger a repeated update", {
   expect_identical(manifest$last_snapshot_code, "snapshot")
 })
 
+test_that("parsed-key baselines are rebased to API delivery keys", {
+  baseline <- BioticExplorerServer:::.baseline_manifest_from_parsed(
+    parsed_year(), 2020L, as.POSIXct("2026-01-01 00:00:00", tz = "UTC")
+  )
+  deliveries <- data.frame(
+    missiontype = "API survey", data_year = 2020L,
+    platform = "api-platform", delivery = "api-delivery",
+    stringsAsFactors = FALSE
+  )
+  headers <- c(
+    last_modified = "Wed, 01 Jan 2025 00:00:00 GMT",
+    last_snapshot_code = "snapshot",
+    last_snapshot_time = "2025-01-01T00:00:00Z",
+    format_version = "3.1"
+  )
+
+  local_mocked_bindings(
+    .discover_source_deliveries = function(years) deliveries,
+    .api_delivery_headers = function(...) headers,
+    .package = "BioticExplorerServer"
+  )
+
+  manifest <- BioticExplorerServer:::.discover_source_manifest(
+    stored_manifest = baseline, parsed_baseline_years = 2020L
+  )
+  expect_identical(attr(manifest, "changed_years"), integer())
+  expect_identical(manifest$missiontype, "API survey")
+  expect_identical(manifest$platform, "api-platform")
+  expect_identical(manifest$delivery, "api-delivery")
+})
+
+test_that("parsed-key baseline migration still detects newer API data", {
+  baseline <- BioticExplorerServer:::.baseline_manifest_from_parsed(
+    parsed_year(), 2020L, as.POSIXct("2026-01-01 00:00:00", tz = "UTC")
+  )
+  deliveries <- data.frame(
+    missiontype = "API survey", data_year = 2020L,
+    platform = "api-platform", delivery = "api-delivery",
+    stringsAsFactors = FALSE
+  )
+  headers <- c(
+    last_modified = "Fri, 02 Jan 2026 00:00:00 GMT",
+    last_snapshot_code = "snapshot",
+    last_snapshot_time = "2026-01-02T00:00:00Z",
+    format_version = "3.1"
+  )
+
+  local_mocked_bindings(
+    .discover_source_deliveries = function(years) deliveries,
+    .api_delivery_headers = function(...) headers,
+    .package = "BioticExplorerServer"
+  )
+
+  manifest <- BioticExplorerServer:::.discover_source_manifest(
+    stored_manifest = baseline, parsed_baseline_years = 2020L
+  )
+  expect_identical(attr(manifest, "changed_years"), 2020L)
+})
+
+test_that("parsed delivery baselines are identified from local missions", {
+  directory <- withr::local_tempdir()
+  database <- file.path(directory, "bioticexplorer.duckdb")
+  baseline <- BioticExplorerServer:::.baseline_manifest_from_parsed(
+    parsed_year(), 2020L, as.POSIXct("2026-01-01 00:00:00", tz = "UTC")
+  )
+  create_test_database(database, manifest = baseline)
+  con <- DBI::dbConnect(duckdb::duckdb(), dbdir = database, read_only = TRUE)
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+
+  expect_identical(
+    BioticExplorerServer:::.parsed_baseline_years(con, baseline), 2020L
+  )
+})
+
 test_that("an unchanged compatible database downloads nothing", {
   directory <- withr::local_tempdir()
   database <- file.path(directory, "bioticexplorer.duckdb")
@@ -367,6 +441,12 @@ test_that("an early-exit update stores a post-download delivery baseline", {
     2020L, "2026-01-01T00:00:00Z"
   )
   attr(discovered, "changed_years") <- 2020L
+  inventory <- data.frame(
+    missiontype = "API survey", data_year = 2020L,
+    platform = "api-platform", delivery = "api-delivery",
+    stringsAsFactors = FALSE
+  )
+  attr(discovered, "delivery_inventory") <- inventory
 
   local_mocked_bindings(
     .refresh_reference_tables = reuse_test_references,
@@ -383,7 +463,9 @@ test_that("an early-exit update stores a post-download delivery baseline", {
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = database, read_only = TRUE)
   on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
   baseline <- DBI::dbReadTable(con, "source_manifest")
-  expect_identical(baseline$delivery, "2020001")
+  expect_identical(baseline$missiontype, "API survey")
+  expect_identical(baseline$platform, "api-platform")
+  expect_identical(baseline$delivery, "api-delivery")
   expect_true(all(is.na(baseline$last_modified)))
   expect_true(BioticExplorerServer:::.manifest_year_is_baseline(baseline))
 })

@@ -312,7 +312,8 @@
 
 .discover_source_manifest <- function(years = NULL, verbose = FALSE,
                                       stored_manifest = NULL,
-                                      metadata_workers = 1L) {
+                                      metadata_workers = 1L,
+                                      parsed_baseline_years = integer()) {
   metadata_workers <- as.integer(metadata_workers)
   if (length(metadata_workers) != 1L || is.na(metadata_workers) ||
       metadata_workers < 1L) {
@@ -356,6 +357,7 @@
         , drop = FALSE
       ]
       stored_keys <- .manifest_delivery_keys(stored_inventory)
+      rebase_parsed_baseline <- baseline && year %in% parsed_baseline_years
       year_result <- list()
       year_changed <- FALSE
       last_checked <- 0L
@@ -392,8 +394,8 @@
         row <- .manifest_row(delivery, headers, checked_at)
         key <- .manifest_delivery_keys(row)
         if (baseline) {
-          year_changed <- !key %in% stored_keys ||
-            .manifest_row_newer_than(row, baseline_at)
+          year_changed <- .manifest_row_newer_than(row, baseline_at) ||
+            (!rebase_parsed_baseline && !key %in% stored_keys)
         } else {
           old <- stored_year[.manifest_delivery_keys(stored_year) == key, , drop = FALSE]
           year_changed <- nrow(old) != 1L ||
@@ -433,7 +435,8 @@
       current_year <- if (length(year_result)) {
         do.call(rbind, year_result)
       } else .empty_source_manifest()
-      if (!identical(sort(.manifest_delivery_keys(current_year)), sort(stored_keys))) {
+      if (!rebase_parsed_baseline &&
+          !identical(sort(.manifest_delivery_keys(current_year)), sort(stored_keys))) {
         changed_years <- c(changed_years, year)
         if (nrow(year_deliveries)) {
           result[[length(result) + 1L]] <- .year_baseline_placeholder(year, checked_at)
@@ -445,6 +448,7 @@
 
     value <- if (length(result)) do.call(rbind, result) else .empty_source_manifest()
     attr(value, "changed_years") <- sort(unique(as.integer(changed_years)))
+    attr(value, "delivery_inventory") <- deliveries
     if (unavailable) {
       warning(
         "Skipped ", unavailable,
@@ -572,6 +576,37 @@
     checked_at = format(checked_at, "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"),
     stringsAsFactors = FALSE
   )
+}
+
+.baseline_manifest_from_inventory <- function(inventory, year, checked_at) {
+  inventory <- inventory[inventory$data_year == year, c(
+    "missiontype", "data_year", "platform", "delivery"
+  ), drop = FALSE]
+  inventory <- unique(inventory)
+  if (!nrow(inventory)) return(.empty_source_manifest())
+  data.frame(
+    inventory,
+    last_modified = NA_character_,
+    last_snapshot_code = NA_character_,
+    last_snapshot_time = NA_character_,
+    format_version = NA_character_,
+    checked_at = format(checked_at, "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"),
+    stringsAsFactors = FALSE
+  )
+}
+
+.parsed_baseline_years <- function(connection, stored_manifest) {
+  if (!nrow(stored_manifest)) return(integer())
+  local <- .local_delivery_inventory(connection)
+  stored_by_year <- split(stored_manifest, stored_manifest$data_year)
+  candidate_years <- as.integer(names(stored_by_year)[vapply(
+    stored_by_year, .manifest_year_is_baseline, logical(1)
+  )])
+  candidate_years[vapply(candidate_years, function(year) {
+    stored_year <- stored_manifest[stored_manifest$data_year == year, , drop = FALSE]
+    local_year <- local[local$data_year == year, , drop = FALSE]
+    identical(.manifest_keys(stored_year), .manifest_keys(local_year))
+  }, logical(1))]
 }
 
 .manifest_keys <- function(value) {
@@ -828,12 +863,15 @@ updateDatabase <- function(
   } else {
     stored_manifest[stored_manifest$data_year %in% requested_years, , drop = FALSE]
   }
+  parsed_baseline_years <- .parsed_baseline_years(connection, discovery_manifest)
   current_manifest <- .discover_source_manifest(
     requested_years, verbose = verbose,
     stored_manifest = if (nrow(discovery_manifest)) discovery_manifest else NULL,
-    metadata_workers = metadata_workers
+    metadata_workers = metadata_workers,
+    parsed_baseline_years = parsed_baseline_years
   )
   discovered_changed_years <- attr(current_manifest, "changed_years")
+  delivery_inventory <- attr(current_manifest, "delivery_inventory")
   local_years <- if ("mission" %in% DBI::dbListTables(connection)) {
     DBI::dbGetQuery(connection, "SELECT DISTINCT startyear FROM mission")$startyear
   } else integer()
@@ -866,9 +904,15 @@ updateDatabase <- function(
         year, cruiseSeries = cruiseSeries, gearCodes = gearCodes
       )
       if (!is.null(discovered_changed_years)) {
-        year_manifest <- .baseline_manifest_from_parsed(
-          downloaded$parsed, year, download_started_at
-        )
+        year_manifest <- if (!is.null(delivery_inventory)) {
+          .baseline_manifest_from_inventory(
+            delivery_inventory, year, download_started_at
+          )
+        } else {
+          .baseline_manifest_from_parsed(
+            downloaded$parsed, year, download_started_at
+          )
+        }
       }
       .write_database_year(
         connection, year, downloaded$parsed, downloaded$filesize,
