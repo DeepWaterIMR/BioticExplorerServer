@@ -157,7 +157,7 @@ test_that("delivery inventory discovery is parallelized by level", {
       observed_workers <<- c(observed_workers, max_active)
       switch(
         field,
-        year = list(c("2020", "2021"), "2021"),
+        year = list(c("20", "199", "2020", "2021", "2030"), "2021"),
         platformpath = list("A_1", "A_2", "B_1"),
         delivery = list(c("1", "2"), "3", "4")
       )
@@ -171,6 +171,24 @@ test_that("delivery inventory discovery is parallelized by level", {
   expect_equal(nrow(deliveries), 4)
   expect_identical(sort(unique(deliveries$data_year)), c(2020L, 2021L))
   expect_identical(observed_workers, c(4L, 4L, 4L))
+})
+
+test_that("delivery inventory ignores malformed API years", {
+  local_mocked_bindings(
+    .api_list_field = function(url, field) {
+      switch(
+        field,
+        missiontypename = "Survey",
+        year = c("20", "199", "2020", "2030"),
+        platformpath = "Platform",
+        delivery = "delivery"
+      )
+    },
+    .package = "BioticExplorerServer"
+  )
+
+  deliveries <- BioticExplorerServer:::.discover_source_deliveries_sequential()
+  expect_identical(deliveries$data_year, 2020L)
 })
 
 test_that("metadata discovery returns an empty manifest when all deliveries disappear", {
@@ -549,6 +567,27 @@ test_that("legacy compatible databases are stamped without rebuilding", {
   on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
   metadata <- DBI::dbReadTable(con, "metadata")
   expect_equal(metadata$database_schema_version, 1)
+})
+
+test_that("a freshly compiled database uses API timestamps for its first update", {
+  directory <- withr::local_tempdir()
+  database <- file.path(directory, "bioticexplorer.duckdb")
+  create_test_database(database, manifest = NULL)
+  con <- DBI::dbConnect(duckdb::duckdb(), dbdir = database, read_only = TRUE)
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  api_manifest <- data.frame(
+    missiontype = "API routing name", data_year = 2020L,
+    platform = "api-platform", delivery = "api-delivery",
+    last_modified = "Wed, 01 Jan 2025 00:00:00 GMT",
+    last_snapshot_code = "snapshot",
+    last_snapshot_time = "2025-01-01T00:00:00Z",
+    format_version = "3.1", checked_at = "2026-01-01T00:00:00Z",
+    stringsAsFactors = FALSE
+  )
+
+  expect_true(BioticExplorerServer:::.legacy_year_is_current(
+    con, api_manifest, 2020L
+  ))
 })
 
 test_that("schema mismatch chooses a full compatibility rebuild", {

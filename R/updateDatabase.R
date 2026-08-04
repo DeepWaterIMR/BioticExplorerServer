@@ -117,16 +117,21 @@
   })
 }
 
+.valid_source_years <- function(years) {
+  years <- as.integer(years)
+  years[!is.na(years) & years >= 1900L &
+          years <= data.table::year(Sys.time())]
+}
+
 .discover_source_deliveries_sequential <- function(years = NULL) {
   missiontypes <- .api_list_field(.BIOTIC_API_BASE, "missiontypename")
   result <- list()
   n <- 0L
 
   for (missiontype in missiontypes) {
-    available_years <- suppressWarnings(as.integer(
-      .api_list_field(.api_path(missiontype), "year")
+    available_years <- .valid_source_years(.api_list_field(
+      .api_path(missiontype), "year"
     ))
-    available_years <- available_years[!is.na(available_years)]
     if (!is.null(years)) available_years <- intersect(available_years, years)
 
     for (year in available_years) {
@@ -166,8 +171,7 @@
 
   mission_years <- list()
   for (n in seq_along(missiontypes)) {
-    available_years <- suppressWarnings(as.integer(year_values[[n]]))
-    available_years <- available_years[!is.na(available_years)]
+    available_years <- .valid_source_years(year_values[[n]])
     if (!is.null(years)) available_years <- intersect(available_years, years)
     if (length(available_years)) {
       mission_years[[length(mission_years) + 1L]] <- data.frame(
@@ -634,17 +638,16 @@
 }
 
 .legacy_year_is_current <- function(connection, manifest, year) {
-  local <- .local_delivery_inventory(connection)
-  local <- local[local$data_year == year, , drop = FALSE]
+  if (!.database_has_year(connection, year)) return(FALSE)
   remote <- manifest[manifest$data_year == year, , drop = FALSE]
-  if (!identical(.manifest_keys(local), .manifest_keys(remote))) return(FALSE)
+  if (!nrow(remote)) return(FALSE)
 
   metadata <- .database_metadata(connection)
   built <- .parse_api_time(metadata$timeend[[1]])
   signals <- c(.parse_api_time(remote$last_modified),
                .parse_api_time(remote$last_snapshot_time))
   signals <- signals[!is.na(signals)]
-  !is.na(built) && (!length(signals) || built >= max(signals))
+  !is.na(built) && length(signals) && built >= max(signals)
 }
 
 .download_year_for_update <- function(year, icesAreas = NULL,
