@@ -33,16 +33,12 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.8.4" id="bioticexplorerserver-084">BioticExplorerServer 0.8.4<a class="anchor" aria-label="anchor" href="#bioticexplorerserver-084"></a></h2>
+<h2 class="pkg-version" data-toc-text="0.8.4" id="bioticexplorerserver-084-development-version">BioticExplorerServer 0.8.4 (development version)<a class="anchor" aria-label="anchor" href="#bioticexplorerserver-084-development-version"></a></h2>
 <p><em>2026-08-04</em></p>
 <ul><li>Fixed the first <code><a href="../reference/updateDatabase.html">updateDatabase()</a></code> run after <code><a href="../reference/compileDatabase.html">compileDatabase()</a></code>: it now establishes the API delivery manifest from API timestamps, avoiding a needless full redownload caused by differences between API routing keys and parsed mission labels.</li>
 <li>Rebased older mission-derived update manifests to API delivery keys, so unchanged years are no longer repeatedly flagged for download.</li>
 <li>Ignore malformed API inventory years outside the supported 1900–current-year range.</li>
-</ul></div>
-    <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.8.1" id="bioticexplorerserver-081">BioticExplorerServer 0.8.1<a class="anchor" aria-label="anchor" href="#bioticexplorerserver-081"></a></h2>
-<p><em>2026-08-03</em></p>
-<ul><li>Retried transient Reference API connection failures while preparing cruise series, gear, taxa, and coded-field reference tables. This keeps both <code><a href="../reference/updateDatabase.html">updateDatabase()</a></code> and <code><a href="../reference/compileDatabase.html">compileDatabase()</a></code> from failing on a dropped TLS connection during reference refreshes.</li>
+<li>Retried transient Reference API connection failures while preparing cruise series, gear, taxa, and coded-field reference tables. This keeps both <code><a href="../reference/updateDatabase.html">updateDatabase()</a></code> and <code><a href="../reference/compileDatabase.html">compileDatabase()</a></code> from failing on a dropped TLS connection during reference refreshes.</li>
 <li>Retried transient Biotic API timeouts and parallelized delivery-inventory and metadata discovery with bounded concurrency. Reference-code tables that are not exposed by the Reference API are no longer requested.</li>
 </ul></div>
     <div class="section level2">

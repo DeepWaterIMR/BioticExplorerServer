@@ -103,9 +103,10 @@
 <span><span class="op">}</span></span>
 <span></span>
 <span><span class="co"># Load the packages</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/invisible.html" class="external-link">invisible</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">packages</span>, <span class="va">library</span>, character.only <span class="op">=</span> <span class="cn">TRUE</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Connect to the database (assuming you used standard dbPath and name)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/invisible.html" class="external-link">invisible</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">packages</span>, <span class="va">library</span>, character.only <span class="op">=</span> <span class="cn">TRUE</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="do">## Warning: package 'duckdb' was built under R version 4.6.1</span></span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Connect to the database (assuming you used standard dbPath and name)</span></span>
 <span><span class="va">con_db</span> <span class="op">&lt;-</span> <span class="st">"~/IMR_biotic_BES_database/bioticexplorer.duckdb"</span> <span class="op">%&gt;%</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/normalizePath.html" class="external-link">normalizePath</a></span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
 <span>  <span class="fu">duckdb</span><span class="fu">::</span><span class="fu"><a href="https://r.duckdb.org/reference/duckdb.html" class="external-link">duckdb</a></span><span class="op">(</span>read_only <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
@@ -124,25 +125,25 @@
 <span><span class="va">gearlist</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/tbl.html" class="external-link">tbl</a></span><span class="op">(</span><span class="va">con_db</span>, <span class="st">"gearindex"</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">collect</span><span class="op">(</span><span class="op">)</span> <span class="co"># gear index</span></span>
 <span><span class="va">taxalist</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/tbl.html" class="external-link">tbl</a></span><span class="op">(</span><span class="va">con_db</span>, <span class="st">"taxaindex"</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">collect</span><span class="op">(</span><span class="op">)</span> <span class="co"># taxa index</span></span></code></pre></div>
 <p>These data objects can now be used in R:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mission</span> <span class="op">%&gt;%</span></span>
 <span>  <span class="fu">arrange</span><span class="op">(</span><span class="va">startyear</span>, <span class="va">platformname</span>, <span class="va">missionnumber</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
 <span>  <span class="fu">collect</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb7"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="do">## # A tibble: 6 × 14</span></span>
-<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="do">##   startyear platformname               cruise missiontype platform missionnumber</span></span>
-<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="do">##       &lt;int&gt; &lt;chr&gt;                      &lt;chr&gt;  &lt;chr&gt;       &lt;chr&gt;            &lt;int&gt;</span></span>
-<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="do">## 1        20 Falkungen                  &lt;NA&gt;   11          9688                 3</span></span>
-<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="do">## 2       199 Buland                     &lt;NA&gt;   1           3378                 1</span></span>
-<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a><span class="do">## 3      1906 NVG-sampling (Norsk vårgy… &lt;NA&gt;   1           10016                1</span></span>
-<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a><span class="do">## 4      1907 NVG-sampling (Norsk vårgy… &lt;NA&gt;   1           10016                1</span></span>
-<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a><span class="do">## 5      1908 NVG-sampling (Norsk vårgy… &lt;NA&gt;   1           10016                1</span></span>
-<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a><span class="do">## 6      1909 NVG-sampling (Norsk vårgy… &lt;NA&gt;   1           10016                1</span></span>
-<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a><span class="do">## # ℹ 8 more variables: missiontypename &lt;chr&gt;, callsignal &lt;chr&gt;,</span></span>
-<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a><span class="do">## #   missionstartdate &lt;chr&gt;, missionstopdate &lt;chr&gt;, purpose &lt;chr&gt;,</span></span>
-<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a><span class="do">## #   missionid &lt;chr&gt;, cruiseseriescode &lt;chr&gt;, idCruiseseriesSample &lt;chr&gt;</span></span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="do">## # A tibble: 6 × 14</span></span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a><span class="do">##   startyear platformname               cruise missiontype platform missionnumber</span></span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a><span class="do">##       &lt;int&gt; &lt;chr&gt;                      &lt;chr&gt;  &lt;chr&gt;       &lt;chr&gt;            &lt;int&gt;</span></span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a><span class="do">## 1      1906 NVG-sampling (Norsk vårgy… &lt;NA&gt;   1           10016                1</span></span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a><span class="do">## 2      1907 NVG-sampling (Norsk vårgy… &lt;NA&gt;   1           10016                1</span></span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a><span class="do">## 3      1908 NVG-sampling (Norsk vårgy… &lt;NA&gt;   1           10016                1</span></span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a><span class="do">## 4      1909 NVG-sampling (Norsk vårgy… &lt;NA&gt;   1           10016                1</span></span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a><span class="do">## 5      1910 NVG-sampling (Norsk vårgy… &lt;NA&gt;   1           10016                1</span></span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a><span class="do">## 6      1911 NVG-sampling (Norsk vårgy… &lt;NA&gt;   1           10016                1</span></span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a><span class="do">## # ℹ 8 more variables: missiontypename &lt;chr&gt;, callsignal &lt;chr&gt;,</span></span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a><span class="do">## #   missionstartdate &lt;chr&gt;, missionstopdate &lt;chr&gt;, purpose &lt;chr&gt;,</span></span>
+<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a><span class="do">## #   missionid &lt;chr&gt;, cruiseseriescode &lt;chr&gt;, idCruiseseriesSample &lt;chr&gt;</span></span></code></pre></div>
 <p>The <a href="https://solutions.posit.co/connections/db/r-packages/dplyr/" class="external-link">dplyr package can also be used with databases</a>. The only difference from normal use is that you’ll need to <a href="https://dbplyr.tidyverse.org/reference/collapse.tbl_sql.html" class="external-link"><code>collect()</code></a> the data from the database after filtering. Note that you are handling large amounts of data, and using the collect function incorrectly may cause your computer to crash due to insufficient RAM. Therefore, always filter before collecting and consider using <a href="https://dbplyr.tidyverse.org/reference/collapse.tbl_sql.html" class="external-link"><code>compute()</code></a> or use the <a href="https://cran.r-project.org/web/packages/data.table/index.html" class="external-link">data.table</a> package, if you’ll need to handle very large proportions of the IMR Biotic database. Stations with no catch (i.e., where <code>commonname</code> is NA) can now be found with <code>stnall |&gt; filter(is.na(commonname))</code> (Figure 1).</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">stnall</span> <span class="op">%&gt;%</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">cruise</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
 <span>  <span class="fu">collect</span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
@@ -181,11 +182,11 @@ Figure 1. Number of IMR Biotic sampling stations per year from around 1914 to pr
 </p>
 </div>
 <p>The duckdb database contains following data tables:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbListTables.html" class="external-link">dbListTables</a></span><span class="op">(</span><span class="va">con_db</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb10"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="do">##  [1] "ageall"          "codeindex"       "csindex"         "filesize"       </span></span>
-<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="do">##  [5] "gearindex"       "indall"          "metadata"        "mission"        </span></span>
-<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a><span class="do">##  [9] "source_manifest" "stnall"          "taxaindex"</span></span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="do">##  [1] "ageall"          "codeindex"       "csindex"         "filesize"       </span></span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a><span class="do">##  [5] "gearindex"       "indall"          "metadata"        "mission"        </span></span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a><span class="do">##  [9] "source_manifest" "stnall"          "taxaindex"</span></span></code></pre></div>
 <p><code>source_manifest</code>, created by <code><a href="reference/updateDatabase.html">updateDatabase()</a></code>, stores metadata-only change signals used to identify which years need refreshing.</p>
 </div>
 <div class="section level3">
@@ -207,7 +208,7 @@ Figure 1. Number of IMR Biotic sampling stations per year from around 1914 to pr
 <p>Error: ! error in evaluating the argument ‘drv’ in selecting a method for function ‘dbConnect’: rapi_startup: Failed to open database: {“exception_type”:“IO”,“exception_message”:“Could not set lock on file …</p>
 </blockquote>
 <p>You likely have database connection with write privileges open elsewhere within your R session. DuckDB supports only one write connection, but multiple simultaneus read only connections can be established. Close the connections to the database:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbDisconnect.html" class="external-link">dbDisconnect</a></span><span class="op">(</span><span class="va">con_db</span><span class="op">)</span></span></code></pre></div>
 <p>and connect to the database in read only mode: <code>duckdb::duckdb(read_only = TRUE)</code>.</p>
 </div>

@@ -103,7 +103,11 @@ if (any(installed_packages == FALSE)) {
 
 # Load the packages
 invisible(lapply(packages, library, character.only = TRUE, quietly = TRUE))
+```
 
+    ## Warning: package 'duckdb' was built under R version 4.6.1
+
+``` r
 # Connect to the database (assuming you used standard dbPath and name)
 con_db <- "~/IMR_biotic_BES_database/bioticexplorer.duckdb" %>% 
   normalizePath() %>% 
@@ -136,12 +140,12 @@ mission %>%
     ## # A tibble: 6 × 14
     ##   startyear platformname               cruise missiontype platform missionnumber
     ##       <int> <chr>                      <chr>  <chr>       <chr>            <int>
-    ## 1        20 Falkungen                  <NA>   11          9688                 3
-    ## 2       199 Buland                     <NA>   1           3378                 1
-    ## 3      1906 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
-    ## 4      1907 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
-    ## 5      1908 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
-    ## 6      1909 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
+    ## 1      1906 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
+    ## 2      1907 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
+    ## 3      1908 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
+    ## 4      1909 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
+    ## 5      1910 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
+    ## 6      1911 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
     ## # ℹ 8 more variables: missiontypename <chr>, callsignal <chr>,
     ## #   missionstartdate <chr>, missionstopdate <chr>, purpose <chr>,
     ## #   missionid <chr>, cruiseseriescode <chr>, idCruiseseriesSample <chr>

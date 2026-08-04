@@ -1,6 +1,6 @@
 # Changelog
 
-## BioticExplorerServer 0.8.4
+## BioticExplorerServer 0.8.4 (development version)
 
 *2026-08-04*
 
@@ -15,11 +15,6 @@
   so unchanged years are no longer repeatedly flagged for download.
 - Ignore malformed API inventory years outside the supported
   1900–current-year range.
-
-## BioticExplorerServer 0.8.1
-
-*2026-08-03*
-
 - Retried transient Reference API connection failures while preparing
   cruise series, gear, taxa, and coded-field reference tables. This
   keeps both
