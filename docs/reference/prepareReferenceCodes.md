@@ -3,9 +3,9 @@
 Downloads and compiles the simple (non-composite) coded-field reference
 tables from the IMR NMD Reference API into a single long-format lookup.
 These are the Biotic columns flagged as codes of type `KeyType` (e.g.
-`sex`, `maturationstage`, `missiontype`, `nation`) whose meaning is
-otherwise only resolvable against the API. The result is written to the
-DuckDB database as the `codeindex` table by
+`sex`, `maturationstage`, `nation`) whose meaning is otherwise only
+resolvable against the API. The result is written to the DuckDB database
+as the `codeindex` table by
 [`compileDatabase`](https://deepwaterimr.github.io/BioticExplorerServer/reference/compileDatabase.md),
 so agents and the Shiny app can decode these fields offline with a join
 instead of a per-code network call.
@@ -21,10 +21,10 @@ prepareReferenceCodes(tables = NULL, lang = c("en", "no"))
 - tables:
 
   Character vector of reference-table names to pull. Defaults to the
-  coded `KeyType` columns that actually occur in
-  `mission`/`stnall`/`indall`. Note that a few Biotic columns map to a
-  differently named reference dataset (e.g. the `gear` column resolves
-  against the `equipment` table — handled separately by
+  coded `KeyType` columns that occur in `mission`/`stnall`/`indall` and
+  are exposed as Reference API datasets. Note that a few Biotic columns
+  map to a differently named reference dataset (e.g. the `gear` column
+  resolves against the `equipment` table — handled separately by
   [`prepareGearList`](https://deepwaterimr.github.io/BioticExplorerServer/reference/prepareGearList.md)
   and therefore not included here).
 

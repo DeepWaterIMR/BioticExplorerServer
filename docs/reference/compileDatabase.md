@@ -67,11 +67,11 @@ and
 functions, and saves the results into a
 [duckdb](https://r.duckdb.org/reference/duckdb.html). The cruise-series,
 gear and taxa reference lists are written as the `csindex`, `gearindex`
-and `taxaindex` tables, respectively, and the coded `KeyType` fields
-(`sex`, `maturationstage`, `missiontype`, `nation`, …) are written as
-the long-format `codeindex` table so they can be decoded offline with a
-join. Completed databases are stamped with the package and
-database-schema versions used to build them;
+and `taxaindex` tables, respectively, and coded `KeyType` fields exposed
+by the Reference API (such as `sex`, `maturationstage`, and `nation`)
+are written as the long-format `codeindex` table so they can be decoded
+offline with a join. Completed databases are stamped with the package
+and database-schema versions used to build them;
 [`updateDatabase`](https://deepwaterimr.github.io/BioticExplorerServer/reference/updateDatabase.md)
 uses this information to decide whether an incremental update is safe.
 Be aware that running these functions requires access to the IMR

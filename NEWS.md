@@ -1,3 +1,16 @@
+# BioticExplorerServer 0.8.4
+
+*2026-08-04*
+
+- Fixed the first `updateDatabase()` run after `compileDatabase()`: it now
+  establishes the API delivery manifest from API timestamps, avoiding a
+  needless full redownload caused by differences between API routing keys and
+  parsed mission labels.
+- Rebased older mission-derived update manifests to API delivery keys, so
+  unchanged years are no longer repeatedly flagged for download.
+- Ignore malformed API inventory years outside the supported 1900–current-year
+  range.
+
 # BioticExplorerServer 0.8.1
 
 *2026-08-03*

@@ -1,5 +1,37 @@
 # Changelog
 
+## BioticExplorerServer 0.8.4
+
+*2026-08-04*
+
+- Fixed the first
+  [`updateDatabase()`](https://deepwaterimr.github.io/BioticExplorerServer/reference/updateDatabase.md)
+  run after
+  [`compileDatabase()`](https://deepwaterimr.github.io/BioticExplorerServer/reference/compileDatabase.md):
+  it now establishes the API delivery manifest from API timestamps,
+  avoiding a needless full redownload caused by differences between API
+  routing keys and parsed mission labels.
+- Rebased older mission-derived update manifests to API delivery keys,
+  so unchanged years are no longer repeatedly flagged for download.
+- Ignore malformed API inventory years outside the supported
+  1900–current-year range.
+
+## BioticExplorerServer 0.8.1
+
+*2026-08-03*
+
+- Retried transient Reference API connection failures while preparing
+  cruise series, gear, taxa, and coded-field reference tables. This
+  keeps both
+  [`updateDatabase()`](https://deepwaterimr.github.io/BioticExplorerServer/reference/updateDatabase.md)
+  and
+  [`compileDatabase()`](https://deepwaterimr.github.io/BioticExplorerServer/reference/compileDatabase.md)
+  from failing on a dropped TLS connection during reference refreshes.
+- Retried transient Biotic API timeouts and parallelized
+  delivery-inventory and metadata discovery with bounded concurrency.
+  Reference-code tables that are not exposed by the Reference API are no
+  longer requested.
+
 ## BioticExplorerServer 0.8.0
 
 *2026-06-19*
