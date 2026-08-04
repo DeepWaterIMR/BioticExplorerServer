@@ -1,4 +1,4 @@
-# BioticExplorerServer 0.8.4
+# BioticExplorerServer 0.8.4 (development version)
 
 *2026-08-04*
 
@@ -10,11 +10,6 @@
   unchanged years are no longer repeatedly flagged for download.
 - Ignore malformed API inventory years outside the supported 1900–current-year
   range.
-
-# BioticExplorerServer 0.8.1
-
-*2026-08-03*
-
 - Retried transient Reference API connection failures while preparing cruise
   series, gear, taxa, and coded-field reference tables. This keeps both
   `updateDatabase()` and `compileDatabase()` from failing on a dropped TLS
@@ -22,6 +17,7 @@
 - Retried transient Biotic API timeouts and parallelized delivery-inventory and
   metadata discovery with bounded concurrency. Reference-code tables that are
   not exposed by the Reference API are no longer requested.
+
 
 # BioticExplorerServer 0.8.0
 
