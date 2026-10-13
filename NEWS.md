@@ -1,4 +1,21 @@
-# BioticExplorerServer 0.8.8 (development version)
+# BioticExplorerServer 0.8.9 (development version)
+
+*2026-10-13*
+
+- Fixed non-ASCII text (`å`, `ø`, `æ`) being stored as literal escape text such as
+  `"bl<c3><a5>kveite"` when the database was written under a non-UTF-8 locale, typically a
+  background `Rscript` started with `LANG` unset. `RstoxData::readXmlFile()` returns UTF-8 bytes
+  with `"unknown"` encoding; R then treats them as native, and duckdb's UTF-8 translation escapes
+  every non-ASCII byte under a C locale. `bioticToDatabase()` now declares all character
+  columns as UTF-8, so `compileDatabase()` and `updateDatabase()` write correct text in any
+  locale. Affected rows split species, platform and mission-type names into two spellings, so
+  filtering on e.g. `commonname == "blåkveite"` silently lost the affected years.
+- New `repairDatabaseEncoding()` decodes such escape text in place in the `mission`, `stnall`,
+  `indall` and `ageall` tables of an existing database and re-indexes it. `dryRun = TRUE` only
+  reports affected columns. Incremental updates do not re-download years whose source is
+  unchanged, so existing databases need this one-off repair.
+
+# BioticExplorerServer 0.8.8
 
 *2026-09-07*
 

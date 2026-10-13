@@ -32,6 +32,11 @@ bioticToDatabase <- function(file, removeEmpty = FALSE, convertColumns = FALSE, 
   ## Read the Biotic file ----
   
   dt <- RstoxData::readXmlFile(file)
+
+  # RstoxData returns UTF-8 bytes with "unknown" encoding. R then treats them as
+  # native, so under a non-UTF-8 (e.g. C) locale DBI/duckdb escapes non-ASCII
+  # bytes as "<c3><a5>" text. Declare the encoding explicitly.
+  dt <- lapply(dt, .mark_utf8)
   
   utils::setTxtProgressBar(pb, 2)
   
