@@ -1,19 +1,28 @@
-# BioticExplorerServer 0.8.9 (development version)
+# BioticExplorerServer 0.8.9
 
-*2026-10-13*
+*2026-10-14*
 
-- Fixed non-ASCII text (`å`, `ø`, `æ`) being stored as literal escape text such as
-  `"bl<c3><a5>kveite"` when the database was written under a non-UTF-8 locale, typically a
-  background `Rscript` started with `LANG` unset. `RstoxData::readXmlFile()` returns UTF-8 bytes
-  with `"unknown"` encoding; R then treats them as native, and duckdb's UTF-8 translation escapes
-  every non-ASCII byte under a C locale. `bioticToDatabase()` now declares all character
-  columns as UTF-8, so `compileDatabase()` and `updateDatabase()` write correct text in any
-  locale. Affected rows split species, platform and mission-type names into two spellings, so
-  filtering on e.g. `commonname == "blåkveite"` silently lost the affected years.
-- New `repairDatabaseEncoding()` decodes such escape text in place in the `mission`, `stnall`,
-  `indall` and `ageall` tables of an existing database and re-indexes it. `dryRun = TRUE` only
-  reports affected columns. Incremental updates do not re-download years whose source is
-  unchanged, so existing databases need this one-off repair.
+- Fixed Norwegian characters (`å`, `ø`, `æ`) being stored as literal escape text such as
+  `"bl<c3><a5>kveite"` when the database was compiled or updated under a non-UTF-8 locale,
+  typically a background `Rscript` started with `LANG` unset. Every free-text column was
+  affected: species (`commonname`), platform and mission-type names, cruise purposes, and all
+  comment fields. Affected years split names into two spellings, so filtering on e.g.
+  `commonname == "blåkveite"` silently lost those years. Root cause:
+  `RstoxData::readXmlFile()` returns UTF-8 bytes with `"unknown"` encoding (only column names are
+  marked UTF-8); R treats such strings as native, and duckdb's UTF-8 translation escapes every
+  non-ASCII byte under a C locale. Three layers of protection now:
+  - `bioticToDatabase()` declares all character columns as UTF-8, so text is written correctly
+    in any locale.
+  - `compileDatabase()` and `updateDatabase()` switch `LC_CTYPE` to a UTF-8 locale for the
+    duration of the run when started under a non-UTF-8 one, and warn if none is available.
+  - `updateDatabase()` warns at the end of a run if species or platform names still contain
+    byte-escaped text, pointing to the repair.
+- New `repairDatabaseEncoding()` checks (`dryRun = TRUE`) or repairs byte-escaped text in place
+  in every table of an existing database, then re-indexes it. Only escapes of bytes >= 0x80 that
+  decode to valid UTF-8 are changed, so legitimate text such as `"<10>"` is untouched. It takes
+  the same `dbPath`/`dbName`/`dbIndexFile` arguments as `updateDatabase()`. Incremental updates
+  do not re-download years whose source is unchanged, so an affected database needs this one-off
+  repair, or a full re-download with `compileDatabase(overwrite = TRUE)`.
 
 # BioticExplorerServer 0.8.8
 

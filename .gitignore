@@ -54,3 +54,5 @@ CLAUDE.md
 .positai
 docs/CLAUDE.html
 docs/AGENTS.html
+tests/testthat/_problems/
+tests/testthat/testthat-problems.rds

@@ -77,6 +77,16 @@ metadata check, use:
 compileDatabase(years = 2024:2026, overwrite = TRUE)
 ```
 
+Databases compiled or updated with BioticExplorerServer \<= 0.8.8 under
+a non-UTF-8 locale may store Norwegian characters as escape text
+(`"bl<c3><a5>kveite"` instead of `"blåkveite"`). Check and repair such a
+database in place with:
+
+``` r
+repairDatabaseEncoding(dryRun = TRUE) # check
+repairDatabaseEncoding()              # repair and re-index
+```
+
 ### Uninstall the database
 
 If you want to remove the database from your computer, simply delete the
@@ -201,7 +211,7 @@ stnall %>%
 
 <div class="figure">
 
-<img src="man/figures/README-unnamed-chunk-8-1.png" alt="Figure 1. Number of IMR Biotic sampling stations per year from around 1914 to present. Zero catch stations (is.na(commonname)) are shown in red, while stations with positive catches are shown in grey."  />
+<img src="man/figures/README-unnamed-chunk-9-1.png" alt="Figure 1. Number of IMR Biotic sampling stations per year from around 1914 to present. Zero catch stations (is.na(commonname)) are shown in red, while stations with positive catches are shown in grey."  />
 <p class="caption">
 
 Figure 1. Number of IMR Biotic sampling stations per year from around

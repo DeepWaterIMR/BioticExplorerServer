@@ -26,6 +26,7 @@ reference:
   - downloadDatabase
   - downloadDatabaseToFiles
   - indexDatabase
+  - repairDatabaseEncoding
 
 - title: Biotic data processing
   desc: >

@@ -21,6 +21,12 @@ compileDatabase <- function(
   dbName = NULL,
   overwrite = FALSE
 ) {
+  if (.needs_utf8_locale()) {
+    return(.with_utf8_locale(compileDatabase(
+      years = years, dbPath = dbPath, dbIndexFile = dbIndexFile, dbName = dbName,
+      overwrite = overwrite
+    )))
+  }
   operation_started_at <- .start_operation_timer("Compilation")
   operation_succeeded <- FALSE
   on.exit({

@@ -810,6 +810,12 @@ updateDatabase <- function(
   verbose = FALSE,
   metadata_workers = 8L
 ) {
+  if (.needs_utf8_locale()) {
+    return(.with_utf8_locale(updateDatabase(
+      years = years, dbPath = dbPath, dbIndexFile = dbIndexFile, dbName = dbName,
+      verbose = verbose, metadata_workers = metadata_workers
+    )))
+  }
   operation_started_at <- .start_operation_timer("Update")
   operation_succeeded <- FALSE
   on.exit({
@@ -943,6 +949,14 @@ updateDatabase <- function(
   }
 
   .write_database_metadata(connection, time_start, Sys.time(), update_mode = "incremental")
+  escaped <- .count_escaped_text(connection)
+  if (escaped > 0) {
+    warning(
+      escaped, " species or platform names contain byte-escaped text such as ",
+      "\"bl<c3><a5>kveite\" (written under a non-UTF-8 locale by an earlier ",
+      "version). Run repairDatabaseEncoding() to fix the database.", call. = FALSE
+    )
+  }
   indexDatabase(connection = connection, dbIndexFile = dbIndexFile)
   DBI::dbDisconnect(connection, shutdown = TRUE)
   connection_open <- FALSE

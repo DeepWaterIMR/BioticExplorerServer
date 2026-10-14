@@ -2,26 +2,38 @@
 % Please edit documentation in R/databaseMaintenance.R
 \name{repairDatabaseEncoding}
 \alias{repairDatabaseEncoding}
-\title{Repair byte-escaped text in a BioticExplorer database}
+\title{Check and repair byte-escaped text in a BioticExplorer database}
 \usage{
 repairDatabaseEncoding(
-  dbPath = file.path(defaultDbPath(), "bioticexplorer.duckdb"),
-  dbIndexFile = file.path(dirname(dbPath), "dbIndex.rda"),
+  dbPath = defaultDbPath(),
+  dbIndexFile = file.path(dbPath, "dbIndex.rda"),
+  dbName = NULL,
   dryRun = FALSE
 )
 }
 \arguments{
-\item{dbPath}{Character string giving the path to the DuckDB database file.}
+\item{dbPath}{Character string specifying the folder where the \link[duckdb]{duckdb} and \link[=indexDatabase]{dbIndex} files should be saved. Defaults to \code{\link{defaultDbPath}()}, which is \code{~/IMR_biotic_BES_database} on macOS and Linux and \code{\%USERPROFILE\%\\IMR_biotic_BES_database} on Windows, where R's \code{~} expansion may otherwise land the database in a OneDrive-synchronized Documents folder.}
 
-\item{dbIndexFile}{Character string giving the path to the index file. Rebuilt after a repair. Set to \code{NULL} to skip re-indexing.}
+\item{dbIndexFile}{Character string giving the path to the index file rebuilt after a repair. \code{NULL} skips re-indexing.}
 
-\item{dryRun}{Logical. If \code{TRUE}, only reports the number of affected rows per table and column.}
+\item{dbName}{Character string or \code{NULL}. If \code{NULL} uses the default name ("bioticexplorer").}
+
+\item{dryRun}{Logical. If \code{TRUE}, opens the database read-only and only reports the affected tables and columns.}
 }
 \value{
-A data frame with one row per repaired table and column, giving the number of distinct values and rows changed. Returned invisibly unless \code{dryRun = TRUE}.
+A data frame with one row per affected table and column, giving the number of distinct values and rows. Returned invisibly unless \code{dryRun = TRUE}. A zero-row data frame means the database has no byte-escaped text.
 }
 \description{
-Databases written under a non-UTF-8 locale (for example a background \code{Rscript} with \code{LANG} unset) by \code{BioticExplorerServer} <= 0.8.8 store non-ASCII characters as literal escape text, so that \code{"blåkveite"} becomes \code{"bl<c3><a5>kveite"}. This function finds such values in all text columns of the \code{mission}, \code{stnall}, \code{indall} and \code{ageall} tables, decodes them back to UTF-8 in place and re-indexes the database.
+Databases compiled or updated by \code{BioticExplorerServer} <= 0.8.8 under a non-UTF-8 locale (for example a background \code{Rscript} started with \code{LANG} unset) store Norwegian characters as literal escape text, so that \code{"blåkveite"} becomes \code{"bl<c3><a5>kveite"}. This affects every text column: species, platform and mission-type names, and all comment fields. The function finds such values in all tables of the database, decodes them back to UTF-8 in place and re-indexes the database. Use \code{dryRun = TRUE} to only check. An alternative to repairing is to re-download the whole database with \code{compileDatabase(overwrite = TRUE)} using BioticExplorerServer >= 0.8.9.
+}
+\details{
+Close all other connections to the database (R sessions, BioticExplorer) before repairing. Only escape sequences for bytes >= 0x80 that decode to valid UTF-8 are changed, so legitimate text such as \code{"<10>"} is left alone.
+}
+\examples{
+\dontrun{
+repairDatabaseEncoding(dryRun = TRUE) # check
+repairDatabaseEncoding()              # repair and re-index
+}
 }
 \author{
 Mikko Vihtakari

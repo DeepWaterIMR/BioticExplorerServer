@@ -175,12 +175,57 @@
   x
 }
 
-# Turn R's "<c3><a5>" byte-escape text back into UTF-8. Values that would not
+# R escapes bytes it cannot represent in a non-UTF-8 native encoding as "<xx>".
+# Only bytes >= 0x80 are escaped, so ASCII text such as "<10>" is never touched.
+.ESCAPED_BYTE_PATTERN <- "<[89a-f][0-9a-f]>"
+
+# Run expr with a UTF-8 LC_CTYPE. Biotic text is UTF-8; under a C/POSIX locale R
+# and its database drivers mangle non-ASCII characters.
+.needs_utf8_locale <- function() {
+  !isTRUE(l10n_info()[["UTF-8"]]) && !isTRUE(getOption("BioticExplorerServer.locale_checked"))
+}
+
+.with_utf8_locale <- function(expr) {
+  if (!.needs_utf8_locale()) return(expr)
+  old_option <- options(BioticExplorerServer.locale_checked = TRUE)
+  on.exit(options(old_option), add = TRUE)
+  old <- Sys.getlocale("LC_CTYPE")
+  candidates <- c("C.UTF-8", "en_US.UTF-8", "en_GB.UTF-8", "nb_NO.UTF-8", "UTF-8")
+  for (locale in candidates) {
+    if (nzchar(suppressWarnings(Sys.setlocale("LC_CTYPE", locale)))) break
+  }
+  if (!isTRUE(l10n_info()[["UTF-8"]])) {
+    warning("Could not switch to a UTF-8 locale (current LC_CTYPE: ", old, "). ",
+            "Set LANG/LC_ALL to a UTF-8 locale before running BioticExplorerServer.",
+            call. = FALSE)
+  } else {
+    message("Temporarily using LC_CTYPE=", Sys.getlocale("LC_CTYPE"),
+            " (was ", old, ") so that Norwegian characters are stored correctly.")
+    on.exit(suppressWarnings(Sys.setlocale("LC_CTYPE", old)), add = TRUE)
+  }
+  force(expr)
+}
+
+# Count values with byte-escape text in the columns most likely to carry
+# Norwegian characters. Cheap enough to run after every update.
+.count_escaped_text <- function(connection) {
+  checks <- list(mission = "platformname", stnall = "commonname")
+  sum(vapply(names(checks), function(table) {
+    if (!table %in% DBI::dbListTables(connection) ||
+        !checks[[table]] %in% DBI::dbListFields(connection, table)) return(0)
+    as.numeric(DBI::dbGetQuery(connection, paste0(
+      "SELECT count(*) AS n FROM ", table, " WHERE regexp_matches(",
+      checks[[table]], ", '", .ESCAPED_BYTE_PATTERN, "')"
+    ))$n)
+  }, numeric(1)))
+}
+
+# Turn "<c3><a5>" byte-escape text back into UTF-8. Values that would not
 # decode to valid UTF-8 are returned unchanged.
 .decode_escaped_bytes <- function(x) {
   out <- vapply(x, function(s) {
-    hex <- regmatches(s, gregexpr("<[0-9a-f]{2}>", s))[[1]]
-    rest <- strsplit(s, "<[0-9a-f]{2}>", perl = TRUE)[[1]]
+    hex <- regmatches(s, gregexpr(.ESCAPED_BYTE_PATTERN, s))[[1]]
+    rest <- strsplit(s, .ESCAPED_BYTE_PATTERN, perl = TRUE)[[1]]
     rest <- c(rest, rep("", length(hex) + 1L - length(rest)))
     bytes <- c(charToRaw(rest[1]), unlist(lapply(seq_along(hex), function(i) {
       c(as.raw(strtoi(substr(hex[i], 2, 3), 16L)), charToRaw(rest[i + 1L]))
@@ -193,29 +238,41 @@
   out
 }
 
-#' @title Repair byte-escaped text in a BioticExplorer database
-#' @description Databases written under a non-UTF-8 locale (for example a background \code{Rscript} with \code{LANG} unset) by \code{BioticExplorerServer} <= 0.8.8 store non-ASCII characters as literal escape text, so that \code{"blåkveite"} becomes \code{"bl<c3><a5>kveite"}. This function finds such values in all text columns of the \code{mission}, \code{stnall}, \code{indall} and \code{ageall} tables, decodes them back to UTF-8 in place and re-indexes the database.
-#' @param dbPath Character string giving the path to the DuckDB database file.
-#' @param dbIndexFile Character string giving the path to the index file. Rebuilt after a repair. Set to \code{NULL} to skip re-indexing.
-#' @param dryRun Logical. If \code{TRUE}, only reports the number of affected rows per table and column.
-#' @return A data frame with one row per repaired table and column, giving the number of distinct values and rows changed. Returned invisibly unless \code{dryRun = TRUE}.
+#' @title Check and repair byte-escaped text in a BioticExplorer database
+#' @description Databases compiled or updated by \code{BioticExplorerServer} <= 0.8.8 under a non-UTF-8 locale (for example a background \code{Rscript} started with \code{LANG} unset) store Norwegian characters as literal escape text, so that \code{"blåkveite"} becomes \code{"bl<c3><a5>kveite"}. This affects every text column: species, platform and mission-type names, and all comment fields. The function finds such values in all tables of the database, decodes them back to UTF-8 in place and re-indexes the database. Use \code{dryRun = TRUE} to only check. An alternative to repairing is to re-download the whole database with \code{compileDatabase(overwrite = TRUE)} using BioticExplorerServer >= 0.8.9.
+#' @param dbIndexFile Character string giving the path to the index file rebuilt after a repair. \code{NULL} skips re-indexing.
+#' @param dryRun Logical. If \code{TRUE}, opens the database read-only and only reports the affected tables and columns.
+#' @inheritParams updateDatabase
+#' @return A data frame with one row per affected table and column, giving the number of distinct values and rows. Returned invisibly unless \code{dryRun = TRUE}. A zero-row data frame means the database has no byte-escaped text.
+#' @details Close all other connections to the database (R sessions, BioticExplorer) before repairing. Only escape sequences for bytes >= 0x80 that decode to valid UTF-8 are changed, so legitimate text such as \code{"<10>"} is left alone.
 #' @author Mikko Vihtakari
+#' @examples
+#' \dontrun{
+#' repairDatabaseEncoding(dryRun = TRUE) # check
+#' repairDatabaseEncoding()              # repair and re-index
+#' }
 #' @export
 
-repairDatabaseEncoding <- function(dbPath = file.path(defaultDbPath(), "bioticexplorer.duckdb"),
-                                   dbIndexFile = file.path(dirname(dbPath), "dbIndex.rda"),
+repairDatabaseEncoding <- function(dbPath = defaultDbPath(),
+                                   dbIndexFile = file.path(dbPath, "dbIndex.rda"),
+                                   dbName = NULL,
                                    dryRun = FALSE) {
+  .with_utf8_locale({
+  if (is.null(dbName)) dbName <- "bioticexplorer"
   dbPath <- path.expand(dbPath)
-  if (!file.exists(dbPath)) stop("Database not found: ", dbPath)
+  if (!is.null(dbIndexFile)) dbIndexFile <- path.expand(dbIndexFile)
+  database <- normalizePath(paste0(file.path(dbPath, dbName), ".duckdb"), mustWork = FALSE)
+  if (!file.exists(database)) stop("Database not found: ", database)
 
-  connection <- DBI::dbConnect(duckdb::duckdb(), dbPath, read_only = dryRun)
+  connection <- DBI::dbConnect(duckdb::duckdb(), dbdir = database, read_only = dryRun)
   on.exit(DBI::dbDisconnect(connection, shutdown = TRUE), add = TRUE)
 
-  pattern <- "<[0-9a-f]{2}>"
+  pattern <- .ESCAPED_BYTE_PATTERN
   columns <- DBI::dbGetQuery(connection, paste0(
-    "SELECT table_name, column_name FROM information_schema.columns ",
-    "WHERE data_type = 'VARCHAR' AND table_name IN (",
-    paste0("'", .BES_FACT_TABLES, "'", collapse = ", "), ")"
+    "SELECT c.table_name, c.column_name FROM information_schema.columns c ",
+    "JOIN information_schema.tables t USING (table_schema, table_name) ",
+    "WHERE c.data_type = 'VARCHAR' AND t.table_type = 'BASE TABLE' ",
+    "AND c.table_schema = 'main'"
   ))
 
   report <- do.call(rbind, lapply(seq_len(nrow(columns)), function(i) {
@@ -237,7 +294,8 @@ repairDatabaseEncoding <- function(dbPath = file.path(defaultDbPath(), "bioticex
     } else {
       DBI::dbWriteTable(connection, "bes_encoding_map", map, temporary = TRUE, overwrite = TRUE)
       rows <- DBI::dbWithTransaction(connection, DBI::dbExecute(connection, paste0(
-        "UPDATE ", tab, " SET ", col, " = m.new FROM bes_encoding_map m WHERE ", tab, ".", col, " = m.old"
+        "UPDATE ", tab, " SET ", col, " = m.new FROM bes_encoding_map m WHERE ",
+        tab, ".", col, " = m.old"
       )))
       DBI::dbRemoveTable(connection, "bes_encoding_map", temporary = TRUE)
     }
@@ -247,14 +305,18 @@ repairDatabaseEncoding <- function(dbPath = file.path(defaultDbPath(), "bioticex
   }))
 
   if (is.null(report)) {
-    message("No byte-escaped text found.")
-    report <- data.frame(table = character(), column = character(), values = integer(), rows = numeric())
+    message("No byte-escaped text found in ", database, ".")
+    report <- data.frame(table = character(), column = character(),
+                         values = integer(), rows = numeric(), stringsAsFactors = FALSE)
   }
 
   if (dryRun) return(report)
 
-  if (nrow(report) && !is.null(dbIndexFile)) {
-    indexDatabase(connection = connection, dbIndexFile = dbIndexFile)
+  if (nrow(report)) {
+    remaining <- .count_escaped_text(connection)
+    if (remaining > 0) warning(remaining, " byte-escaped values could not be repaired.", call. = FALSE)
+    if (!is.null(dbIndexFile)) indexDatabase(connection = connection, dbIndexFile = dbIndexFile)
   }
   invisible(report)
+  })
 }

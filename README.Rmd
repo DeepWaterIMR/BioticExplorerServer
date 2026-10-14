@@ -59,6 +59,13 @@ particular years without running the metadata check, use:
 compileDatabase(years = 2024:2026, overwrite = TRUE)
 ```
 
+Databases compiled or updated with BioticExplorerServer <= 0.8.8 under a non-UTF-8 locale may store Norwegian characters as escape text (`"bl<c3><a5>kveite"` instead of `"blåkveite"`). Check and repair such a database in place with:
+
+```{r, eval = FALSE}
+repairDatabaseEncoding(dryRun = TRUE) # check
+repairDatabaseEncoding()              # repair and re-index
+```
+
 ### Uninstall the database
 
 If you want to remove the database from your computer, simply delete the folder at the specified `dbPath`. Remember to empty your trash bin as well.
