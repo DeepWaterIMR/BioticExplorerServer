@@ -85,3 +85,11 @@ ageall  <- dplyr::tbl(con, "ageall")   # age readings (lazy)
 mission <- dplyr::tbl(con, "mission")  # cruise/mission metadata (lazy)
 taxaindex <- dplyr::tbl(con, "taxaindex") # taxa reference data (lazy)
 ```
+
+
+## Versioning
+
+Every ordinary commit increments the patch version by 0.0.1 and stamps the current date in
+`DESCRIPTION`. The shared `.githooks/pre-commit` enforces this rule; enable it with
+`git config core.hooksPath .githooks`. Add a matching heading and summary to `NEWS.md` in the
+same commit. Minor or major version changes require an explicit maintainer request.
