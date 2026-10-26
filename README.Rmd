@@ -7,8 +7,7 @@ editor_options:
 ---
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(fig.path = "man/figures/README-")
-suppressPackageStartupMessages(library(tidyverse))
+knitr::opts_chunk$set(fig.path = "man/figures/README-", eval = FALSE)
 ```
 
 
@@ -26,6 +25,8 @@ See the [package website](https://deepwaterimr.github.io/BioticExplorerServer/) 
 ```{r, eval = FALSE}
 remotes::install_github("DeepWaterIMR/BioticExplorerServer")
 ```
+
+The database examples below are shown as code and are not executed while building this documentation.
 
 ## Usage
 
@@ -151,6 +152,8 @@ stnall %>%
     panel.grid.minor.x = element_line(color = "grey90", linewidth = 0.1)
   )
 ```
+
+![Figure 1. Historical example of station counts by year, retained from the previously published documentation. Re-run the code above against your local database for current results.](man/figures/README-unnamed-chunk-9-1.png)
 
 The duckdb database contains following data tables:
 
