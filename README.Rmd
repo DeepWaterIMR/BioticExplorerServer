@@ -7,8 +7,7 @@ editor_options:
 ---
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(fig.path = "man/figures/README-")
-suppressPackageStartupMessages(library(tidyverse))
+knitr::opts_chunk$set(fig.path = "man/figures/README-", eval = FALSE)
 ```
 
 
@@ -26,6 +25,8 @@ See the [package website](https://deepwaterimr.github.io/BioticExplorerServer/) 
 ```{r, eval = FALSE}
 remotes::install_github("DeepWaterIMR/BioticExplorerServer")
 ```
+
+The database examples below are shown as code and are not executed while building this documentation.
 
 ## Usage
 

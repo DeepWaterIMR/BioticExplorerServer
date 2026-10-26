@@ -1,3 +1,7 @@
+# BioticExplorerServer 0.8.12
+
+* Publish pkgdown directly through GitHub Pages artifacts, with source-version verification and no generated commits.
+
 # BioticExplorerServer 0.8.11
 
 * Declare the upstream GitHub source for RstoxData so clean installations and CI can resolve the dependency.

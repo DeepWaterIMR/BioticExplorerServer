@@ -22,6 +22,9 @@ documentation and function reference.
 remotes::install_github("DeepWaterIMR/BioticExplorerServer")
 ```
 
+The database examples below are shown as code and are not executed while
+building this documentation.
+
 ## Usage
 
 ### Download the IMR biotic database
@@ -53,7 +56,17 @@ library(BioticExplorerServer)
 compileDatabase() # writes to defaultDbPath(); pass dbPath to choose another folder
 ```
 
-**Where the database goes.** The default `dbPath` is `~/IMR_biotic_BES_database` on macOS and Linux. On Windows R expands `~` through the Documents special folder, which OneDrive's Known Folder Move often redirects into a synchronized `OneDrive - <Organization>\Documents` folder — the last place a multi-gigabyte database should live. Since version 0.8.7 the default therefore resolves to `%USERPROFILE%\IMR_biotic_BES_database` on Windows, matching the convention documented by [BAIT](https://github.com/DeepWaterIMR/BAIT). Call `defaultDbPath()` to see the resolved path, and `findDatabase()` to locate a database that an earlier version installed under Documents.
+**Where the database goes.** The default `dbPath` is
+`~/IMR_biotic_BES_database` on macOS and Linux. On Windows R expands `~`
+through the Documents special folder, which OneDrive’s Known Folder Move
+often redirects into a synchronized
+`OneDrive - <Organization>\Documents` folder — the last place a
+multi-gigabyte database should live. Since version 0.8.7 the default
+therefore resolves to `%USERPROFILE%\IMR_biotic_BES_database` on
+Windows, matching the convention documented by
+[BAIT](https://github.com/DeepWaterIMR/BAIT). Call `defaultDbPath()` to
+see the resolved path, and `findDatabase()` to locate a database that an
+earlier version installed under Documents.
 
 ### Update the database
 
@@ -113,11 +126,7 @@ if (any(installed_packages == FALSE)) {
 
 # Load the packages
 invisible(lapply(packages, library, character.only = TRUE, quietly = TRUE))
-```
 
-    ## Warning: package 'duckdb' was built under R version 4.6.1
-
-``` r
 # Connect to the database (assuming you used standard dbPath and name)
 con_db <- BioticExplorerServer::findDatabase() %>% 
   duckdb::duckdb(read_only = TRUE) %>% 
@@ -145,19 +154,6 @@ mission %>%
   head() %>%
   collect()
 ```
-
-    ## # A tibble: 6 × 14
-    ##   startyear platformname               cruise missiontype platform missionnumber
-    ##       <int> <chr>                      <chr>  <chr>       <chr>            <int>
-    ## 1      1906 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
-    ## 2      1907 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
-    ## 3      1908 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
-    ## 4      1909 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
-    ## 5      1910 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
-    ## 6      1911 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
-    ## # ℹ 8 more variables: missiontypename <chr>, callsignal <chr>,
-    ## #   missionstartdate <chr>, missionstopdate <chr>, purpose <chr>,
-    ## #   missionid <chr>, cruiseseriescode <chr>, idCruiseseriesSample <chr>
 
 The [dplyr package can also be used with
 databases](https://solutions.posit.co/connections/db/r-packages/dplyr/).
@@ -209,27 +205,11 @@ stnall %>%
   )
 ```
 
-<div class="figure">
-
-<img src="man/figures/README-unnamed-chunk-9-1.png" alt="Figure 1. Number of IMR Biotic sampling stations per year from around 1914 to present. Zero catch stations (is.na(commonname)) are shown in red, while stations with positive catches are shown in grey."  />
-<p class="caption">
-
-Figure 1. Number of IMR Biotic sampling stations per year from around
-1914 to present. Zero catch stations (is.na(commonname)) are shown in
-red, while stations with positive catches are shown in grey.
-</p>
-
-</div>
-
 The duckdb database contains following data tables:
 
 ``` r
 DBI::dbListTables(con_db)
 ```
-
-    ##  [1] "ageall"          "codeindex"       "csindex"         "filesize"       
-    ##  [5] "gearindex"       "indall"          "metadata"        "mission"        
-    ##  [9] "source_manifest" "stnall"          "taxaindex"
 
 `source_manifest`, created by `updateDatabase()`, stores metadata-only
 change signals used to identify which years need refreshing.
