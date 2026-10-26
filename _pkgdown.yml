@@ -28,6 +28,15 @@ reference:
   - indexDatabase
   - repairDatabaseEncoding
 
+- title: Database path helpers
+  desc: >
+    Resolve default database locations and locate an existing local database.
+    These helpers only inspect local paths; they do not contact the IMR APIs.
+  contents:
+  - defaultDbPath
+  - dbPathCandidates
+  - findDatabase
+
 - title: Biotic data processing
   desc: >
     Functions to parse a single NMD Biotic XML file into R data tables.

@@ -1,8 +1,8 @@
 Package: BioticExplorerServer
 Type: Package
 Title: R Package for Downloading Server-Side Data for BioticExplorer
-Version: 0.8.9
-Date: 2026-09-07
+Version: 0.8.11
+Date: 2026-10-25
 Authors@R: c(person("Mikko", "Vihtakari", email = "mikko.vihtakari@hi.no",
                   role = c("aut", "cre")), 
           person("Ibrahim", "Umar",
@@ -17,6 +17,7 @@ Description: This package can be used to download the IMR Biotic database and
         Institute's Biotic data from R.
 Depends: R (>= 3.5)
 Imports: data.table, DBI, RstoxData, dbplyr, duckdb, dplyr, httr2, sf, xml2
+Remotes: StoXProject/RstoxData
 Suggests: testthat (>= 3.0.0), withr
 Config/testthat/edition: 3
 URL: https://deepwaterimr.github.io/BioticExplorerServer

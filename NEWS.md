@@ -1,3 +1,11 @@
+# BioticExplorerServer 0.8.11
+
+* Declare the upstream GitHub source for RstoxData so clean installations and CI can resolve the dependency.
+
+# BioticExplorerServer 0.8.10
+
+2026-10-25 Add automated pkgdown builds and Pages deployment. The site build uses local documentation examples and does not call the Biotic or reference APIs.
+
 # BioticExplorerServer 0.8.9
 
 *2026-10-14*
