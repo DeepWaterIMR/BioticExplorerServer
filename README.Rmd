@@ -153,6 +153,8 @@ stnall %>%
   )
 ```
 
+![Figure 1. Historical example of station counts by year, retained from the previously published documentation. Re-run the code above against your local database for current results.](man/figures/README-unnamed-chunk-9-1.png)
+
 The duckdb database contains following data tables:
 
 ```{r}

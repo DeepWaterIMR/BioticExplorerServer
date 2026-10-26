@@ -205,6 +205,15 @@ stnall %>%
   )
 ```
 
+<figure>
+<img src="man/figures/README-unnamed-chunk-9-1.png"
+alt="Figure 1. Historical example of station counts by year, retained from the previously published documentation. Re-run the code above against your local database for current results." />
+<figcaption aria-hidden="true">Figure 1. Historical example of station
+counts by year, retained from the previously published documentation.
+Re-run the code above against your local database for current
+results.</figcaption>
+</figure>
+
 The duckdb database contains following data tables:
 
 ``` r
