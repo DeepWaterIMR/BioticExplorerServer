@@ -39,7 +39,7 @@ library(BioticExplorerServer)
 compileDatabase() # writes to defaultDbPath(); pass dbPath to choose another folder
 ```
 
-**Where the database goes.** The default `dbPath` is `~/IMR_biotic_BES_database` on macOS and Linux. On Windows R expands `~` through the Documents special folder, which OneDrive's Known Folder Move often redirects into a synchronized `OneDrive - <Organization>\Documents` folder — the last place a multi-gigabyte database should live. Since version 0.8.7 the default therefore resolves to `%USERPROFILE%\IMR_biotic_BES_database` on Windows, matching the convention documented by [BAIT](https://github.com/DeepWaterIMR/BAIT). Call `defaultDbPath()` to see the resolved path, and `findDatabase()` to locate a database that an earlier version installed under Documents.
+**Where the database goes.** The default `dbPath` is `~/Fiskwise_data/IMR_biotic_BES_database` on macOS and Linux and `%USERPROFILE%\Fiskwise_data\IMR_biotic_BES_database` on Windows. `Fiskwise_data` is the shared folder in which [Fiskwise](https://github.com/DeepWaterIMR/fiskwise) and [BAIT](https://github.com/DeepWaterIMR/BAIT) keep all local databases. On Windows the home folder is `%USERPROFILE%` rather than R's `~`, which goes through the Documents special folder that OneDrive's Known Folder Move often redirects into a synchronized folder — the last place a multi-gigabyte database should live. Databases in the legacy location `~/IMR_biotic_BES_database` (before version 0.8.14) are still found: `updateDatabase()` updates them in place. Move the folder into `~/Fiskwise_data/` to migrate. Call `defaultDbPath()` to see the resolved path and `findDatabase()` to locate an existing database.
 
 ### Update the database
 

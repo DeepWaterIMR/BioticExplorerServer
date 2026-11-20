@@ -6,7 +6,7 @@
 \usage{
 updateDatabase(
   years = NULL,
-  dbPath = defaultDbPath(),
+  dbPath = .existingDbPath(dbName),
   dbIndexFile = file.path(dbPath, "dbIndex.rda"),
   dbName = NULL,
   verbose = FALSE,
@@ -17,7 +17,7 @@ updateDatabase(
 \item{years}{Optional integer vector limiting metadata checks and incremental
 replacements. A schema compatibility rebuild always includes all years.}
 
-\item{dbPath}{Character string specifying the folder where the \link[duckdb]{duckdb} and \link[=indexDatabase]{dbIndex} files should be saved. Defaults to \code{\link{defaultDbPath}()}, which is \code{~/IMR_biotic_BES_database} on macOS and Linux and \code{\%USERPROFILE\%\\IMR_biotic_BES_database} on Windows, where R's \code{~} expansion may otherwise land the database in a OneDrive-synchronized Documents folder.}
+\item{dbPath}{Character string specifying the folder that holds the \link[duckdb]{duckdb} file. Defaults to the folder of the database that \code{\link{findDatabase}()} locates, so a database in a legacy location (directly in the home directory) is updated in place. If no database is found, \code{\link{defaultDbPath}()} is used and the database is compiled there.}
 
 \item{dbIndexFile}{Character string specifying the file path where the index of the database should be saved. Must include \code{.rda} at the end. Defaults to \code{dbIndex.rda} inside \code{dbPath}. The index is used by \href{https://github.com/DeepWaterIMR/BioticExplorer}{BioticExplorer}.}
 

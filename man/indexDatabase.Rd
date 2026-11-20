@@ -6,7 +6,7 @@
 \usage{
 indexDatabase(
   connection,
-  dbIndexFile = file.path(defaultDbPath(), "dbIndex.rda"),
+  dbIndexFile = file.path(.existingDbPath(), "dbIndex.rda"),
   fileOnly = TRUE
 )
 }

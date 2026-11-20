@@ -11,7 +11,7 @@
 
 # dbPath = "~/Desktop/IMR_db.duckdb"; dbIndexFile = "~/Desktop/dbIndex.rda"
 indexDatabase <- function(connection,
-                          dbIndexFile = file.path(defaultDbPath(), "dbIndex.rda"),
+                          dbIndexFile = file.path(.existingDbPath(), "dbIndex.rda"),
                           fileOnly = TRUE) {
   if (!requireNamespace("dbplyr", quietly = TRUE)) {
     stop("The dbplyr package is required to index database backends.", call. = FALSE)

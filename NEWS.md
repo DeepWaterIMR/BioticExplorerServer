@@ -1,3 +1,22 @@
+# BioticExplorerServer 0.8.14
+
+*2026-11-20*
+
+- The default database folder moved into a shared Fiskwise data folder:
+  `~/Fiskwise_data/IMR_biotic_BES_database` on macOS and Linux,
+  `%USERPROFILE%\Fiskwise_data\IMR_biotic_BES_database` on Windows. Keeping all local
+  databases (Biotic, SEAT, and later ones) under one folder avoids cluttering the home
+  directory. `defaultDbPath()`, `dbPathCandidates()` and `findDatabase()` gain a `root`
+  argument (default `"Fiskwise_data"`; `NULL` gives the old layout).
+- Existing databases keep working without moving them. `dbPathCandidates()` lists the new
+  location first and the legacy `~/IMR_biotic_BES_database` after it, so `findDatabase()`
+  still finds an unmigrated database. `updateDatabase()`, `repairDatabaseEncoding()` and
+  `indexDatabase()` now default to the folder of the database `findDatabase()` locates,
+  so a routine update of a legacy install runs in place instead of starting a full
+  compile in the new folder. Only `compileDatabase()` uses the new default directly.
+- To migrate, move the folder: `mkdir ~/Fiskwise_data && mv ~/IMR_biotic_BES_database
+  ~/Fiskwise_data/` (macOS/Linux), and update `bes_db_path` in `~/.bait/config.json` if
+  you use BAIT.
 # BioticExplorerServer 0.8.13
 
 * Retain the published station-count illustration while rendering database examples as code only.

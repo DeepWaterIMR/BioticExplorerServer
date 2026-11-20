@@ -4,11 +4,17 @@
 \alias{dbPathCandidates}
 \title{Plausible locations of the IMR Biotic database}
 \usage{
-dbPathCandidates(folder = "IMR_biotic_BES_database")
+dbPathCandidates(folder = "IMR_biotic_BES_database", root = "Fiskwise_data")
 }
 \arguments{
-\item{folder}{Character string giving the name of the database folder inside the
-user's home directory. Defaults to \code{"IMR_biotic_BES_database"}.}
+\item{folder}{Character string giving the name of the database folder. Defaults to
+\code{"IMR_biotic_BES_database"}.}
+
+\item{root}{Character string giving the shared data folder inside the user's home
+directory that holds \code{folder}. Defaults to \code{"Fiskwise_data"}, the folder in
+which \href{https://github.com/DeepWaterIMR/fiskwise}{Fiskwise} keeps all its local
+databases. Use \code{NULL} or \code{""} to place \code{folder} directly in the home
+directory (the layout used before BioticExplorerServer 0.8.14).}
 }
 \value{
 Character vector of unique absolute paths. The folders are not created and are
@@ -19,12 +25,19 @@ Returns the folders in which an IMR Biotic database may have been
   installed, most likely first.
 }
 \details{
-On macOS and Linux there is only one candidate, \code{~/IMR_biotic_BES_database}.
-  On Windows the function returns \code{\link{defaultDbPath}} first, followed by the
-  location that raw \code{~} expansion produces (typically the Documents folder, which
-  may be redirected into OneDrive). Databases compiled before
-  BioticExplorerServer 0.8.7 may live in the latter, so both are worth checking.
+The current default (\code{\link{defaultDbPath}}, inside \code{root}) comes
+  first, followed by the legacy location directly in the home directory, which
+  databases compiled before BioticExplorerServer 0.8.14 use. On Windows each of these is
+  listed twice: under \code{\%USERPROFILE\%} and under the location that raw \code{~}
+  expansion produces (typically the Documents folder, which may be redirected into
+  OneDrive and was used before version 0.8.7).
 }
+\section{AI assistance}{
+
+Written with Claude Opus 5.5 (Anthropic); reviewed in full by Claude Opus 5.5
+(Anthropic), 2026-11-20.
+}
+
 \examples{
 dbPathCandidates()
 }

@@ -4,11 +4,17 @@
 \alias{defaultDbPath}
 \title{Default location of the IMR Biotic database}
 \usage{
-defaultDbPath(folder = "IMR_biotic_BES_database")
+defaultDbPath(folder = "IMR_biotic_BES_database", root = "Fiskwise_data")
 }
 \arguments{
-\item{folder}{Character string giving the name of the database folder inside the
-user's home directory. Defaults to \code{"IMR_biotic_BES_database"}.}
+\item{folder}{Character string giving the name of the database folder. Defaults to
+\code{"IMR_biotic_BES_database"}.}
+
+\item{root}{Character string giving the shared data folder inside the user's home
+directory that holds \code{folder}. Defaults to \code{"Fiskwise_data"}, the folder in
+which \href{https://github.com/DeepWaterIMR/fiskwise}{Fiskwise} keeps all its local
+databases. Use \code{NULL} or \code{""} to place \code{folder} directly in the home
+directory (the layout used before BioticExplorerServer 0.8.14).}
 }
 \value{
 Character string giving an absolute path to the default database folder. The
@@ -19,23 +25,28 @@ Returns the platform-appropriate default folder for the
   \link[duckdb]{duckdb} database compiled by \code{\link{compileDatabase}}.
 }
 \details{
-On macOS and Linux the default is \code{~/IMR_biotic_BES_database}. On
-  Windows, R expands \code{~} through the "personal"/Documents special folder, which
-  OneDrive's Known Folder Move frequently redirects into a synchronized
-  \code{OneDrive - <Organization>\\Documents} folder. A multi-gigabyte DuckDB file does
-  not belong in a cloud-synchronized folder, and the redirection made the documented
-  default resolve to different real locations depending on the machine. The default
-  therefore resolves to \code{\%USERPROFILE\%\\IMR_biotic_BES_database} on Windows,
-  matching the convention documented by
-  \href{https://github.com/DeepWaterIMR/BAIT}{BAIT}. If \code{USERPROFILE} is not set,
-  the function falls back to \code{~} expansion.
+On macOS and Linux the default is
+  \code{~/Fiskwise_data/IMR_biotic_BES_database}. On Windows, R expands \code{~} through
+  the "personal"/Documents special folder, which OneDrive's Known Folder Move frequently
+  redirects into a synchronized \code{OneDrive - <Organization>\\Documents} folder. A
+  multi-gigabyte DuckDB file does not belong in a cloud-synchronized folder, so the
+  default resolves to \code{\%USERPROFILE\%\\Fiskwise_data\\IMR_biotic_BES_database} on
+  Windows. If \code{USERPROFILE} is not set, the function falls back to \code{~}
+  expansion.
 }
+\section{AI assistance}{
+
+Written with Claude Opus 5.5 (Anthropic); reviewed in full by Claude Opus 5.5
+(Anthropic), 2026-11-20.
+}
+
 \examples{
 defaultDbPath()
+defaultDbPath(root = NULL)
 }
 \seealso{
 \code{\link{dbPathCandidates}} and \code{\link{findDatabase}} for locating a
-  database that was installed to either of the two historical Windows locations.
+  database installed to one of the earlier default locations.
 }
 \author{
 Mikko Vihtakari (Institute of Marine Research)
