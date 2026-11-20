@@ -794,6 +794,7 @@
 #' @param years Optional integer vector limiting metadata checks and incremental
 #'   replacements. A schema compatibility rebuild always includes all years.
 #' @inheritParams compileDatabase
+#' @param dbPath Character string specifying the folder that holds the \link[duckdb]{duckdb} file. Defaults to the folder of the database that \code{\link{findDatabase}()} locates, so a database in a legacy location (directly in the home directory) is updated in place. If no database is found, \code{\link{defaultDbPath}()} is used and the database is compiled there.
 #' @param verbose Logical; emit one metadata-check message per delivery. The
 #'   default uses a progress bar in interactive sessions and bounded milestone
 #'   messages in non-interactive logs.
@@ -804,7 +805,7 @@
 #' @export
 updateDatabase <- function(
   years = NULL,
-  dbPath = defaultDbPath(),
+  dbPath = .existingDbPath(dbName),
   dbIndexFile = file.path(dbPath, "dbIndex.rda"),
   dbName = NULL,
   verbose = FALSE,

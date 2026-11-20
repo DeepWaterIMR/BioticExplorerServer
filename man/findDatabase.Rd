@@ -4,15 +4,25 @@
 \alias{findDatabase}
 \title{Locate an existing IMR Biotic database}
 \usage{
-findDatabase(dbName = NULL, folder = "IMR_biotic_BES_database")
+findDatabase(
+  dbName = NULL,
+  folder = "IMR_biotic_BES_database",
+  root = "Fiskwise_data"
+)
 }
 \arguments{
 \item{dbName}{Character string or \code{NULL} giving the name of the database file
 without the \code{.duckdb} extension. If \code{NULL} uses the default name
 ("bioticexplorer").}
 
-\item{folder}{Character string giving the name of the database folder inside the
-user's home directory. Defaults to \code{"IMR_biotic_BES_database"}.}
+\item{folder}{Character string giving the name of the database folder. Defaults to
+\code{"IMR_biotic_BES_database"}.}
+
+\item{root}{Character string giving the shared data folder inside the user's home
+directory that holds \code{folder}. Defaults to \code{"Fiskwise_data"}, the folder in
+which \href{https://github.com/DeepWaterIMR/fiskwise}{Fiskwise} keeps all its local
+databases. Use \code{NULL} or \code{""} to place \code{folder} directly in the home
+directory (the layout used before BioticExplorerServer 0.8.10).}
 }
 \value{
 Character string giving the absolute path to an existing \code{.duckdb} file,
@@ -24,11 +34,17 @@ Searches the plausible database locations and returns the path to the
 }
 \details{
 Checks \code{\link{dbPathCandidates}} in order, so a database installed to the
-  current default takes precedence over one left in the location that raw \code{~}
-  expansion produced on Windows. Intended for downstream code, such as
+  current default takes precedence over one left in a legacy location. Intended for
+  downstream code, such as
   \href{https://github.com/DeepWaterIMR/BioticExplorer}{BioticExplorer}, which has to
   find a database it did not compile itself.
 }
+\section{AI assistance}{
+
+Written with Claude Opus 5.5 (Anthropic); reviewed in full by Claude Opus 5.5
+(Anthropic), 2026-11-20.
+}
+
 \examples{
 findDatabase()
 }

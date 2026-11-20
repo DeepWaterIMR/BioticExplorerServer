@@ -53,7 +53,20 @@ library(BioticExplorerServer)
 compileDatabase() # writes to defaultDbPath(); pass dbPath to choose another folder
 ```
 
-**Where the database goes.** The default `dbPath` is `~/IMR_biotic_BES_database` on macOS and Linux. On Windows R expands `~` through the Documents special folder, which OneDrive's Known Folder Move often redirects into a synchronized `OneDrive - <Organization>\Documents` folder — the last place a multi-gigabyte database should live. Since version 0.8.7 the default therefore resolves to `%USERPROFILE%\IMR_biotic_BES_database` on Windows, matching the convention documented by [BAIT](https://github.com/DeepWaterIMR/BAIT). Call `defaultDbPath()` to see the resolved path, and `findDatabase()` to locate a database that an earlier version installed under Documents.
+**Where the database goes.** The default `dbPath` is
+`~/Fiskwise_data/IMR_biotic_BES_database` on macOS and Linux and
+`%USERPROFILE%\Fiskwise_data\IMR_biotic_BES_database` on Windows.
+`Fiskwise_data` is the shared folder in which
+[Fiskwise](https://github.com/DeepWaterIMR/fiskwise) and
+[BAIT](https://github.com/DeepWaterIMR/BAIT) keep all local databases.
+On Windows the home folder is `%USERPROFILE%` rather than R’s `~`, which
+goes through the Documents special folder that OneDrive’s Known Folder
+Move often redirects into a synchronized folder — the last place a
+multi-gigabyte database should live. Databases in the legacy location
+`~/IMR_biotic_BES_database` (before version 0.8.10) are still found:
+`updateDatabase()` updates them in place. Move the folder into
+`~/Fiskwise_data/` to migrate. Call `defaultDbPath()` to see the
+resolved path and `findDatabase()` to locate an existing database.
 
 ### Update the database
 
@@ -115,6 +128,8 @@ if (any(installed_packages == FALSE)) {
 invisible(lapply(packages, library, character.only = TRUE, quietly = TRUE))
 ```
 
+    ## Warning: package 'data.table' was built under R version 4.6.1
+
     ## Warning: package 'duckdb' was built under R version 4.6.1
 
 ``` r
@@ -146,16 +161,16 @@ mission %>%
   collect()
 ```
 
-    ## # A tibble: 6 × 14
+    ## # A tibble: 6 x 14
     ##   startyear platformname               cruise missiontype platform missionnumber
     ##       <int> <chr>                      <chr>  <chr>       <chr>            <int>
-    ## 1      1906 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
-    ## 2      1907 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
-    ## 3      1908 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
-    ## 4      1909 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
-    ## 5      1910 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
-    ## 6      1911 NVG-sampling (Norsk vårgy… <NA>   1           10016                1
-    ## # ℹ 8 more variables: missiontypename <chr>, callsignal <chr>,
+    ## 1      1906 "NVG-sampling (Norsk v\u0~ <NA>   1           10016                1
+    ## 2      1907 "NVG-sampling (Norsk v\u0~ <NA>   1           10016                1
+    ## 3      1908 "NVG-sampling (Norsk v\u0~ <NA>   1           10016                1
+    ## 4      1909 "NVG-sampling (Norsk v\u0~ <NA>   1           10016                1
+    ## 5      1910 "NVG-sampling (Norsk v\u0~ <NA>   1           10016                1
+    ## 6      1911 "NVG-sampling (Norsk v\u0~ <NA>   1           10016                1
+    ## # i 8 more variables: missiontypename <chr>, callsignal <chr>,
     ## #   missionstartdate <chr>, missionstopdate <chr>, purpose <chr>,
     ## #   missionid <chr>, cruiseseriescode <chr>, idCruiseseriesSample <chr>
 

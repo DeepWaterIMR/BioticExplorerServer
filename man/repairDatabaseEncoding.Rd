@@ -5,14 +5,14 @@
 \title{Check and repair byte-escaped text in a BioticExplorer database}
 \usage{
 repairDatabaseEncoding(
-  dbPath = defaultDbPath(),
+  dbPath = .existingDbPath(dbName),
   dbIndexFile = file.path(dbPath, "dbIndex.rda"),
   dbName = NULL,
   dryRun = FALSE
 )
 }
 \arguments{
-\item{dbPath}{Character string specifying the folder where the \link[duckdb]{duckdb} and \link[=indexDatabase]{dbIndex} files should be saved. Defaults to \code{\link{defaultDbPath}()}, which is \code{~/IMR_biotic_BES_database} on macOS and Linux and \code{\%USERPROFILE\%\\IMR_biotic_BES_database} on Windows, where R's \code{~} expansion may otherwise land the database in a OneDrive-synchronized Documents folder.}
+\item{dbPath}{Character string specifying the folder that holds the \link[duckdb]{duckdb} file. Defaults to the folder of the database that \code{\link{findDatabase}()} locates, so a database in a legacy location (directly in the home directory) is updated in place. If no database is found, \code{\link{defaultDbPath}()} is used and the database is compiled there.}
 
 \item{dbIndexFile}{Character string giving the path to the index file rebuilt after a repair. \code{NULL} skips re-indexing.}
 

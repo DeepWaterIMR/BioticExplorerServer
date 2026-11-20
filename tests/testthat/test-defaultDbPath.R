@@ -3,11 +3,19 @@ test_that("defaultDbPath uses ~ expansion outside Windows", {
 
   expect_identical(
     defaultDbPath(),
-    path.expand("~/IMR_biotic_BES_database")
+    path.expand("~/Fiskwise_data/IMR_biotic_BES_database")
   )
   expect_identical(
     defaultDbPath(folder = "custom_folder"),
-    path.expand("~/custom_folder")
+    path.expand("~/Fiskwise_data/custom_folder")
+  )
+  expect_identical(
+    defaultDbPath(root = NULL),
+    path.expand("~/IMR_biotic_BES_database")
+  )
+  expect_identical(
+    defaultDbPath(root = ""),
+    path.expand("~/IMR_biotic_BES_database")
   )
 })
 
@@ -17,7 +25,7 @@ test_that("defaultDbPath uses USERPROFILE on Windows", {
 
   expect_identical(
     defaultDbPath(),
-    "C:/Users/tester/IMR_biotic_BES_database"
+    "C:/Users/tester/Fiskwise_data/IMR_biotic_BES_database"
   )
 })
 
@@ -27,25 +35,31 @@ test_that("defaultDbPath falls back to ~ when USERPROFILE is unset", {
 
   expect_identical(
     defaultDbPath(),
-    path.expand("~/IMR_biotic_BES_database")
+    path.expand("~/Fiskwise_data/IMR_biotic_BES_database")
   )
 })
 
-test_that("dbPathCandidates lists both historical Windows locations", {
+test_that("dbPathCandidates lists current and legacy Windows locations", {
   local_mocked_bindings(.isWindows = function() TRUE)
   withr::local_envvar(USERPROFILE = "C:/Users/tester")
 
   candidates <- dbPathCandidates()
 
-  expect_length(candidates, 2)
-  expect_identical(candidates[[1]], "C:/Users/tester/IMR_biotic_BES_database")
-  expect_identical(candidates[[2]], path.expand("~/IMR_biotic_BES_database"))
+  expect_identical(candidates, c(
+    "C:/Users/tester/Fiskwise_data/IMR_biotic_BES_database",
+    path.expand("~/Fiskwise_data/IMR_biotic_BES_database"),
+    "C:/Users/tester/IMR_biotic_BES_database",
+    path.expand("~/IMR_biotic_BES_database")
+  ))
 })
 
-test_that("dbPathCandidates returns a single path outside Windows", {
+test_that("dbPathCandidates lists current then legacy path outside Windows", {
   local_mocked_bindings(.isWindows = function() FALSE)
 
-  expect_identical(dbPathCandidates(), path.expand("~/IMR_biotic_BES_database"))
+  expect_identical(dbPathCandidates(), c(
+    path.expand("~/Fiskwise_data/IMR_biotic_BES_database"),
+    path.expand("~/IMR_biotic_BES_database")
+  ))
 })
 
 test_that("findDatabase returns NULL when no database exists", {
@@ -55,43 +69,59 @@ test_that("findDatabase returns NULL when no database exists", {
   expect_null(findDatabase())
 })
 
-test_that("findDatabase prefers the current default over the legacy location", {
-  home <- withr::local_tempdir()
-  profile <- withr::local_tempdir()
-
-  dir.create(file.path(home, "IMR_biotic_BES_database"))
-  dir.create(file.path(profile, "IMR_biotic_BES_database"))
-  file.create(file.path(home, "IMR_biotic_BES_database", "bioticexplorer.duckdb"))
-  file.create(file.path(profile, "IMR_biotic_BES_database", "bioticexplorer.duckdb"))
-
-  local_mocked_bindings(.isWindows = function() TRUE)
-  withr::local_envvar(HOME = home, USERPROFILE = profile)
-
-  expect_identical(
-    findDatabase(),
-    normalizePath(
-      file.path(profile, "IMR_biotic_BES_database", "bioticexplorer.duckdb"),
-      winslash = "/", mustWork = FALSE
-    )
+make_db <- function(...) {
+  dir <- file.path(...)
+  dir.create(dir, recursive = TRUE)
+  file.create(file.path(dir, "bioticexplorer.duckdb"))
+  normalizePath(
+    file.path(dir, "bioticexplorer.duckdb"), winslash = "/", mustWork = FALSE
   )
+}
+
+test_that("findDatabase prefers Fiskwise_data over the legacy home location", {
+  home <- withr::local_tempdir()
+  local_mocked_bindings(.isWindows = function() FALSE)
+  withr::local_envvar(HOME = home)
+
+  legacy <- make_db(home, "IMR_biotic_BES_database")
+  expect_identical(findDatabase(), legacy)
+
+  current <- make_db(home, "Fiskwise_data", "IMR_biotic_BES_database")
+  expect_identical(findDatabase(), current)
 })
 
-test_that("findDatabase falls back to the legacy location and honours dbName", {
+test_that("findDatabase prefers USERPROFILE over ~ expansion on Windows", {
   home <- withr::local_tempdir()
   profile <- withr::local_tempdir()
-
-  dir.create(file.path(home, "IMR_biotic_BES_database"))
-  file.create(file.path(home, "IMR_biotic_BES_database", "bioticexplorer.duckdb"))
-
   local_mocked_bindings(.isWindows = function() TRUE)
   withr::local_envvar(HOME = home, USERPROFILE = profile)
 
-  expect_identical(
-    findDatabase(),
-    normalizePath(
-      file.path(home, "IMR_biotic_BES_database", "bioticexplorer.duckdb"),
-      winslash = "/", mustWork = FALSE
-    )
-  )
+  make_db(home, "IMR_biotic_BES_database")
+  expected <- make_db(profile, "IMR_biotic_BES_database")
+
+  expect_identical(findDatabase(), expected)
+})
+
+test_that("findDatabase falls back to the oldest location and honours dbName", {
+  home <- withr::local_tempdir()
+  profile <- withr::local_tempdir()
+  local_mocked_bindings(.isWindows = function() TRUE)
+  withr::local_envvar(HOME = home, USERPROFILE = profile)
+
+  expected <- make_db(home, "IMR_biotic_BES_database")
+
+  expect_identical(findDatabase(), expected)
   expect_null(findDatabase(dbName = "does_not_exist"))
+})
+
+test_that(".existingDbPath follows a legacy install and defaults to the new folder", {
+  home <- withr::local_tempdir()
+  local_mocked_bindings(.isWindows = function() FALSE)
+  withr::local_envvar(HOME = home)
+
+  expect_identical(.existingDbPath(), defaultDbPath())
+
+  legacy <- make_db(home, "IMR_biotic_BES_database")
+  expect_identical(.existingDbPath(), dirname(legacy))
+  expect_identical(.existingDbPath("other"), defaultDbPath())
 })

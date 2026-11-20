@@ -253,7 +253,7 @@
 #' }
 #' @export
 
-repairDatabaseEncoding <- function(dbPath = defaultDbPath(),
+repairDatabaseEncoding <- function(dbPath = .existingDbPath(dbName),
                                    dbIndexFile = file.path(dbPath, "dbIndex.rda"),
                                    dbName = NULL,
                                    dryRun = FALSE) {
